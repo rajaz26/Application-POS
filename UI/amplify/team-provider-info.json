@@ -35,6 +35,9 @@
       },
       "api": {
         "fyp": {}
+      },
+      "storage": {
+        "fypimages": {}
       }
     }
   }

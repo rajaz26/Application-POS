@@ -37,7 +37,7 @@
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-fyp-raja-40354-deployment/amplify-cfn-templates/api/cloudformation-template.json",
         "logicalId": "apifyp"
       },
-      "lastPushTimeStamp": "2024-02-14T00:06:16.402Z",
+      "lastPushTimeStamp": "2024-02-14T12:52:35.872Z",
       "lastPushDirHash": "E+fJDKraXZz63OwEl0So7RxrxGQ="
     }
   },
@@ -69,7 +69,7 @@
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-fyp-raja-40354-deployment/amplify-cfn-templates/auth/fyp1db63f83-cloudformation-template.json",
         "logicalId": "authfyp1db63f83"
       },
-      "lastPushTimeStamp": "2024-02-14T00:06:01.381Z",
+      "lastPushTimeStamp": "2024-02-14T12:52:35.877Z",
       "output": {
         "UserPoolId": "us-east-1_LPSfZvcW6",
         "AppClientIDWeb": "2im5b1n959tfm7b3hs9t4okslq",
@@ -80,6 +80,23 @@
         "UserPoolName": "fyp1db63f83_userpool_1db63f83"
       },
       "lastPushDirHash": "SQD2YZTETRmNIU5At0KuLl6ggUI="
+    }
+  },
+  "storage": {
+    "fypimages": {
+      "service": "S3",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [],
+      "lastPushTimeStamp": "2024-02-14T12:52:39.129Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-fyp-raja-40354-deployment/amplify-cfn-templates/storage/cloudformation-template.json",
+        "logicalId": "storagefypimages"
+      },
+      "output": {
+        "BucketName": "fypimages40354-raja",
+        "Region": "us-east-1"
+      },
+      "lastPushDirHash": "xfPU5z+Tc0QOLOaDyXW7DSKnVTs="
     }
   }
 }

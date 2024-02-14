@@ -1,10 +1,18 @@
 import { StyleSheet, Text, View,ScrollView,SafeAreaView,TouchableOpacity,Image} from 'react-native'
-import React from 'react'
+import React,{useState} from 'react'
 import Ionic from 'react-native-vector-icons/Ionicons';
 import { COLORS } from '../assets/theme/index.js';
 import { useNavigation } from '@react-navigation/native'; 
-
+import { SelectList } from 'react-native-dropdown-select-list';
 const StaffListScreen = () => {
+    const data = [
+        {key:'1', value:'Cashier'},
+        {key:'2', value:'Purchaser'},
+        {key:'3', value:'Warehouse Manager'}
+      ];
+    const [rank, setRank] = useState('Select Role');
+    const [selected, setSelected] = React.useState('');
+
  const navigation=useNavigation();
   return (
     <View style={styles.container}>
@@ -13,10 +21,24 @@ const StaffListScreen = () => {
                 <TouchableOpacity style={styles.arrowBack}  onPress={()=> navigation.goBack()}>
                     <Ionic size={25} color='white' name ='chevron-back-outline'/>
                 </TouchableOpacity>
-                <Text style={styles.cashierHeading}>Cashiers</Text>
+                <Text style={styles.cashierHeading}>Staff List</Text>
             </View>
         </SafeAreaView>
         <View style={styles.listContainer}>
+        <View style={styles.selectedContainer} >
+        <SelectList 
+             setSelected={(rank) => setSelected(rank)} 
+                            data={data} search={false} 
+                            renderRightIcon={{size:30,}}
+                            save="value"
+                            placeholder={rank}
+                            boxStyles={{ borderWidth:2}} 
+                            arrowicon={ <Ionic style={{position:'absolute',right:10,top:14}} size={26} color='rgba(180, 180, 180,4)' name ='chevron-down-outline'/>}
+                            inputStyles={{fontSize:18.5,top:1,fontFamily:'Poppins-Regular',color:'rgba(140, 140, 140,4)'}}
+                            dropdownTextStyles={{ fontFamily:'Poppins-Regular',fontSize:15,color:'rgba(180, 180, 180,4)' }}
+                            />
+        </View>
+
             <ScrollView>
             <View style={styles.billContainer}>
                 <Image style={styles.logoStyles} source={require("../assets/images/person.jpg")}/>
@@ -140,8 +162,8 @@ const StaffListScreen = () => {
             </View>
             <View style={styles.footerContainer}>
             <View style={styles.footerWrapper}>
-                <TouchableOpacity style={styles.confirmButton}>
-                    <Text style={styles.confirmText}>Add Cashier</Text>
+                <TouchableOpacity style={styles.confirmButton} onPress={()=> navigation.navigate('AddAccount')}>
+                    <Text style={styles.confirmText}>Add Account</Text>
                 </TouchableOpacity>
             </View>
         </View>
@@ -183,20 +205,30 @@ const styles = StyleSheet.create({
         borderTopRightRadius:30,
         borderTopLeftRadius:30,
         backgroundColor:'rgba(240, 240, 240,4)',
+        justifyContent:'center',
+        // alignItems:'center',
+        paddingHorizontal:20,
+    },
+    selectedContainer:{
+        flex:0,
+        paddingVertical:20,
+        width:'100%',
+        marginTop:10,
     },
     billContainer:{
         flex:0,
         flexDirection:'row',
+       
         // marginVertical:15,
         marginTop:25,
-        marginHorizontal:25,
+        // marginHorizontal:25,
         paddingVertical:25,
         paddingHorizontal:10,
         backgroundColor:'white',
         elevation: 5, 
         shadowColor: 'black', 
         shadowOffset: {
-            width: 0,
+            width:'100%',
             height: 2, 
         },
     shadowOpacity: 1, 

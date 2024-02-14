@@ -1,0 +1,14 @@
+{
+  "resourceName": "fypimages",
+  "policyUUID": "fec8766f",
+  "bucketName": "fypimages",
+  "storageAccess": "auth",
+  "guestAccess": [],
+  "authAccess": [
+    "CREATE_AND_UPDATE",
+    "READ",
+    "DELETE"
+  ],
+  "triggerFunction": "NONE",
+  "groupAccess": {}
+}

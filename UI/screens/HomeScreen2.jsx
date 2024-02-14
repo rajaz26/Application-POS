@@ -18,6 +18,7 @@ const HomeScreen2 = () => {
   const openDrawer = () => {
     navigation.openDrawer();
   };
+  
   // const handleSignOut = async() => {
   //   console.log('SignOut funtion');
   //   const authUser = await getCurrentUser({ bypassCache: true });
@@ -33,7 +34,6 @@ const HomeScreen2 = () => {
           
         {userRole === 'General Manager' && (
            <SafeAreaView style={styles.safeArea}>
-             
                   <View style={styles.sliderWrapper}>
                       <SalesLineChart/>
                   </View>
@@ -49,16 +49,12 @@ const HomeScreen2 = () => {
           styles.bodyWrapper,
           (userRole === 'Cashier' || userRole === 'Warehouse' || userRole === 'Purchaser') ? {justifyContent:'space-evenly' } : null,
         ]}> 
-          
                 <View style={styles.menuContainer}>
                   <Text style={styles.menuText}>Menu</Text>
                 </View>
-                <View style={styles.iconWrapper}>
-
-                
+                <View style={styles.iconWrapper}>    
                 <View style={styles.icons}>
-                  <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('Profile')}>
-               
+                  <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('Staff')}>  
                     <Ionic name="person" size={25} color={COLORS.primary} style={styles.homeIcon} />
                     <Text style={styles.iconText}>Profile</Text>
                   </TouchableOpacity>

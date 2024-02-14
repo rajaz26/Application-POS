@@ -32,6 +32,7 @@ import { Hub } from '@aws-amplify/core';
 import { getCurrentUser } from "aws-amplify/auth";
 import {View, ActivityIndicator} from 'react-native';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
+import AddAccount from "../screens/AddAccount";
 const Drawer = createDrawerNavigator();
 
 const AppNavigation = () => {
@@ -109,6 +110,7 @@ useEffect(() => {
             <Drawer.Screen name="Upload" component={UploadPurchase} />
             <Drawer.Screen name="Notifications" component={Notifications} />
             <Drawer.Screen name="PurchaseHistory" component={PurchaseHistory} />
+            <Drawer.Screen name="AddAccount" component={AddAccount} />
           </>
         ) : (
           <>

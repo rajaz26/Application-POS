@@ -15,11 +15,20 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { COLORS } from '../assets/theme';
 import { useNavigation } from '@react-navigation/native'; 
-
+import { signOut } from 'aws-amplify/auth';
 
 
 const Drawer = props => {
   const navigation = useNavigation();
+  const handleSignOut = async () => {
+    console.log('signed out')
+    try {
+      await signOut();
+      console.log('signed out')
+    } catch (error) {
+      console.log('error signing out: ', error);
+    }
+  }
   return (
     <View style={{flex: 1}}>
       <DrawerContentScrollView
@@ -148,7 +157,7 @@ const Drawer = props => {
                 </Text>
             </View>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => {}} style={{paddingVertical: 10}}>
+            <TouchableOpacity onPress={() => handleSignOut()} style={{paddingVertical: 10}} >
             <View style={{flexDirection: 'row'}}>
                 <Ionicons name="log-out-outline" size={22} color={COLORS.primary} />
                 <Text
