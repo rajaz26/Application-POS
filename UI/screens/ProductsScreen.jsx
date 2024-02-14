@@ -30,7 +30,9 @@ const ProductsScreen = ({route}) => {
     );
     setFilteredCategories(allCategories);
   }, [products]);
-
+  const handleAddProduct = () => {
+    navigation.navigate('AddProduct');
+  };
   const handleSearch = query => {
     setSearchQuery(query);
     const filtered = products.filter(
@@ -110,7 +112,7 @@ const ProductsScreen = ({route}) => {
           </TouchableOpacity>
         )}
       </View>
-      <ScrollView>
+      <ScrollView style={styles.containerScrollView}>
         {filteredCategories.map(category => (
           <View key={category}>
             <View style={styles.categoryTitleContainer}>
@@ -138,7 +140,14 @@ const ProductsScreen = ({route}) => {
             </View>
           </View>
         ))}
+      
       </ScrollView>
+      <View style={styles.containerButton}>
+      <TouchableOpacity style={styles.floatingButton} onPress={handleAddProduct}>
+      <Text style={styles.buttonText}>Add Product</Text>
+    </TouchableOpacity>
+      </View>
+    
     </View>
   );
 };
@@ -147,6 +156,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    
+  },
+
+  containerScrollView:{
+
+    // marginBottom:50,
   },
   categoryRow: {
     backgroundColor: '#F6F6F6', // Background color for the entire row
@@ -166,9 +181,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
     
   },
-  // categoryRow: {
 
-  // },
   categoryCardList: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -260,6 +273,27 @@ const styles = StyleSheet.create({
     fontFamily:'Poppins-SemiBold',
     fontSize:10,
   },
+  floatingButton: {
+    position: 'absolute',
+    bottom: 20,
+    backgroundColor: COLORS.secondary, 
+    borderRadius: 30,
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+    elevation: 5,
+    zIndex:3,
+  },
+  buttonText: {
+    color: COLORS.primary,
+    fontSize: 17,
+    top:1.5,
+    fontFamily:'Poppins-SemiBold',
+  },
+  containerButton:{
+    flex:1,
+    justifyContent:'center',
+    alignItems:'center',
+  }
 });
 
 export default ProductsScreen;

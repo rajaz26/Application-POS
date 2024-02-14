@@ -6,16 +6,31 @@ import Ionic from 'react-native-vector-icons/Ionicons';
 import {productsObj} from '../assets/Products';
 import { useNavigation } from '@react-navigation/native'; 
 import { useSelector } from 'react-redux'; 
+import { createProduct } from '../src/graphql/mutations';
+// import { API, graphqlOperation } from 'aws-amplify/api';
+import { generateClient } from 'aws-amplify/api';
+import { getCurrentUser, signInWithRedirect, signOut } from "aws-amplify/auth";
 const HomeScreen2 = () => {
-  const userRole = useSelector((state) => state.user.role);
+  const client = generateClient();
+  // const userRole = useSelector((state) => state.user.role);
+  const userRole = 'General Manager';
   const navigation = useNavigation();
   const openDrawer = () => {
     navigation.openDrawer();
   };
+  // const handleSignOut = async() => {
+  //   console.log('SignOut funtion');
+  //   const authUser = await getCurrentUser({ bypassCache: true });
+  //   console.log(authUser);
+  //   await signOut();
+  //   console.log('SignOut funtion done');
+  //   console.log(authUser);
+  // };
 
   return (
     <View style={{flex:1,backgroundColor:COLORS.primary}}>
         <View style={styles.wrapper}>
+          
         {userRole === 'General Manager' && (
            <SafeAreaView style={styles.safeArea}>
              
@@ -43,6 +58,7 @@ const HomeScreen2 = () => {
                 
                 <View style={styles.icons}>
                   <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('Profile')}>
+               
                     <Ionic name="person" size={25} color={COLORS.primary} style={styles.homeIcon} />
                     <Text style={styles.iconText}>Profile</Text>
                   </TouchableOpacity>
@@ -56,6 +72,7 @@ const HomeScreen2 = () => {
                   </TouchableOpacity>
                   {userRole !== 'Purchaser' ? (
                   <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('Settings')}>
+                  {/* //<TouchableOpacity style={styles.iconContainer} onPress={createNewProduct}> */}
                     <Ionic name="settings" size={25} color={COLORS.primary} style={styles.homeIcon} />
                     <Text style={styles.iconText}>Settings</Text>
                   </TouchableOpacity>

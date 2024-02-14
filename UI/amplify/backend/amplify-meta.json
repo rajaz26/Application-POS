@@ -1,0 +1,85 @@
+{
+  "providers": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-fyp-raja-40354-authRole",
+      "UnauthRoleArn": "arn:aws:iam::233679213002:role/amplify-fyp-raja-40354-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::233679213002:role/amplify-fyp-raja-40354-authRole",
+      "Region": "us-east-1",
+      "DeploymentBucketName": "amplify-fyp-raja-40354-deployment",
+      "UnauthRoleName": "amplify-fyp-raja-40354-unauthRole",
+      "StackName": "amplify-fyp-raja-40354",
+      "StackId": "arn:aws:cloudformation:us-east-1:233679213002:stack/amplify-fyp-raja-40354/2c933630-cac4-11ee-a3a1-12b505ba9d9d",
+      "AmplifyAppId": "dmvzvv247pzqq"
+    }
+  },
+  "api": {
+    "fyp": {
+      "dependsOn": [],
+      "output": {
+        "authConfig": {
+          "additionalAuthenticationProviders": [],
+          "defaultAuthentication": {
+            "apiKeyConfig": {
+              "apiKeyExpirationDate": "2025-02-11T22:48:27.974Z",
+              "apiKeyExpirationDays": 364,
+              "description": "fypapis"
+            },
+            "authenticationType": "API_KEY"
+          }
+        },
+        "GraphQLAPIIdOutput": "d56oo6rdjfhurjjibinwnuch6m",
+        "GraphQLAPIEndpointOutput": "https://rtnnvv6ni5au3b5i5j272uqsem.appsync-api.us-east-1.amazonaws.com/graphql",
+        "GraphQLAPIKeyOutput": "da2-qsaiwgz6w5hh7fneewgblmyylu"
+      },
+      "providerPlugin": "awscloudformation",
+      "service": "AppSync",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-fyp-raja-40354-deployment/amplify-cfn-templates/api/cloudformation-template.json",
+        "logicalId": "apifyp"
+      },
+      "lastPushTimeStamp": "2024-02-14T00:06:16.402Z",
+      "lastPushDirHash": "E+fJDKraXZz63OwEl0So7RxrxGQ="
+    }
+  },
+  "auth": {
+    "fyp1db63f83": {
+      "customAuth": false,
+      "dependsOn": [],
+      "frontendAuthConfig": {
+        "mfaConfiguration": "OFF",
+        "mfaTypes": [
+          "SMS"
+        ],
+        "passwordProtectionSettings": {
+          "passwordPolicyMinLength": 8,
+          "passwordPolicyCharacters": []
+        },
+        "signupAttributes": [
+          "EMAIL"
+        ],
+        "socialProviders": [],
+        "usernameAttributes": [],
+        "verificationMechanisms": [
+          "EMAIL"
+        ]
+      },
+      "providerPlugin": "awscloudformation",
+      "service": "Cognito",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-fyp-raja-40354-deployment/amplify-cfn-templates/auth/fyp1db63f83-cloudformation-template.json",
+        "logicalId": "authfyp1db63f83"
+      },
+      "lastPushTimeStamp": "2024-02-14T00:06:01.381Z",
+      "output": {
+        "UserPoolId": "us-east-1_LPSfZvcW6",
+        "AppClientIDWeb": "2im5b1n959tfm7b3hs9t4okslq",
+        "AppClientID": "3i9gl54q7jleptj62f3sovqqdj",
+        "IdentityPoolId": "us-east-1:461e1605-b752-4775-9fbe-a42dc38c8fab",
+        "UserPoolArn": "arn:aws:cognito-idp:us-east-1:233679213002:userpool/us-east-1_LPSfZvcW6",
+        "IdentityPoolName": "fyp1db63f83_identitypool_1db63f83__raja",
+        "UserPoolName": "fyp1db63f83_userpool_1db63f83"
+      },
+      "lastPushDirHash": "SQD2YZTETRmNIU5At0KuLl6ggUI="
+    }
+  }
+}

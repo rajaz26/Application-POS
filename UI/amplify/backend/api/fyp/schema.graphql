@@ -1,0 +1,64 @@
+
+enum UserRole {
+  GENERAL_MANAGER
+  CASHIER
+  WAREHOUSE_MANAGER
+  PURCHASER
+}
+
+enum BillStatus {
+  PENDING
+  CONFIRMED
+  PAID
+}
+
+
+type User @model @auth(rules: [{ allow: public }]){
+  id: ID!
+  userId: ID!
+  username: String!
+  phonenumber: String!
+  image: String
+  role: UserRole!
+  idcardimage:[String]
+   bills: [Bill] @hasMany
+  purchaserorder: [PurchaseOrder] @hasMany
+}
+
+type Product @model @auth(rules: [{ allow: public }]){
+  id: ID!
+  name: String!
+  barcode: String!
+  images: [String]
+  price: Float!
+  manufacturer:String
+  category:String
+  warehouseQuantity: Int!
+  shelfQuantity: Int!
+}
+type BillItem @model @auth(rules: [{ allow: public }]){
+  product: Product!
+  quantity: Int!
+  productPrice:Float!
+  subtotal: Float!
+  category: String
+  manufacturer:String
+}
+
+type Bill @model @auth(rules: [{ allow: public }]){
+  id: ID!
+  cashier: User! @belongsTo
+  items: [BillItem!]! @hasMany
+  totalAmount: Float!
+  status: BillStatus!
+}
+
+
+type PurchaseOrder @model @auth(rules: [{ allow: public }]){
+  id: ID!
+  purchaser: User! @belongsTo
+  image: [String!]
+  vendor: String
+  amount: Int
+  date: String
+}
