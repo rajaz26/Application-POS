@@ -6,7 +6,7 @@ import { COLORS } from '../assets/theme/index.js';
 import Animated, { FadeIn, Easing, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useForm, Controller } from 'react-hook-form';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { signIn } from 'aws-amplify/auth';
+import { signIn,getCurrentUser } from 'aws-amplify/auth';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 // import config from '../src/aws-exports.js';
 // Amplify.configure(config);
@@ -49,6 +49,8 @@ const handleSignOut = async () => {
       console.log('Login success', user);
       reset();
       console.log(data);
+       const authUser = await getCurrentUser({bypassCache: true});
+        console.log('User just logged in',authUser);
       navigation.navigate('Home', { screen: 'Dashboard' });
     } catch (error) {
       console.error('Login error has occurred', error);
@@ -66,7 +68,7 @@ const handleSignOut = async () => {
   width={15}
   fill={100}
   prefill={0} 
-  duration={1800} 
+  duration={2000} 
   delay={0}
   easing={Easing.inOut(Easing.ease)} 
   tintColor={COLORS.secondary}

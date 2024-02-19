@@ -1,13 +1,9 @@
 {
-  "aws_project_region": "us-east-1",
-  "aws_appsync_graphqlEndpoint": "https://rtnnvv6ni5au3b5i5j272uqsem.appsync-api.us-east-1.amazonaws.com/graphql",
-  "aws_appsync_region": "us-east-1",
-  "aws_appsync_authenticationType": "API_KEY",
-  "aws_appsync_apiKey": "da2-qsaiwgz6w5hh7fneewgblmyylu",
-  "aws_cognito_identity_pool_id": "us-east-1:461e1605-b752-4775-9fbe-a42dc38c8fab",
-  "aws_cognito_region": "us-east-1",
-  "aws_user_pools_id": "us-east-1_LPSfZvcW6",
-  "aws_user_pools_web_client_id": "2im5b1n959tfm7b3hs9t4okslq",
+  "aws_project_region": "ap-south-1",
+  "aws_cognito_identity_pool_id": "ap-south-1:1567edc1-0cc8-4d78-8921-2664417d354b",
+  "aws_cognito_region": "ap-south-1",
+  "aws_user_pools_id": "ap-south-1_XOZKGa2hb",
+  "aws_user_pools_web_client_id": "229kshgj7fk1vjta85oem1jcir",
   "oauth": {},
   "aws_cognito_username_attributes": [],
   "aws_cognito_social_providers": [],
@@ -25,6 +21,10 @@
   "aws_cognito_verification_mechanisms": [
     "EMAIL"
   ],
-  "aws_user_files_s3_bucket": "fypimages40354-raja",
-  "aws_user_files_s3_bucket_region": "us-east-1"
+  "aws_appsync_graphqlEndpoint": "https://qssvvfcl3nek7e5qpny5swrz2a.appsync-api.ap-south-1.amazonaws.com/graphql",
+  "aws_appsync_region": "ap-south-1",
+  "aws_appsync_authenticationType": "API_KEY",
+  "aws_appsync_apiKey": "da2-o4yzuz4rbrc67br54rcvxy2zmu",
+  "aws_user_files_s3_bucket": "fypimages81950-dev",
+  "aws_user_files_s3_bucket_region": "ap-south-1"
 }

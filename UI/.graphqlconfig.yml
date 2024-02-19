@@ -1,5 +1,5 @@
 projects:
-  fyp:
+  retailfyp:
     schemaPath: src/graphql/schema.json
     includes:
       - src/graphql/**/*.js

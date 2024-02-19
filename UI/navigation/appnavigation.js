@@ -78,6 +78,7 @@ useEffect(() => {
   fill={100}
   prefill={0} 
   delay={0}
+  duration={2200} 
   easing={Easing.inOut(Easing.ease)} 
   tintColor={COLORS.primary}
   onAnimationComplete={() => console.log('onAnimationComplete')}
@@ -118,6 +119,7 @@ useEffect(() => {
             <Drawer.Screen name="Login" component={LoginScreen} />
             <Drawer.Screen name="SignUp" component={SignUpScreen} />
             <Drawer.Screen name="ConfirmSignUp" component={ConfirmSignUp} />
+            
           </>
         )}
       </Drawer.Navigator>

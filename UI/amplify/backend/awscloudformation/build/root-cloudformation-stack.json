@@ -1,5 +1,5 @@
 {
-  "Description": "Root Stack for AWS Amplify Console",
+  "Description": "Root Stack for AWS Amplify CLI",
   "AWSTemplateFormatVersion": "2010-09-09",
   "Parameters": {
     "DeploymentBucketName": {
@@ -152,29 +152,15 @@
         }
       }
     },
-    "apifyp": {
+    "authretailfypf13cba35": {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
-        "TemplateURL": "https://s3.amazonaws.com/amplify-fyp-raja-40354-deployment/amplify-cfn-templates/api/cloudformation-template.json",
+        "TemplateURL": "https://s3.amazonaws.com/amplify-retailfyp-dev-81950-deployment/amplify-cfn-templates/auth/retailfypf13cba35-cloudformation-template.json",
         "Parameters": {
-          "AppSyncApiName": "fyp",
-          "DynamoDBBillingMode": "PAY_PER_REQUEST",
-          "DynamoDBEnableServerSideEncryption": false,
-          "S3DeploymentBucket": "amplify-fyp-raja-40354-deployment",
-          "S3DeploymentRootKey": "amplify-appsync-files/136dbf3475defaad0bb900ce03fc5c37207bcedc",
-          "env": "raja"
-        }
-      }
-    },
-    "authfyp1db63f83": {
-      "Type": "AWS::CloudFormation::Stack",
-      "Properties": {
-        "TemplateURL": "https://s3.amazonaws.com/amplify-fyp-raja-40354-deployment/amplify-cfn-templates/auth/fyp1db63f83-cloudformation-template.json",
-        "Parameters": {
-          "identityPoolName": "fyp1db63f83_identitypool_1db63f83",
-          "allowUnauthenticatedIdentities": false,
-          "resourceNameTruncated": "fyp1db63f83",
-          "userPoolName": "fyp1db63f83_userpool_1db63f83",
+          "identityPoolName": "retailfypf13cba35_identitypool_f13cba35",
+          "allowUnauthenticatedIdentities": true,
+          "resourceNameTruncated": "retailf13cba35",
+          "userPoolName": "retailfypf13cba35_userpool_f13cba35",
           "autoVerifiedAttributes": "email",
           "mfaConfiguration": "OFF",
           "mfaTypes": "SMS Text Message",
@@ -191,10 +177,10 @@
           "userpoolClientRefreshTokenValidity": 30,
           "userpoolClientWriteAttributes": "email",
           "userpoolClientReadAttributes": "email",
-          "userpoolClientLambdaRole": "fyp1db1db63f83_userpoolclient_lambda_role",
+          "userpoolClientLambdaRole": "retailf13cba35_userpoolclient_lambda_role",
           "userpoolClientSetAttributes": false,
-          "sharedId": "1db63f83",
-          "resourceName": "fyp1db63f83",
+          "sharedId": "f13cba35",
+          "resourceName": "retailfypf13cba35",
           "authSelections": "identityPoolAndUserPool",
           "useDefault": "default",
           "userPoolGroupList": "",
@@ -215,17 +201,31 @@
           },
           "breakCircularDependency": true,
           "dependsOn": "",
-          "env": "raja"
+          "env": "dev"
         }
       }
     },
-    "storagefypimages": {
+    "apiretailfyp": {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
-        "TemplateURL": "https://s3.amazonaws.com/amplify-fyp-raja-40354-deployment/amplify-cfn-templates/storage/cloudformation-template.json",
+        "TemplateURL": "https://s3.amazonaws.com/amplify-retailfyp-dev-81950-deployment/amplify-cfn-templates/api/cloudformation-template.json",
+        "Parameters": {
+          "AppSyncApiName": "retailfyp",
+          "DynamoDBBillingMode": "PAY_PER_REQUEST",
+          "DynamoDBEnableServerSideEncryption": false,
+          "S3DeploymentBucket": "amplify-retailfyp-dev-81950-deployment",
+          "S3DeploymentRootKey": "amplify-appsync-files/7cf8fcbb9ed341120af831257495b38f449f2ec3",
+          "env": "dev"
+        }
+      }
+    },
+    "storagefypstorage": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": "https://s3.amazonaws.com/amplify-retailfyp-dev-81950-deployment/amplify-cfn-templates/storage/cloudformation-template.json",
         "Parameters": {
           "bucketName": "fypimages",
-          "selectedGuestPermissions": "",
+          "selectedGuestPermissions": "s3:PutObject,s3:GetObject,s3:ListBucket,s3:DeleteObject",
           "selectedAuthenticatedPermissions": "s3:PutObject,s3:GetObject,s3:ListBucket,s3:DeleteObject",
           "unauthRoleName": {
             "Ref": "UnauthRoleName"
@@ -233,22 +233,22 @@
           "authRoleName": {
             "Ref": "AuthRoleName"
           },
-          "s3PrivatePolicy": "Private_policy_fec8766f",
-          "s3ProtectedPolicy": "Protected_policy_fec8766f",
-          "s3PublicPolicy": "Public_policy_fec8766f",
-          "s3ReadPolicy": "read_policy_fec8766f",
-          "s3UploadsPolicy": "Uploads_policy_fec8766f",
-          "authPolicyName": "s3_amplify_fec8766f",
-          "unauthPolicyName": "s3_amplify_fec8766f",
+          "s3PrivatePolicy": "Private_policy_7adfa491",
+          "s3ProtectedPolicy": "Protected_policy_7adfa491",
+          "s3PublicPolicy": "Public_policy_7adfa491",
+          "s3ReadPolicy": "read_policy_7adfa491",
+          "s3UploadsPolicy": "Uploads_policy_7adfa491",
+          "authPolicyName": "s3_amplify_7adfa491",
+          "unauthPolicyName": "s3_amplify_7adfa491",
           "AuthenticatedAllowList": "ALLOW",
-          "GuestAllowList": "DISALLOW",
+          "GuestAllowList": "ALLOW",
           "s3PermissionsAuthenticatedPrivate": "s3:PutObject,s3:GetObject,s3:DeleteObject",
           "s3PermissionsAuthenticatedProtected": "s3:PutObject,s3:GetObject,s3:DeleteObject",
           "s3PermissionsAuthenticatedPublic": "s3:PutObject,s3:GetObject,s3:DeleteObject",
           "s3PermissionsAuthenticatedUploads": "s3:PutObject",
-          "s3PermissionsGuestPublic": "DISALLOW",
-          "s3PermissionsGuestUploads": "DISALLOW",
-          "env": "raja"
+          "s3PermissionsGuestPublic": "s3:PutObject,s3:GetObject,s3:DeleteObject",
+          "s3PermissionsGuestUploads": "s3:PutObject",
+          "env": "dev"
         }
       }
     },
@@ -256,7 +256,7 @@
       "DependsOn": [
         "AuthRole",
         "UnauthRole",
-        "authfyp1db63f83"
+        "authretailfypf13cba35"
       ],
       "Type": "AWS::Lambda::Function",
       "Properties": {
@@ -366,7 +366,7 @@
         },
         "idpId": {
           "Fn::GetAtt": [
-            "authfyp1db63f83",
+            "authretailfypf13cba35",
             "Outputs.IdentityPoolId"
           ]
         },

@@ -2,11 +2,6 @@
   "dev": {
     "configLevel": "project",
     "useProfile": false,
-    "awsConfigFilePath": "C:\\Users\\PMLS\\.amplify\\awscloudformation\\pSu80ME3cv"
-  },
-  "raja": {
-    "configLevel": "project",
-    "useProfile": false,
-    "awsConfigFilePath": "C:\\Users\\PMLS\\.amplify\\awscloudformation\\MJNM6v6u2S"
+    "awsConfigFilePath": "C:\\Users\\PMLS\\.amplify\\awscloudformation\\5yX7yGXRqc"
   }
 }

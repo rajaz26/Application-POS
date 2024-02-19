@@ -1,4 +1,4 @@
-import React,{useState} from 'react';
+import React,{useState,useEffect} from 'react';
 import {
   View,
   Text,
@@ -6,7 +6,8 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
-  ScrollView
+  ScrollView,
+  Keyboard
 } from 'react-native';
 import Ionic from 'react-native-vector-icons/Ionicons';
 import { launchImageLibrary } from 'react-native-image-picker';
@@ -17,11 +18,19 @@ import { useForm, Controller } from 'react-hook-form'; // Import React Hook Form
 import { useNavigation } from '@react-navigation/native';
 import { generateClient } from 'aws-amplify/api';
 import { createUser } from '../src/graphql/mutations';
-import { signUp,getCurrentUser} from 'aws-amplify/auth';
+import { signUp} from 'aws-amplify/auth';
+import { fetchUserAttributes, getCurrentUser } from 'aws-amplify/auth';
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
 const AddAccount = () => {
     const [rank, setRank] = useState('Select Role');
     const [role, setRole] = useState('Select Role');
     const [name, setName] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [loadingMessage, setLoadingMessage] = useState(false);
+    const [userEmail, setUserEmail] = useState('');
+    const [success, setSuccess] = useState(false);
+    const [error, setError] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
     const [phonenumber, setPhoneNumber] = useState('');
     const [password, setPassword] = useState('');
     const [idCardNumber, setIdCardNumber] = useState('');
@@ -43,54 +52,60 @@ const AddAccount = () => {
       }
     });
   };
-  // useEffect(() => {
-  //   const fetchLoggedInUserEmail = async () => {
-  //     try {
-  //       const user = await getCurrentUser();
-  //       setLoggedInUserEmail(user.attributes.email);
-  //       console.log("email",loggedInUserEmail);
-  //     } catch (error) {
-  //       console.error('Error fetching logged-in user email:', error);
-  //     }
-  //   };
+//   const handleLoading = () => {
+//     setLoading(true)
+//   }
+  const handleSuccessButtonPress= () => {
+    setLoading(false)
+    setLoadingMessage(false)
+    setSuccess(false)
+    setError(false)
+    setErrorMessage('')
+  }
+  
+//   useEffect(() => {
+//     const fetchLoggedInUserEmail = async () => {
+//       try {
+//         const mail = await fetchUserAttributes();
+//         setUserEmail(mail.email);
+//         console.log("email retrieved",userEmail);
+//         setLoggedInUserEmail(userEmail);
+//       } catch (error) {
+//         console.error('Error fetching logged-in user email:', error);
+//       }
+//     };
 
-  //   fetchLoggedInUserEmail();
-  // }, []);
-
+//     fetchLoggedInUserEmail();
+//   }, []);
   const onSubmit = async () => {
     console.log("We Have entereed")
+    setLoading(true);
+    setLoadingMessage(true);
+    Keyboard.dismiss();
     try {
-      // Sign up user with Cognito
-    //   const userInput = {
-    //     input: {
-    //       username: name,// Add email if needed
-    //       phonenumber,
-    //       role,
-    //       idCardNumber,
-    //       // Add other user data here
-    //     }
-    //   };
-      const user={
-        email: "jon@example.com",
-      };
-      console.log("Email",user.email);
+        let mail = await fetchUserAttributes();
+        console.log(mail)
+        if(!mail){
+          mail = await getCurrentUser();
+        }
+        console.log(mail)
+       
+        setUserEmail(mail.email);
+        console.log("email retrieved",userEmail);
       const signUpResponse = await signUp({
         username:name,
         password,
       options: {
         userAttributes: {
-          email:user.email,
+          email:userEmail,
         },
       }
       });
       console.log("Sign Up Successful")
-      // Get Cognito user ID
-    //   const cognitoUserId = signUpResponse.userSub;
       const cognitoUserId = signUpResponse.userId;
       console.log("cognito id",signUpResponse);
-      // console.log("userBack",signUpResponse);
-
       console.log("Into User model");
+
       // Create user in the database using GraphQL mutation
       const userInput = {
         input: {
@@ -98,7 +113,6 @@ const AddAccount = () => {
           username:name,
           phonenumber:phonenumber,
           role:role,
-          // Add other user data here
         }
       };
       console.log("User model about to be created",userInput.input);
@@ -107,14 +121,21 @@ const AddAccount = () => {
         variables: { input: userInput.input},
         authMode: 'apiKey',
        } );
-       
-      console.log('User created:', createUserResponse);
+       setLoadingMessage(false);
+       setSuccess(true);
+    console.log('User created:', createUserResponse);
+    setName('')
+    setPassword('')
+    setPhoneNumber('')
+    setIdCardNumber('')
+    setRole('SelectRole')
       
-      // Navigate to success screen or perform any other action
-      // navigation.navigate('SuccessScreen');
+
     } catch (error) {
       console.error('Error creating user:', error);
-      // Handle error
+      setLoadingMessage(false);
+      setError(true);
+      setErrorMessage(error.message)
     }
   };
 
@@ -122,6 +143,42 @@ const AddAccount = () => {
   return (
     <View style={styles.container}>
       {/* Upper View */}
+      {loading && (
+      <View style={styles.loadingContainer}>
+      <AnimatedCircularProgress
+  size={120}
+  width={15}
+  duration={2200} 
+  delay={0}
+  fill={100}
+  tintColor={COLORS.secondary}
+  onAnimationComplete={() => console.log('onAnimationComplete')}
+  backgroundColor="#3d5875" />
+{loadingMessage ? (
+  <Text style={styles.loadingText}>Creating Account</Text>
+) : success ? (
+  <View style={styles.successMessageContainer}>
+    <Text style={styles.loadingText}>Account Added Successfully</Text>
+    <TouchableOpacity
+      style={styles.successButton}
+      onPress={handleSuccessButtonPress}>
+      <Text style={styles.buttonText}>Go Back</Text>
+    </TouchableOpacity>
+  </View>
+) : error ? (
+  <View style={styles.successMessageContainer}>
+    <Text style={styles.loadingText}>ACCOUNT CREATION FAILED</Text>
+    <Text style={styles.loadingTextSubtitle}>{errorMessage}</Text>
+    <TouchableOpacity
+      style={styles.successButton}
+      onPress={handleSuccessButtonPress}>
+      <Text style={styles.buttonText}>Go Back</Text>
+    </TouchableOpacity>
+  </View>
+) : null}
+
+      </View>
+     )}
       <View style={styles.upperView}>
         {/* <Image
           source={require('../assets/images/profile.png')}
@@ -470,6 +527,45 @@ saveText:{
   textAlign:'center',
 
 },
+loadingContainer: {
+    ...StyleSheet.absoluteFillObject,
+    position:'absolute',
+    zIndex:999999,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText:{
+    color:'white',
+    fontSize:24,
+    fontFamily:'Poppins-Regular',
+    top:15,
+  },
+  loadingTextSubtitle:{
+    color:'white',
+    fontSize:20,
+    fontFamily:'Poppins-Regular',
+    top:15,
+  },
+  successMessageContainer:{
+    flex:0,
+   alignItems:'center'
+  },
+  successButton: {
+    backgroundColor: COLORS.secondary,
+    width: 150,
+    paddingVertical: 8,
+    borderRadius: 30,
+    top:20,
+  },
+  buttonText: {
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 18,
+    color: COLORS.primary,
+    textAlign: 'center',
+    top:1,
+  },
+
 });
 
 export default AddAccount;

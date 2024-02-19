@@ -1,6 +1,111 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const onCreateStore = /* GraphQL */ `
+  subscription OnCreateStore($filter: ModelSubscriptionStoreFilterInput) {
+    onCreateStore(filter: $filter) {
+      id
+      name
+      address
+      users {
+        nextToken
+        startedAt
+        __typename
+      }
+      products {
+        nextToken
+        startedAt
+        __typename
+      }
+      bills {
+        nextToken
+        startedAt
+        __typename
+      }
+      purchaseOrders {
+        nextToken
+        startedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+  }
+`;
+export const onUpdateStore = /* GraphQL */ `
+  subscription OnUpdateStore($filter: ModelSubscriptionStoreFilterInput) {
+    onUpdateStore(filter: $filter) {
+      id
+      name
+      address
+      users {
+        nextToken
+        startedAt
+        __typename
+      }
+      products {
+        nextToken
+        startedAt
+        __typename
+      }
+      bills {
+        nextToken
+        startedAt
+        __typename
+      }
+      purchaseOrders {
+        nextToken
+        startedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+  }
+`;
+export const onDeleteStore = /* GraphQL */ `
+  subscription OnDeleteStore($filter: ModelSubscriptionStoreFilterInput) {
+    onDeleteStore(filter: $filter) {
+      id
+      name
+      address
+      users {
+        nextToken
+        startedAt
+        __typename
+      }
+      products {
+        nextToken
+        startedAt
+        __typename
+      }
+      bills {
+        nextToken
+        startedAt
+        __typename
+      }
+      purchaseOrders {
+        nextToken
+        startedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+  }
+`;
 export const onCreateUser = /* GraphQL */ `
   subscription OnCreateUser($filter: ModelSubscriptionUserFilterInput) {
     onCreateUser(filter: $filter) {
@@ -11,12 +116,23 @@ export const onCreateUser = /* GraphQL */ `
       image
       role
       idcardimage
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       bills {
         nextToken
         startedAt
         __typename
       }
-      purchaserorder {
+      purchaseOrders {
         nextToken
         startedAt
         __typename
@@ -26,6 +142,7 @@ export const onCreateUser = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
+      storeUsersId
       __typename
     }
   }
@@ -40,12 +157,23 @@ export const onUpdateUser = /* GraphQL */ `
       image
       role
       idcardimage
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       bills {
         nextToken
         startedAt
         __typename
       }
-      purchaserorder {
+      purchaseOrders {
         nextToken
         startedAt
         __typename
@@ -55,6 +183,7 @@ export const onUpdateUser = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
+      storeUsersId
       __typename
     }
   }
@@ -69,12 +198,23 @@ export const onDeleteUser = /* GraphQL */ `
       image
       role
       idcardimage
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       bills {
         nextToken
         startedAt
         __typename
       }
-      purchaserorder {
+      purchaseOrders {
         nextToken
         startedAt
         __typename
@@ -84,6 +224,7 @@ export const onDeleteUser = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
+      storeUsersId
       __typename
     }
   }
@@ -94,17 +235,34 @@ export const onCreateProduct = /* GraphQL */ `
       id
       name
       barcode
-      images
+      image
       price
       manufacturer
       category
       warehouseQuantity
       shelfQuantity
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      billItems {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeProductsId
       __typename
     }
   }
@@ -115,17 +273,34 @@ export const onUpdateProduct = /* GraphQL */ `
       id
       name
       barcode
-      images
+      image
       price
       manufacturer
       category
       warehouseQuantity
       shelfQuantity
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      billItems {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeProductsId
       __typename
     }
   }
@@ -136,17 +311,34 @@ export const onDeleteProduct = /* GraphQL */ `
       id
       name
       barcode
-      images
+      image
       price
       manufacturer
       category
       warehouseQuantity
       shelfQuantity
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      billItems {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeProductsId
       __typename
     }
   }
@@ -154,11 +346,12 @@ export const onDeleteProduct = /* GraphQL */ `
 export const onCreateBillItem = /* GraphQL */ `
   subscription OnCreateBillItem($filter: ModelSubscriptionBillItemFilterInput) {
     onCreateBillItem(filter: $filter) {
+      id
       product {
         id
         name
         barcode
-        images
+        image
         price
         manufacturer
         category
@@ -169,6 +362,7 @@ export const onCreateBillItem = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeProductsId
         __typename
       }
       quantity
@@ -176,12 +370,25 @@ export const onCreateBillItem = /* GraphQL */ `
       subtotal
       category
       manufacturer
-      id
+      bill {
+        id
+        totalAmount
+        status
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeBillsId
+        userBillsId
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      productBillItemsId
       billItemsId
       __typename
     }
@@ -190,11 +397,12 @@ export const onCreateBillItem = /* GraphQL */ `
 export const onUpdateBillItem = /* GraphQL */ `
   subscription OnUpdateBillItem($filter: ModelSubscriptionBillItemFilterInput) {
     onUpdateBillItem(filter: $filter) {
+      id
       product {
         id
         name
         barcode
-        images
+        image
         price
         manufacturer
         category
@@ -205,6 +413,7 @@ export const onUpdateBillItem = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeProductsId
         __typename
       }
       quantity
@@ -212,12 +421,25 @@ export const onUpdateBillItem = /* GraphQL */ `
       subtotal
       category
       manufacturer
-      id
+      bill {
+        id
+        totalAmount
+        status
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeBillsId
+        userBillsId
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      productBillItemsId
       billItemsId
       __typename
     }
@@ -226,11 +448,12 @@ export const onUpdateBillItem = /* GraphQL */ `
 export const onDeleteBillItem = /* GraphQL */ `
   subscription OnDeleteBillItem($filter: ModelSubscriptionBillItemFilterInput) {
     onDeleteBillItem(filter: $filter) {
+      id
       product {
         id
         name
         barcode
-        images
+        image
         price
         manufacturer
         category
@@ -241,6 +464,7 @@ export const onDeleteBillItem = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeProductsId
         __typename
       }
       quantity
@@ -248,12 +472,25 @@ export const onDeleteBillItem = /* GraphQL */ `
       subtotal
       category
       manufacturer
-      id
+      bill {
+        id
+        totalAmount
+        status
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeBillsId
+        userBillsId
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      productBillItemsId
       billItemsId
       __typename
     }
@@ -276,6 +513,7 @@ export const onCreateBill = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeUsersId
         __typename
       }
       items {
@@ -285,11 +523,23 @@ export const onCreateBill = /* GraphQL */ `
       }
       totalAmount
       status
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeBillsId
       userBillsId
       __typename
     }
@@ -312,6 +562,7 @@ export const onUpdateBill = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeUsersId
         __typename
       }
       items {
@@ -321,11 +572,23 @@ export const onUpdateBill = /* GraphQL */ `
       }
       totalAmount
       status
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeBillsId
       userBillsId
       __typename
     }
@@ -348,6 +611,7 @@ export const onDeleteBill = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeUsersId
         __typename
       }
       items {
@@ -357,11 +621,23 @@ export const onDeleteBill = /* GraphQL */ `
       }
       totalAmount
       status
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeBillsId
       userBillsId
       __typename
     }
@@ -386,18 +662,31 @@ export const onCreatePurchaseOrder = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeUsersId
         __typename
       }
       image
       vendor
       amount
       date
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      userPurchaserorderId
+      storePurchaseOrdersId
+      userPurchaseOrdersId
       __typename
     }
   }
@@ -421,18 +710,31 @@ export const onUpdatePurchaseOrder = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeUsersId
         __typename
       }
       image
       vendor
       amount
       date
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      userPurchaserorderId
+      storePurchaseOrdersId
+      userPurchaseOrdersId
       __typename
     }
   }
@@ -456,18 +758,31 @@ export const onDeletePurchaseOrder = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeUsersId
         __typename
       }
       image
       vendor
       amount
       date
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      userPurchaserorderId
+      storePurchaseOrdersId
+      userPurchaseOrdersId
       __typename
     }
   }

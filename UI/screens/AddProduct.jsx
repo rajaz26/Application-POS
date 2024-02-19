@@ -1,12 +1,12 @@
 import { StyleSheet, Text, Alert, View, ScrollView, SafeAreaView, TouchableOpacity, TextInput,ActivityIndicator,Keyboard} from 'react-native';
-import React, { useState } from 'react';
+import React, {useEffect, useState } from 'react';
 import Ionic from 'react-native-vector-icons/Ionicons';
 import { COLORS } from '../assets/theme/index.js';
 import { useNavigation } from '@react-navigation/native';
 import { Dimensions } from 'react-native';
 import { SelectList } from 'react-native-dropdown-select-list';
 import { launchImageLibrary } from 'react-native-image-picker';
-import { Storage } from 'aws-amplify';
+import { uploadData, getUrl } from 'aws-amplify/storage';
 import { createProduct } from '../src/graphql/mutations';
 import { generateClient } from 'aws-amplify/api';
 import { useForm, Controller } from 'react-hook-form';
@@ -29,14 +29,71 @@ const client = generateClient();
   shelfQuantity:''
   });
 
+
+  
   const [selectedImage, setSelectedImage] = useState(null);
+  useEffect(() => {
+  }, [selectedImage]); 
+
   const handleChoosePhoto = () => {
     launchImageLibrary({}, (response) => {
-      if (response.uri) {
-        setSelectedImage(response);
+      console.log(response);
+      if (response.assets && response.assets.length > 0) {
+        const imageUri = response.assets[0].uri;
+        setSelectedImage(imageUri); 
+      } else {
+        console.log('No image selected or unexpected response structure');
       }
     });
   };
+
+  const uploadImageToS3 = async (imageUri, fileName) => {
+    try {
+        const response = await fetch(imageUri);
+        const blob = await response.blob();
+        console.log("image ::: "+imageUri);
+        console.log("bloob: "+blob);
+
+
+        const uploadResult = await uploadData({
+            key: fileName,
+            data: blob,
+            options: {
+                contentType: 'image/jpeg', 
+            }
+        }).result;
+        console.log('Upload success:', uploadResult);
+        return uploadResult.key; 
+    } catch (error) {
+        console.error('Upload error:', error);
+        throw error;
+    }
+};
+
+const getImageUrlFromS3 = async (fileKey) => {
+  try {
+      console.log("file key is here: " + fileKey);
+      
+      // Fetch the signed URL for the uploaded file
+      const getUrlResult = await getUrl({
+          key: fileKey,
+          options: {
+              accessLevel: 'guest',
+              expiresIn: 9000909,
+              useAccelerateEndpoint: true, 
+          },
+      });
+
+      console.log('***************************Signed Image URL:', getUrlResult.url);
+      return getUrlResult.url; // Return the signed URL
+  } catch (error) {
+      console.error('Error getting image URL:', error);
+      throw error;
+  }
+};
+  
+
+
   const handleLoading = () => {
     setLoading(true)
     setSuccessMessage(true);
@@ -53,20 +110,22 @@ const client = generateClient();
     console.log(setLoading)
     
     try {
-      let imageKey = null;
+      const fileName = `product-image-${Date.now()}.jpeg`;
+      console.log('Here 1');
+      const fileKey = await uploadImageToS3(selectedImage, fileName);
+      console.log('Here 2');
+      console.log('File uploaded with key:', fileKey);
   
-      if (selectedImage) {
-        imageKey = `products/${selectedImage.fileName}`;
-        await Storage.put(imageKey, selectedImage, {
-          contentType: selectedImage.type,
-        });
-      }
-  
+      const imageUrl = await getImageUrlFromS3(fileKey);
+      console.log('S3 Image URL:', imageUrl);
+    console.log("url bamzi : "+imageUrl.toString());
+    // const imageUrl='abc'
       const productWithImage = {
         ...data,
-        images: imageKey ? [imageKey] : [],
+        category: selected,
+        image: imageUrl ? [imageUrl] : [],
       };
-  
+      console.log("categorryyyyy checkkkk"+productWithImage.category);
       const newProduct = await client.graphql({
         query: createProduct,
         variables: { input: productWithImage },

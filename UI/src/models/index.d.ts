@@ -17,6 +17,44 @@ export enum BillStatus {
 
 
 
+type EagerStore = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<Store, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly name: string;
+  readonly address?: string | null;
+  readonly users?: (User | null)[] | null;
+  readonly products?: (Product | null)[] | null;
+  readonly bills?: (Bill | null)[] | null;
+  readonly purchaseOrders?: (PurchaseOrder | null)[] | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+type LazyStore = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<Store, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly name: string;
+  readonly address?: string | null;
+  readonly users: AsyncCollection<User>;
+  readonly products: AsyncCollection<Product>;
+  readonly bills: AsyncCollection<Bill>;
+  readonly purchaseOrders: AsyncCollection<PurchaseOrder>;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type Store = LazyLoading extends LazyLoadingDisabled ? EagerStore : LazyStore
+
+export declare const Store: (new (init: ModelInit<Store>) => Store) & {
+  copyOf(source: Store, mutator: (draft: MutableModel<Store>) => MutableModel<Store> | void): Store;
+}
+
 type EagerUser = {
   readonly [__modelMeta__]: {
     identifier: ManagedIdentifier<User, 'id'>;
@@ -29,10 +67,12 @@ type EagerUser = {
   readonly image?: string | null;
   readonly role: UserRole | keyof typeof UserRole;
   readonly idcardimage?: (string | null)[] | null;
+  readonly store?: Store | null;
   readonly bills?: (Bill | null)[] | null;
-  readonly purchaserorder?: (PurchaseOrder | null)[] | null;
+  readonly purchaseOrders?: (PurchaseOrder | null)[] | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
+  readonly storeUsersId?: string | null;
 }
 
 type LazyUser = {
@@ -47,10 +87,12 @@ type LazyUser = {
   readonly image?: string | null;
   readonly role: UserRole | keyof typeof UserRole;
   readonly idcardimage?: (string | null)[] | null;
+  readonly store: AsyncItem<Store | undefined>;
   readonly bills: AsyncCollection<Bill>;
-  readonly purchaserorder: AsyncCollection<PurchaseOrder>;
+  readonly purchaseOrders: AsyncCollection<PurchaseOrder>;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
+  readonly storeUsersId?: string | null;
 }
 
 export declare type User = LazyLoading extends LazyLoadingDisabled ? EagerUser : LazyUser
@@ -67,14 +109,17 @@ type EagerProduct = {
   readonly id: string;
   readonly name: string;
   readonly barcode: string;
-  readonly images?: (string | null)[] | null;
+  readonly image?: string | null;
   readonly price: number;
   readonly manufacturer?: string | null;
   readonly category?: string | null;
   readonly warehouseQuantity: number;
   readonly shelfQuantity: number;
+  readonly store?: Store | null;
+  readonly billItems?: (BillItem | null)[] | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
+  readonly storeProductsId?: string | null;
 }
 
 type LazyProduct = {
@@ -85,14 +130,17 @@ type LazyProduct = {
   readonly id: string;
   readonly name: string;
   readonly barcode: string;
-  readonly images?: (string | null)[] | null;
+  readonly image?: string | null;
   readonly price: number;
   readonly manufacturer?: string | null;
   readonly category?: string | null;
   readonly warehouseQuantity: number;
   readonly shelfQuantity: number;
+  readonly store: AsyncItem<Store | undefined>;
+  readonly billItems: AsyncCollection<BillItem>;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
+  readonly storeProductsId?: string | null;
 }
 
 export declare type Product = LazyLoading extends LazyLoadingDisabled ? EagerProduct : LazyProduct
@@ -107,13 +155,16 @@ type EagerBillItem = {
     readOnlyFields: 'createdAt' | 'updatedAt';
   };
   readonly id: string;
+  readonly product: Product;
   readonly quantity: number;
   readonly productPrice: number;
   readonly subtotal: number;
   readonly category?: string | null;
   readonly manufacturer?: string | null;
+  readonly bill?: Bill | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
+  readonly productBillItemsId?: string | null;
   readonly billItemsId?: string | null;
 }
 
@@ -123,13 +174,16 @@ type LazyBillItem = {
     readOnlyFields: 'createdAt' | 'updatedAt';
   };
   readonly id: string;
+  readonly product: AsyncItem<Product>;
   readonly quantity: number;
   readonly productPrice: number;
   readonly subtotal: number;
   readonly category?: string | null;
   readonly manufacturer?: string | null;
+  readonly bill: AsyncItem<Bill | undefined>;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
+  readonly productBillItemsId?: string | null;
   readonly billItemsId?: string | null;
 }
 
@@ -149,8 +203,10 @@ type EagerBill = {
   readonly items: BillItem[];
   readonly totalAmount: number;
   readonly status: BillStatus | keyof typeof BillStatus;
+  readonly store?: Store | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
+  readonly storeBillsId?: string | null;
   readonly userBillsId?: string | null;
 }
 
@@ -164,8 +220,10 @@ type LazyBill = {
   readonly items: AsyncCollection<BillItem>;
   readonly totalAmount: number;
   readonly status: BillStatus | keyof typeof BillStatus;
+  readonly store: AsyncItem<Store | undefined>;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
+  readonly storeBillsId?: string | null;
   readonly userBillsId?: string | null;
 }
 
@@ -186,9 +244,11 @@ type EagerPurchaseOrder = {
   readonly vendor?: string | null;
   readonly amount?: number | null;
   readonly date?: string | null;
+  readonly store?: Store | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  readonly userPurchaserorderId?: string | null;
+  readonly storePurchaseOrdersId?: string | null;
+  readonly userPurchaseOrdersId?: string | null;
 }
 
 type LazyPurchaseOrder = {
@@ -202,9 +262,11 @@ type LazyPurchaseOrder = {
   readonly vendor?: string | null;
   readonly amount?: number | null;
   readonly date?: string | null;
+  readonly store: AsyncItem<Store | undefined>;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  readonly userPurchaserorderId?: string | null;
+  readonly storePurchaseOrdersId?: string | null;
+  readonly userPurchaseOrdersId?: string | null;
 }
 
 export declare type PurchaseOrder = LazyLoading extends LazyLoadingDisabled ? EagerPurchaseOrder : LazyPurchaseOrder

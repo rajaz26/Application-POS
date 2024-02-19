@@ -1,6 +1,120 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const createStore = /* GraphQL */ `
+  mutation CreateStore(
+    $input: CreateStoreInput!
+    $condition: ModelStoreConditionInput
+  ) {
+    createStore(input: $input, condition: $condition) {
+      id
+      name
+      address
+      users {
+        nextToken
+        startedAt
+        __typename
+      }
+      products {
+        nextToken
+        startedAt
+        __typename
+      }
+      bills {
+        nextToken
+        startedAt
+        __typename
+      }
+      purchaseOrders {
+        nextToken
+        startedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+  }
+`;
+export const updateStore = /* GraphQL */ `
+  mutation UpdateStore(
+    $input: UpdateStoreInput!
+    $condition: ModelStoreConditionInput
+  ) {
+    updateStore(input: $input, condition: $condition) {
+      id
+      name
+      address
+      users {
+        nextToken
+        startedAt
+        __typename
+      }
+      products {
+        nextToken
+        startedAt
+        __typename
+      }
+      bills {
+        nextToken
+        startedAt
+        __typename
+      }
+      purchaseOrders {
+        nextToken
+        startedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+  }
+`;
+export const deleteStore = /* GraphQL */ `
+  mutation DeleteStore(
+    $input: DeleteStoreInput!
+    $condition: ModelStoreConditionInput
+  ) {
+    deleteStore(input: $input, condition: $condition) {
+      id
+      name
+      address
+      users {
+        nextToken
+        startedAt
+        __typename
+      }
+      products {
+        nextToken
+        startedAt
+        __typename
+      }
+      bills {
+        nextToken
+        startedAt
+        __typename
+      }
+      purchaseOrders {
+        nextToken
+        startedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+  }
+`;
 export const createUser = /* GraphQL */ `
   mutation CreateUser(
     $input: CreateUserInput!
@@ -14,12 +128,23 @@ export const createUser = /* GraphQL */ `
       image
       role
       idcardimage
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       bills {
         nextToken
         startedAt
         __typename
       }
-      purchaserorder {
+      purchaseOrders {
         nextToken
         startedAt
         __typename
@@ -29,6 +154,7 @@ export const createUser = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
+      storeUsersId
       __typename
     }
   }
@@ -46,12 +172,23 @@ export const updateUser = /* GraphQL */ `
       image
       role
       idcardimage
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       bills {
         nextToken
         startedAt
         __typename
       }
-      purchaserorder {
+      purchaseOrders {
         nextToken
         startedAt
         __typename
@@ -61,6 +198,7 @@ export const updateUser = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
+      storeUsersId
       __typename
     }
   }
@@ -78,12 +216,23 @@ export const deleteUser = /* GraphQL */ `
       image
       role
       idcardimage
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       bills {
         nextToken
         startedAt
         __typename
       }
-      purchaserorder {
+      purchaseOrders {
         nextToken
         startedAt
         __typename
@@ -93,6 +242,7 @@ export const deleteUser = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
+      storeUsersId
       __typename
     }
   }
@@ -106,17 +256,34 @@ export const createProduct = /* GraphQL */ `
       id
       name
       barcode
-      images
+      image
       price
       manufacturer
       category
       warehouseQuantity
       shelfQuantity
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      billItems {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeProductsId
       __typename
     }
   }
@@ -130,17 +297,34 @@ export const updateProduct = /* GraphQL */ `
       id
       name
       barcode
-      images
+      image
       price
       manufacturer
       category
       warehouseQuantity
       shelfQuantity
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      billItems {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeProductsId
       __typename
     }
   }
@@ -154,17 +338,34 @@ export const deleteProduct = /* GraphQL */ `
       id
       name
       barcode
-      images
+      image
       price
       manufacturer
       category
       warehouseQuantity
       shelfQuantity
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      billItems {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeProductsId
       __typename
     }
   }
@@ -175,11 +376,12 @@ export const createBillItem = /* GraphQL */ `
     $condition: ModelBillItemConditionInput
   ) {
     createBillItem(input: $input, condition: $condition) {
+      id
       product {
         id
         name
         barcode
-        images
+        image
         price
         manufacturer
         category
@@ -190,6 +392,7 @@ export const createBillItem = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeProductsId
         __typename
       }
       quantity
@@ -197,12 +400,25 @@ export const createBillItem = /* GraphQL */ `
       subtotal
       category
       manufacturer
-      id
+      bill {
+        id
+        totalAmount
+        status
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeBillsId
+        userBillsId
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      productBillItemsId
       billItemsId
       __typename
     }
@@ -214,11 +430,12 @@ export const updateBillItem = /* GraphQL */ `
     $condition: ModelBillItemConditionInput
   ) {
     updateBillItem(input: $input, condition: $condition) {
+      id
       product {
         id
         name
         barcode
-        images
+        image
         price
         manufacturer
         category
@@ -229,6 +446,7 @@ export const updateBillItem = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeProductsId
         __typename
       }
       quantity
@@ -236,12 +454,25 @@ export const updateBillItem = /* GraphQL */ `
       subtotal
       category
       manufacturer
-      id
+      bill {
+        id
+        totalAmount
+        status
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeBillsId
+        userBillsId
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      productBillItemsId
       billItemsId
       __typename
     }
@@ -253,11 +484,12 @@ export const deleteBillItem = /* GraphQL */ `
     $condition: ModelBillItemConditionInput
   ) {
     deleteBillItem(input: $input, condition: $condition) {
+      id
       product {
         id
         name
         barcode
-        images
+        image
         price
         manufacturer
         category
@@ -268,6 +500,7 @@ export const deleteBillItem = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeProductsId
         __typename
       }
       quantity
@@ -275,12 +508,25 @@ export const deleteBillItem = /* GraphQL */ `
       subtotal
       category
       manufacturer
-      id
+      bill {
+        id
+        totalAmount
+        status
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeBillsId
+        userBillsId
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      productBillItemsId
       billItemsId
       __typename
     }
@@ -306,6 +552,7 @@ export const createBill = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeUsersId
         __typename
       }
       items {
@@ -315,11 +562,23 @@ export const createBill = /* GraphQL */ `
       }
       totalAmount
       status
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeBillsId
       userBillsId
       __typename
     }
@@ -345,6 +604,7 @@ export const updateBill = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeUsersId
         __typename
       }
       items {
@@ -354,11 +614,23 @@ export const updateBill = /* GraphQL */ `
       }
       totalAmount
       status
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeBillsId
       userBillsId
       __typename
     }
@@ -384,6 +656,7 @@ export const deleteBill = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeUsersId
         __typename
       }
       items {
@@ -393,11 +666,23 @@ export const deleteBill = /* GraphQL */ `
       }
       totalAmount
       status
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeBillsId
       userBillsId
       __typename
     }
@@ -423,18 +708,31 @@ export const createPurchaseOrder = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeUsersId
         __typename
       }
       image
       vendor
       amount
       date
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      userPurchaserorderId
+      storePurchaseOrdersId
+      userPurchaseOrdersId
       __typename
     }
   }
@@ -459,18 +757,31 @@ export const updatePurchaseOrder = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeUsersId
         __typename
       }
       image
       vendor
       amount
       date
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      userPurchaserorderId
+      storePurchaseOrdersId
+      userPurchaseOrdersId
       __typename
     }
   }
@@ -495,18 +806,31 @@ export const deletePurchaseOrder = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeUsersId
         __typename
       }
       image
       vendor
       amount
       date
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      userPurchaserorderId
+      storePurchaseOrdersId
+      userPurchaseOrdersId
       __typename
     }
   }

@@ -1,43 +1,25 @@
 {
   "dev": {
     "awscloudformation": {
-      "AuthRoleName": "amplify-fyp-dev-233525-authRole",
-      "UnauthRoleArn": "arn:aws:iam::233679213002:role/amplify-fyp-dev-233525-unauthRole",
-      "AuthRoleArn": "arn:aws:iam::233679213002:role/amplify-fyp-dev-233525-authRole",
-      "Region": "us-east-1",
-      "DeploymentBucketName": "amplify-fyp-dev-233525-deployment",
-      "UnauthRoleName": "amplify-fyp-dev-233525-unauthRole",
-      "StackName": "amplify-fyp-dev-233525",
-      "StackId": "arn:aws:cloudformation:us-east-1:233679213002:stack/amplify-fyp-dev-233525/ad11ea20-ca9e-11ee-aa09-0ee548c3e98d",
-      "AmplifyAppId": "dmvzvv247pzqq"
+      "AuthRoleName": "amplify-retailfyp-dev-81950-authRole",
+      "UnauthRoleArn": "arn:aws:iam::233679213002:role/amplify-retailfyp-dev-81950-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::233679213002:role/amplify-retailfyp-dev-81950-authRole",
+      "Region": "ap-south-1",
+      "DeploymentBucketName": "amplify-retailfyp-dev-81950-deployment",
+      "UnauthRoleName": "amplify-retailfyp-dev-81950-unauthRole",
+      "StackName": "amplify-retailfyp-dev-81950",
+      "StackId": "arn:aws:cloudformation:ap-south-1:233679213002:stack/amplify-retailfyp-dev-81950/bf24f410-ced5-11ee-8890-06859283fa06",
+      "AmplifyAppId": "d1ff0f5y5bqv80"
     },
     "categories": {
       "auth": {
-        "fyp1db63f83": {}
-      }
-    }
-  },
-  "raja": {
-    "awscloudformation": {
-      "AuthRoleName": "amplify-fyp-raja-40354-authRole",
-      "UnauthRoleArn": "arn:aws:iam::233679213002:role/amplify-fyp-raja-40354-unauthRole",
-      "AuthRoleArn": "arn:aws:iam::233679213002:role/amplify-fyp-raja-40354-authRole",
-      "Region": "us-east-1",
-      "DeploymentBucketName": "amplify-fyp-raja-40354-deployment",
-      "UnauthRoleName": "amplify-fyp-raja-40354-unauthRole",
-      "StackName": "amplify-fyp-raja-40354",
-      "StackId": "arn:aws:cloudformation:us-east-1:233679213002:stack/amplify-fyp-raja-40354/2c933630-cac4-11ee-a3a1-12b505ba9d9d",
-      "AmplifyAppId": "dmvzvv247pzqq"
-    },
-    "categories": {
-      "auth": {
-        "fyp1db63f83": {}
+        "retailfypf13cba35": {}
       },
       "api": {
-        "fyp": {}
+        "retailfyp": {}
       },
       "storage": {
-        "fypimages": {}
+        "fypstorage": {}
       }
     }
   }

@@ -1,6 +1,95 @@
 /* eslint-disable */
 // this is an auto generated file. This will be overwritten
 
+export const getStore = /* GraphQL */ `
+  query GetStore($id: ID!) {
+    getStore(id: $id) {
+      id
+      name
+      address
+      users {
+        nextToken
+        startedAt
+        __typename
+      }
+      products {
+        nextToken
+        startedAt
+        __typename
+      }
+      bills {
+        nextToken
+        startedAt
+        __typename
+      }
+      purchaseOrders {
+        nextToken
+        startedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      __typename
+    }
+  }
+`;
+export const listStores = /* GraphQL */ `
+  query ListStores(
+    $filter: ModelStoreFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listStores(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const syncStores = /* GraphQL */ `
+  query SyncStores(
+    $filter: ModelStoreFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncStores(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
 export const getUser = /* GraphQL */ `
   query GetUser($id: ID!) {
     getUser(id: $id) {
@@ -11,12 +100,23 @@ export const getUser = /* GraphQL */ `
       image
       role
       idcardimage
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       bills {
         nextToken
         startedAt
         __typename
       }
-      purchaserorder {
+      purchaseOrders {
         nextToken
         startedAt
         __typename
@@ -26,6 +126,7 @@ export const getUser = /* GraphQL */ `
       _version
       _deleted
       _lastChangedAt
+      storeUsersId
       __typename
     }
   }
@@ -50,6 +151,7 @@ export const listUsers = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeUsersId
         __typename
       }
       nextToken
@@ -84,6 +186,7 @@ export const syncUsers = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeUsersId
         __typename
       }
       nextToken
@@ -98,17 +201,34 @@ export const getProduct = /* GraphQL */ `
       id
       name
       barcode
-      images
+      image
       price
       manufacturer
       category
       warehouseQuantity
       shelfQuantity
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      billItems {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeProductsId
       __typename
     }
   }
@@ -124,7 +244,7 @@ export const listProducts = /* GraphQL */ `
         id
         name
         barcode
-        images
+        image
         price
         manufacturer
         category
@@ -135,6 +255,7 @@ export const listProducts = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeProductsId
         __typename
       }
       nextToken
@@ -160,7 +281,7 @@ export const syncProducts = /* GraphQL */ `
         id
         name
         barcode
-        images
+        image
         price
         manufacturer
         category
@@ -171,6 +292,7 @@ export const syncProducts = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeProductsId
         __typename
       }
       nextToken
@@ -182,11 +304,12 @@ export const syncProducts = /* GraphQL */ `
 export const getBillItem = /* GraphQL */ `
   query GetBillItem($id: ID!) {
     getBillItem(id: $id) {
+      id
       product {
         id
         name
         barcode
-        images
+        image
         price
         manufacturer
         category
@@ -197,6 +320,7 @@ export const getBillItem = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeProductsId
         __typename
       }
       quantity
@@ -204,12 +328,25 @@ export const getBillItem = /* GraphQL */ `
       subtotal
       category
       manufacturer
-      id
+      bill {
+        id
+        totalAmount
+        status
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeBillsId
+        userBillsId
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      productBillItemsId
       billItemsId
       __typename
     }
@@ -223,17 +360,18 @@ export const listBillItems = /* GraphQL */ `
   ) {
     listBillItems(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
+        id
         quantity
         productPrice
         subtotal
         category
         manufacturer
-        id
         createdAt
         updatedAt
         _version
         _deleted
         _lastChangedAt
+        productBillItemsId
         billItemsId
         __typename
       }
@@ -257,17 +395,18 @@ export const syncBillItems = /* GraphQL */ `
       lastSync: $lastSync
     ) {
       items {
+        id
         quantity
         productPrice
         subtotal
         category
         manufacturer
-        id
         createdAt
         updatedAt
         _version
         _deleted
         _lastChangedAt
+        productBillItemsId
         billItemsId
         __typename
       }
@@ -294,6 +433,7 @@ export const getBill = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeUsersId
         __typename
       }
       items {
@@ -303,11 +443,23 @@ export const getBill = /* GraphQL */ `
       }
       totalAmount
       status
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeBillsId
       userBillsId
       __typename
     }
@@ -329,6 +481,7 @@ export const listBills = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeBillsId
         userBillsId
         __typename
       }
@@ -360,6 +513,7 @@ export const syncBills = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeBillsId
         userBillsId
         __typename
       }
@@ -386,18 +540,31 @@ export const getPurchaseOrder = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeUsersId
         __typename
       }
       image
       vendor
       amount
       date
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      userPurchaserorderId
+      storePurchaseOrdersId
+      userPurchaseOrdersId
       __typename
     }
   }
@@ -420,7 +587,8 @@ export const listPurchaseOrders = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
-        userPurchaserorderId
+        storePurchaseOrdersId
+        userPurchaseOrdersId
         __typename
       }
       nextToken
@@ -453,7 +621,8 @@ export const syncPurchaseOrders = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
-        userPurchaserorderId
+        storePurchaseOrdersId
+        userPurchaseOrdersId
         __typename
       }
       nextToken

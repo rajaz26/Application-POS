@@ -13,7 +13,7 @@ import { getCurrentUser, signInWithRedirect, signOut } from "aws-amplify/auth";
 const HomeScreen2 = () => {
   const client = generateClient();
   // const userRole = useSelector((state) => state.user.role);
-  const userRole = 'General Manager';
+  const userRole = 'GENERAL_MANAGER';
   const navigation = useNavigation();
   const openDrawer = () => {
     navigation.openDrawer();
@@ -32,7 +32,7 @@ const HomeScreen2 = () => {
     <View style={{flex:1,backgroundColor:COLORS.primary}}>
         <View style={styles.wrapper}>
           
-        {userRole === 'General Manager' && (
+        {userRole === 'GENERAL_MANAGER' && (
            <SafeAreaView style={styles.safeArea}>
                   <View style={styles.sliderWrapper}>
                       <SalesLineChart/>
@@ -43,11 +43,11 @@ const HomeScreen2 = () => {
             </SafeAreaView>)}
             <View style={[
           styles.body,
-          (userRole === 'Cashier' || userRole === 'Warehouse' || userRole === 'Purchaser') ? { borderTopLeftRadius: 0, borderTopRightRadius: 0 } : null,
+          (userRole === 'CASHIER' || userRole === 'WAREHOUSE_MANAGER' || userRole === 'PURCHASER') ? { borderTopLeftRadius: 0, borderTopRightRadius: 0 } : null,
         ]}>
                <View style={[
           styles.bodyWrapper,
-          (userRole === 'Cashier' || userRole === 'Warehouse' || userRole === 'Purchaser') ? {justifyContent:'space-evenly' } : null,
+          (userRole === 'CASHIER' || userRole === 'WAREHOUSE_MANAGER' || userRole === 'PURCHASER') ? {justifyContent:'space-evenly' } : null,
         ]}> 
                 <View style={styles.menuContainer}>
                   <Text style={styles.menuText}>Menu</Text>
@@ -59,14 +59,14 @@ const HomeScreen2 = () => {
                     <Text style={styles.iconText}>Profile</Text>
                   </TouchableOpacity>
                   <TouchableOpacity style={styles.iconContainer} onPress={() =>
-    userRole === 'Purchaser'
+    userRole === 'PURCHASER'
       ? navigation.navigate('PurchaseHistory')
       : navigation.navigate('History')
   }>
                     <Ionic name="archive" size={25} color={COLORS.primary} style={styles.homeIcon} />
                     <Text style={styles.iconText}>History</Text>
                   </TouchableOpacity>
-                  {userRole !== 'Purchaser' ? (
+                  {userRole !== 'PURCHASER' ? (
                   <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('Settings')}>
                   {/* //<TouchableOpacity style={styles.iconContainer} onPress={createNewProduct}> */}
                     <Ionic name="settings" size={25} color={COLORS.primary} style={styles.homeIcon} />
@@ -82,10 +82,10 @@ const HomeScreen2 = () => {
                   </TouchableOpacity>
                   )}
                 </View>
-                {userRole !== 'Purchaser' && ( 
+                {userRole !== 'PURCHASER' && ( 
                 <View style={[styles.icons,styles.lastIcons]}>
         
-            {userRole !== 'General Manager' ? (
+            {userRole !== 'GENERAL_MANAGER' ? (
               <TouchableOpacity
                 style={styles.iconContainer}
                 onPress={() => navigation.navigate('Scan')}
@@ -111,7 +111,7 @@ const HomeScreen2 = () => {
                     <Text style={styles.iconText}>Products</Text>
                   </TouchableOpacity>
                   
-              {userRole === 'Cashier' ? (
+              {userRole === 'CASHIER' ? (
               <TouchableOpacity
                 style={styles.iconContainer}
                 onPress={() => navigation.navigate('Settings')}
@@ -131,7 +131,7 @@ const HomeScreen2 = () => {
         
                 </View>)}
                 </View>
-                {userRole === 'General Manager' && (
+                {userRole === 'GENERAL_MANAGER' && (
                   <>
                   <View style={styles.previousContainer}>
                     <Text style={styles.previousText}>Previous Bills</Text>
@@ -167,7 +167,7 @@ const HomeScreen2 = () => {
                 
                 
                 
-                {userRole === 'Purchaser' && (
+                {userRole === 'PURCHASER' && (
                   <>
                   <View style={styles.previousContainer}>
                     <Text style={styles.previousText}>Purchase Order</Text>
@@ -207,7 +207,7 @@ const HomeScreen2 = () => {
                 </TouchableOpacity>
                 </>
                 )}
-                {userRole === 'Purchaser' && (
+                {userRole === 'PURCHASER' && (
                   <>
                   <View style={styles.previousContainer}>
                     <Text style={styles.previousText}>Purchase History</Text>
@@ -243,7 +243,7 @@ const HomeScreen2 = () => {
                 </>
                 )}
 
-                {userRole === 'Purchaser' && (
+                {userRole === 'PURCHASER' && (
                   <>
                   <View style={styles.previousContainer}>
                     <Text style={styles.previousText}>Warehouse Quantity</Text>
@@ -286,8 +286,8 @@ const HomeScreen2 = () => {
                 )}
                 
 
-                {/* WAREHOUSE */}
-                {userRole === 'Warehouse' && (
+                {/* WAREHOUSE_MANAGER */}
+                {userRole === 'WAREHOUSE_MANAGER' && (
                   <>
                   <View style={styles.previousContainer}>
                     <Text style={styles.previousText}>Last Scanned</Text>
@@ -319,7 +319,7 @@ const HomeScreen2 = () => {
                 </View>
                 </>
                 )}
-                {userRole === 'Warehouse' && (
+                {userRole === 'WAREHOUSE_MANAGER' && (
                   <>
                   <View style={styles.previousContainer}>
                     <Text style={styles.previousText}>Recent Notifications</Text>
@@ -351,7 +351,7 @@ const HomeScreen2 = () => {
                 </View>
                 </>
                 )}
-                {userRole === 'Warehouse' && (
+                {userRole === 'WAREHOUSE_MANAGER' && (
                   <>
                  
                   <View style={styles.billSection}>
@@ -384,7 +384,7 @@ const HomeScreen2 = () => {
                 
                 
                 {/* CASHIER */}
-                {userRole === 'Cashier' && (
+                {userRole === 'CASHIER' && (
                   <>
                 <View style={styles.previousContainer}>
                   <Text style={styles.previousText}>Connected Printer</Text>
@@ -418,7 +418,7 @@ const HomeScreen2 = () => {
                 </View>
                 </>
                 )}
-                {userRole === 'Cashier' && (
+                {userRole === 'CASHIER' && (
                   <>
                   <View style={styles.previousContainer}>
                     <Text style={styles.previousText}>Previous Bills</Text>

@@ -1,5 +1,135 @@
 export const schema = {
     "models": {
+        "Store": {
+            "name": "Store",
+            "fields": {
+                "id": {
+                    "name": "id",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "name": {
+                    "name": "name",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": true,
+                    "attributes": []
+                },
+                "address": {
+                    "name": "address",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "users": {
+                    "name": "users",
+                    "isArray": true,
+                    "type": {
+                        "model": "User"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true,
+                    "association": {
+                        "connectionType": "HAS_MANY",
+                        "associatedWith": [
+                            "storeUsersId"
+                        ]
+                    }
+                },
+                "products": {
+                    "name": "products",
+                    "isArray": true,
+                    "type": {
+                        "model": "Product"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true,
+                    "association": {
+                        "connectionType": "HAS_MANY",
+                        "associatedWith": [
+                            "storeProductsId"
+                        ]
+                    }
+                },
+                "bills": {
+                    "name": "bills",
+                    "isArray": true,
+                    "type": {
+                        "model": "Bill"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true,
+                    "association": {
+                        "connectionType": "HAS_MANY",
+                        "associatedWith": [
+                            "storeBillsId"
+                        ]
+                    }
+                },
+                "purchaseOrders": {
+                    "name": "purchaseOrders",
+                    "isArray": true,
+                    "type": {
+                        "model": "PurchaseOrder"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true,
+                    "association": {
+                        "connectionType": "HAS_MANY",
+                        "associatedWith": [
+                            "storePurchaseOrdersId"
+                        ]
+                    }
+                },
+                "createdAt": {
+                    "name": "createdAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                },
+                "updatedAt": {
+                    "name": "updatedAt",
+                    "isArray": false,
+                    "type": "AWSDateTime",
+                    "isRequired": false,
+                    "attributes": [],
+                    "isReadOnly": true
+                }
+            },
+            "syncable": true,
+            "pluralName": "Stores",
+            "attributes": [
+                {
+                    "type": "model",
+                    "properties": {}
+                },
+                {
+                    "type": "auth",
+                    "properties": {
+                        "rules": [
+                            {
+                                "allow": "public",
+                                "operations": [
+                                    "create",
+                                    "update",
+                                    "delete",
+                                    "read"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
         "User": {
             "name": "User",
             "fields": {
@@ -55,6 +185,21 @@ export const schema = {
                     "attributes": [],
                     "isArrayNullable": true
                 },
+                "store": {
+                    "name": "store",
+                    "isArray": false,
+                    "type": {
+                        "model": "Store"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "BELONGS_TO",
+                        "targetNames": [
+                            "storeUsersId"
+                        ]
+                    }
+                },
                 "bills": {
                     "name": "bills",
                     "isArray": true,
@@ -71,8 +216,8 @@ export const schema = {
                         ]
                     }
                 },
-                "purchaserorder": {
-                    "name": "purchaserorder",
+                "purchaseOrders": {
+                    "name": "purchaseOrders",
                     "isArray": true,
                     "type": {
                         "model": "PurchaseOrder"
@@ -83,7 +228,7 @@ export const schema = {
                     "association": {
                         "connectionType": "HAS_MANY",
                         "associatedWith": [
-                            "userPurchaserorderId"
+                            "userPurchaseOrdersId"
                         ]
                     }
                 },
@@ -102,6 +247,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": [],
                     "isReadOnly": true
+                },
+                "storeUsersId": {
+                    "name": "storeUsersId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
                 }
             },
             "syncable": true,
@@ -153,13 +305,12 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
-                "images": {
-                    "name": "images",
-                    "isArray": true,
+                "image": {
+                    "name": "image",
+                    "isArray": false,
                     "type": "String",
                     "isRequired": false,
-                    "attributes": [],
-                    "isArrayNullable": true
+                    "attributes": []
                 },
                 "price": {
                     "name": "price",
@@ -196,6 +347,37 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "store": {
+                    "name": "store",
+                    "isArray": false,
+                    "type": {
+                        "model": "Store"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "BELONGS_TO",
+                        "targetNames": [
+                            "storeProductsId"
+                        ]
+                    }
+                },
+                "billItems": {
+                    "name": "billItems",
+                    "isArray": true,
+                    "type": {
+                        "model": "BillItem"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "isArrayNullable": true,
+                    "association": {
+                        "connectionType": "HAS_MANY",
+                        "associatedWith": [
+                            "productBillItemsId"
+                        ]
+                    }
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -211,6 +393,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": [],
                     "isReadOnly": true
+                },
+                "storeProductsId": {
+                    "name": "storeProductsId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
                 }
             },
             "syncable": true,
@@ -248,6 +437,21 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "product": {
+                    "name": "product",
+                    "isArray": false,
+                    "type": {
+                        "model": "Product"
+                    },
+                    "isRequired": true,
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "BELONGS_TO",
+                        "targetNames": [
+                            "productBillItemsId"
+                        ]
+                    }
+                },
                 "quantity": {
                     "name": "quantity",
                     "isArray": false,
@@ -283,6 +487,21 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "bill": {
+                    "name": "bill",
+                    "isArray": false,
+                    "type": {
+                        "model": "Bill"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "BELONGS_TO",
+                        "targetNames": [
+                            "billItemsId"
+                        ]
+                    }
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -299,6 +518,13 @@ export const schema = {
                     "attributes": [],
                     "isReadOnly": true
                 },
+                "productBillItemsId": {
+                    "name": "productBillItemsId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "billItemsId": {
                     "name": "billItemsId",
                     "isArray": false,
@@ -313,15 +539,6 @@ export const schema = {
                 {
                     "type": "model",
                     "properties": {}
-                },
-                {
-                    "type": "key",
-                    "properties": {
-                        "name": "gsi-Bill.items",
-                        "fields": [
-                            "billItemsId"
-                        ]
-                    }
                 },
                 {
                     "type": "auth",
@@ -398,6 +615,21 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "store": {
+                    "name": "store",
+                    "isArray": false,
+                    "type": {
+                        "model": "Store"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "BELONGS_TO",
+                        "targetNames": [
+                            "storeBillsId"
+                        ]
+                    }
+                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -413,6 +645,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": [],
                     "isReadOnly": true
+                },
+                "storeBillsId": {
+                    "name": "storeBillsId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
                 },
                 "userBillsId": {
                     "name": "userBillsId",
@@ -468,7 +707,7 @@ export const schema = {
                     "association": {
                         "connectionType": "BELONGS_TO",
                         "targetNames": [
-                            "userPurchaserorderId"
+                            "userPurchaseOrdersId"
                         ]
                     }
                 },
@@ -490,7 +729,7 @@ export const schema = {
                 "amount": {
                     "name": "amount",
                     "isArray": false,
-                    "type": "Int",
+                    "type": "Float",
                     "isRequired": false,
                     "attributes": []
                 },
@@ -500,6 +739,21 @@ export const schema = {
                     "type": "String",
                     "isRequired": false,
                     "attributes": []
+                },
+                "store": {
+                    "name": "store",
+                    "isArray": false,
+                    "type": {
+                        "model": "Store"
+                    },
+                    "isRequired": false,
+                    "attributes": [],
+                    "association": {
+                        "connectionType": "BELONGS_TO",
+                        "targetNames": [
+                            "storePurchaseOrdersId"
+                        ]
+                    }
                 },
                 "createdAt": {
                     "name": "createdAt",
@@ -517,8 +771,15 @@ export const schema = {
                     "attributes": [],
                     "isReadOnly": true
                 },
-                "userPurchaserorderId": {
-                    "name": "userPurchaserorderId",
+                "storePurchaseOrdersId": {
+                    "name": "storePurchaseOrdersId",
+                    "isArray": false,
+                    "type": "ID",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "userPurchaseOrdersId": {
+                    "name": "userPurchaseOrdersId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": false,
@@ -572,5 +833,5 @@ export const schema = {
     },
     "nonModels": {},
     "codegenVersion": "3.4.4",
-    "version": "470d69b85f4c50f6682baaac4a54ab3d"
+    "version": "381f0cc322b797e4727eecfd2906d08b"
 };

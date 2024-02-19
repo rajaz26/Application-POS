@@ -1,15 +1,15 @@
 {
   "api": {
-    "fyp": {
+    "retailfyp": {
       "dependsOn": [],
       "output": {
         "authConfig": {
           "additionalAuthenticationProviders": [],
           "defaultAuthentication": {
             "apiKeyConfig": {
-              "apiKeyExpirationDate": "2025-02-11T22:48:27.974Z",
+              "apiKeyExpirationDate": "2025-02-17T03:33:01.822Z",
               "apiKeyExpirationDays": 364,
-              "description": "fypapis"
+              "description": "apikey"
             },
             "authenticationType": "API_KEY"
           }
@@ -20,7 +20,7 @@
     }
   },
   "auth": {
-    "fyp1db63f83": {
+    "retailfypf13cba35": {
       "customAuth": false,
       "dependsOn": [],
       "frontendAuthConfig": {
@@ -46,7 +46,7 @@
     }
   },
   "storage": {
-    "fypimages": {
+    "fypstorage": {
       "dependsOn": [],
       "providerPlugin": "awscloudformation",
       "service": "S3"

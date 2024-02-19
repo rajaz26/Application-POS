@@ -10,13 +10,42 @@ import {
   Keyboard,
   ScrollView,
 } from 'react-native';
+import {listProducts} from '../src/graphql/queries'
+import { generateClient } from 'aws-amplify/api';
 import ImageResizeMode from 'react-native/Libraries/Image/ImageResizeMode'
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {COLORS} from '../assets/theme';
 import {useNavigation} from '@react-navigation/native';
+import { connect } from 'react-redux';
 const ProductsScreen = ({route}) => {
+  const client = generateClient();
+  const [productsObj, setProductsObj] = useState([]);
+  const fetchAllProducts = async () => {
+    try {
+      const { data } = await client.graphql({
+        query: listProducts,
+      });
+      const { items } = data.listProducts;
+      setProductsObj(items);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+    }
+  };
+  useEffect(() => {
+    fetchAllProducts();
+  }, []);
+  useEffect(() => {
+    console.log("skrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
+    productsObj.forEach(product => {
+      console.log(product);
+      console.log("\n"); // Add an empty line between each product
+    });
+    console.log("skrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
+  },[productsObj]); // Log productsObj whenever it changes
+
   const navigation = useNavigation();
-  const products = route.params.productsObj;
+  // const products = route.params.productsObj;
+  const products = productsObj;
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [isSearchActive, setIsSearchActive] = useState(false);
@@ -73,10 +102,10 @@ const ProductsScreen = ({route}) => {
       <View style={styles.productImageContainer}>
         {/* Image */}
         <Image
-          source={item.imgSrc} // Replace with actual image source
-          style={styles.productImage}
-          
-        />
+        source={{ uri: item.images && item.images.length > 0 ? item.images[0] : 'https://upload.wikimedia.org/wikipedia/en/6/61/Tang_drinkmix_logo.png' }}
+        style={styles.productImage}
+        onError={(error) => console.log("Image loading error:", error)}
+      />
       </View>
       <View style={styles.productDetails}>
         {/* Product Name */}

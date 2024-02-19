@@ -15,9 +15,10 @@ const BillStatus = {
   "PAID": "PAID"
 };
 
-const { User, Product, BillItem, Bill, PurchaseOrder } = initSchema(schema);
+const { Store, User, Product, BillItem, Bill, PurchaseOrder } = initSchema(schema);
 
 export {
+  Store,
   User,
   Product,
   BillItem,

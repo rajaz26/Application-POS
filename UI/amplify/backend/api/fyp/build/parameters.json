@@ -1,7 +1,0 @@
-{
-    "AppSyncApiName": "fyp",
-    "DynamoDBBillingMode": "PAY_PER_REQUEST",
-    "DynamoDBEnableServerSideEncryption": false,
-    "S3DeploymentBucket": "amplify-fyp-raja-40354-deployment",
-    "S3DeploymentRootKey": "amplify-appsync-files/136dbf3475defaad0bb900ce03fc5c37207bcedc"
-}
