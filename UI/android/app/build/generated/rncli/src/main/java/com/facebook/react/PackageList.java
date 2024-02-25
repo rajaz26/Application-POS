@@ -21,6 +21,8 @@ import com.reactnativecommunity.netinfo.NetInfoPackage;
 import org.reactnative.maskedview.RNCMaskedViewPackage;
 // @react-native-picker/picker
 import com.reactnativecommunity.picker.RNCPickerPackage;
+// react-native-bluetooth-escpos-printer
+import cn.jystudio.bluetooth.RNBluetoothEscposPrinterPackage;
 // react-native-gesture-handler
 import com.swmansion.gesturehandler.RNGestureHandlerPackage;
 // react-native-get-random-values
@@ -47,6 +49,8 @@ import com.oblador.vectoricons.VectorIconsPackage;
 import fr.greweb.reactnativeviewshot.RNViewShotPackage;
 // react-native-vision-camera
 import com.mrousavy.camera.CameraPackage;
+// rn-fetch-blob
+import com.RNFetchBlob.RNFetchBlobPackage;
 // vision-camera-code-scanner
 import com.visioncameracodescanner.VisionCameraCodeScannerPluginPackage;
 
@@ -99,6 +103,7 @@ public class PackageList {
       new NetInfoPackage(),
       new RNCMaskedViewPackage(),
       new RNCPickerPackage(),
+      new RNBluetoothEscposPrinterPackage(),
       new RNGestureHandlerPackage(),
       new RNGetRandomValuesPackage(),
       new RNReactNativeHapticFeedbackPackage(),
@@ -112,6 +117,7 @@ public class PackageList {
       new VectorIconsPackage(),
       new RNViewShotPackage(),
       new CameraPackage(),
+      new RNFetchBlobPackage(),
       new VisionCameraCodeScannerPluginPackage()
     ));
   }

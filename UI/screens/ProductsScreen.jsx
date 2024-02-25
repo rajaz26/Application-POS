@@ -24,8 +24,20 @@ const ProductsScreen = ({route}) => {
     try {
       const { data } = await client.graphql({
         query: listProducts,
+        expiresIn: 9000909,
+        authMode: 'apiKey',
       });
+      console.log("data is : ",data.listProducts.items)
       const { items } = data.listProducts;
+      items.forEach(item => {
+        // Split the image string by commas to get an array of URLs
+        const imageUrls = item.image.split(',').map(url => url.trim());
+        
+        // Loop through each URL in the array and log it
+        imageUrls.forEach(url => {
+          console.log("imagessssssssssssssss",url);
+        });
+      });
       setProductsObj(items);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -102,7 +114,9 @@ const ProductsScreen = ({route}) => {
       <View style={styles.productImageContainer}>
         {/* Image */}
         <Image
-        source={{ uri: item.images && item.images.length > 0 ? item.images[0] : 'https://upload.wikimedia.org/wikipedia/en/6/61/Tang_drinkmix_logo.png' }}
+        // source={{ uri: item.images && item.images.length > 0 ? item.images[0] : 'https://upload.wikimedia.org/wikipedia/en/6/61/Tang_drinkmix_logo.png' }}
+        source={{ uri: item.imageKey ? `https://fypimages81950-dev.s3.ap-south-1.amazonaws.com/public/${item.imageKey}` : 'https://upload.wikimedia.org/wikipedia/en/6/61/Tang_drinkmix_logo.png' }}
+        //
         style={styles.productImage}
         onError={(error) => console.log("Image loading error:", error)}
       />

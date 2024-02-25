@@ -1,13 +1,13 @@
 // store/index.js
 import { configureStore, getDefaultMiddleware } from '@reduxjs/toolkit';
-import logger from 'redux-logger'; // Import the logger middleware
-import useReducer from './useReducer';
+import logger from 'redux-logger';
+import userReducer from './useReducer';
+import bluetoothReducer from './bluetoothReducer'; // Import the Bluetooth reducer
 
 export const store = configureStore({
   reducer: {
-    user: useReducer, // Use the correct reducer import
+    user: userReducer,
+    bluetooth: bluetoothReducer, // Add the Bluetooth reducer
   },
-  middleware: (getDefaultMiddleware) => [...getDefaultMiddleware(), logger], // Include logger middleware
+  middleware: (getDefaultMiddleware) => [...getDefaultMiddleware(), logger],
 });
-
-export default store;

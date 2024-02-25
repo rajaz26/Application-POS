@@ -1,7 +1,7 @@
 {
     "logs": [
         {
-            "outputFile": "com.uifyp.app-mergeDebugResources-37:/values-en-rGB/values-en-rGB.xml",
+            "outputFile": "com.uifyp.app-mergeDebugResources-38:/values-en-rGB/values-en-rGB.xml",
             "map": [
                 {
                     "source": "C:\\Users\\PMLS\\.gradle\\caches\\transforms-3\\795676a79a0c8e1cc25c8530d5bb032b\\transformed\\jetified-play-services-base-17.6.0\\res\\values-en-rGB\\values.xml",

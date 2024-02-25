@@ -96,16 +96,18 @@ const HomeScreen2 = () => {
             ) : (
               <TouchableOpacity
                 style={styles.iconContainer}
-                onPress={() => navigation.navigate('Stats')}
+                onPress={() => navigation.navigate('Bluetooth2')}
               >
                 <Ionic name="stats-chart" size={28} color={COLORS.primary} />
                 <Text style={styles.iconText}>Stats</Text>
               </TouchableOpacity>
             )}
             
-                  <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('ProductsList', {
+                  {/* <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('ProductsList', {
                     productsObj: productsObj,
                   })
+                }> */}
+                 <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('Bluetooth')
                 }>
                     <Ionic name="list" size={28} color={COLORS.primary} style={styles.homeIcon} />
                     <Text style={styles.iconText}>Products</Text>
@@ -122,7 +124,7 @@ const HomeScreen2 = () => {
             ) : (
               <TouchableOpacity
                 style={styles.iconContainer}
-                onPress={() => navigation.navigate('Stats')}
+                onPress={() => navigation.navigate('Receipt')}
               >
                 <Ionic name="notifications" size={28} color={COLORS.primary} />
                 <Text style={styles.iconText}>Notification</Text>

@@ -5,11 +5,25 @@ import Ionic from 'react-native-vector-icons/Ionicons';
 import { COLORS } from '../assets/theme/index.js';
 import { Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native'; 
-
+import RNFetchBlob from 'rn-fetch-blob';
 const { width, height } = Dimensions.get('window');
+
 
 const ConfirmBill = () => {
     const navigation=useNavigation();
+    const convertImageToBase64 = () => {
+        const imageUrl = 'https://upload.wikimedia.org/wikipedia/en/6/61/Tang_drinkmix_logo.png';
+        RNFetchBlob.fetch('GET', imageUrl, {})
+          .then((res) => {
+            // The image is now in base64 format
+            let base64Str = res.base64();
+            console.log(base64Str);
+            // You can handle the base64 string here - display it, store it, or send it to a server
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      };
   return (
     
     <SafeAreaView style={styles.headContainer}>
@@ -163,6 +177,10 @@ const ConfirmBill = () => {
                 <TouchableOpacity style={styles.confirmButton}>
                     <Text style={styles.confirmText}>Confirm Bill</Text>
                 </TouchableOpacity>
+                <TouchableOpacity style={styles.confirmButton} onPress={convertImageToBase64}>
+            <Text style={styles.confirmText}>Convert Image to Base64</Text>
+          </TouchableOpacity>
+
                 <TouchableOpacity style={styles.addButton}>
                     <Text style={styles.addText}>Add Product</Text>
                 </TouchableOpacity>

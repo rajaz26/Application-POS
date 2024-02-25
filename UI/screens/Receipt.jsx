@@ -4,111 +4,139 @@ import {
   StyleSheet,
   Text,
   View,
-  Image,
   ScrollView,
   TouchableOpacity,
-  ImageBackground,
+  Alert,
+  Image
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useSelector } from 'react-redux';
+import { BluetoothEscposPrinter } from 'react-native-bluetooth-escpos-printer';
+import { selectConnectedDevice } from '../store/bluetoothReducer.js'; // Adjust this path as necessary
+import ViewShot from 'react-native-view-shot';
 import { COLORS } from '../assets/theme/index.js';
-import ViewShot from 'react-native-view-shot'; // Import react-native-view-shot
-
-
 const Receipt = () => {
-    const navigation = useNavigation();
-  const viewShotRef = useRef(null); // Ref for ViewShot
-  const [capturedImageURI, setCapturedImageURI] = useState(null);
-  const captureAndDisplay = async () => {
-    try {
-      const uri = await viewShotRef.current.capture();
-      setCapturedImageURI(uri);
+  const viewShotRef = useRef(null);
+  const connectedDevice = useSelector(selectConnectedDevice);
 
-      // Navigate to ImageViewScreen with the captured image URI
-      navigation.navigate('ImageView', { imageUri: uri });
+  const sampleBill = {
+    store: {
+      name: "Khattak Store",
+      address: "Yousuf Colony",
+    },
+    cashier: {
+      username: "cashier01",
+    },
+    items: [
+      { product: { name: "Product A", price: 10.00 }, quantity: 2 },
+      { product: { name: "Product B", price: 5.50 }, quantity: 1 },
+    ],
+    totalAmount: 25.50,
+    status: "Paid",
+  };
+
+  const _formatBill = (bill) => {
+    let receipt = "";
+    receipt += "Store: " + bill.store.name + "\n";
+    receipt += "Address: " + bill.store.address + "\n";
+    receipt += "Cashier: " + bill.cashier.username + "\n";
+    receipt += "-----------------------------\n";
+    bill.items.forEach((item) => {
+      receipt += item.product.name + " x " + item.quantity + " = $" + (item.product.price * item.quantity).toFixed(2) + "\n";
+    });
+    receipt += "-----------------------------\n";
+    receipt += "Total: $" + bill.totalAmount.toFixed(2) + "\n";
+    receipt += "Status: " + bill.status + "\n";
+    receipt += "Thank you for your purchase!\n";
+    return receipt;
+  };
+
+  const captureAndDisplay = async () => {
+    if (!connectedDevice) {
+      Alert.alert("Print Error", "No Bluetooth device is connected.");
+      return;
+    }
+
+    const formattedReceipt = _formatBill(sampleBill);
+
+    try {
+      await BluetoothEscposPrinter.printerInit();
+      await BluetoothEscposPrinter.printText(formattedReceipt, {});
+      Alert.alert("Print Success", "Receipt printed successfully.");
     } catch (error) {
-      console.error('Error capturing content:', error);
+      console.error('Error printing receipt:', error);
     }
   };
+
   return (
     <SafeAreaView style={styles.safe}>
-        
       <ScrollView style={styles.scrollView}>
-      
-        <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 1.0 }}>
+      <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 1.0 }}>
     
-          <View style={styles.headerContainer}>
-            
-            <ScrollView style={styles.billContainer}>
-                
-              <ScrollView style={styles.wrapper}>
-                
-                <View style={styles.logo}>
-                  <Image
-                    style={styles.logoStyles}
-                    source={require('../assets/images/logo7.png')}
-                  />
-                </View>
-                <View style={styles.address}>
-                  <Text style={styles.addressText}>
-                    Shop 28, Yousuf Colony
-                    {'\n'}
-                    Chaklala Scheme 3, Rawalpindi
-                  </Text>
-                </View>
-                <View style={styles.dashedLine} />
-                
-                <View style={styles.receipt}>
-                  {/* Receipt Header */}
-                  <View style={styles.header}>
-                    
-                    <Text style={styles.headerText}>QTY</Text>
-                    <Text style={styles.headerText}>ITEM</Text>
-                    <Text style={styles.headerText}>PRICE</Text>
-                    <Text style={styles.headerText}>TOTAL</Text>
-                  </View>
-
-                  {/* Receipt Items */}
-                  {Array.from({ length: 15}, (_, index) => (
-                    <View style={styles.itemRow} key={index}>
-                      <Text style={styles.itemText}>2</Text>
-                      <Text style={styles.itemText}>Product A</Text>
-                      <Text style={styles.itemText}>$10.00</Text>
-                      <Text style={styles.itemText}>$20.00</Text>
-                    </View>
-                  ))}
-               
-                  {/* Total */}
-                  <View style={styles.totalRow}>
-                    <Text style={[styles.totalText, styles.alignRight]}>TOTAL</Text>
-                    <Text style={[styles.totalAmount, styles.alignRight]}>$35.00</Text>
-                  </View>
-                </View>
-                
-                {/* Horizontal Line Below Total */}
-                <View style={styles.dashedLine} />
-              
-              </ScrollView>
-         
-            </ScrollView>
-          </View>
-        </ViewShot>
-        
-      </ScrollView>
+    <View style={styles.headerContainer}>
       
-      {/* Fixed "Download" button container */}
-       
-      <View style={styles.footerContainer}>
+      <ScrollView style={styles.billContainer}>
+          
+        <ScrollView style={styles.wrapper}>
+          
+          <View style={styles.logo}>
+            <Image
+              style={styles.logoStyles}
+              source={require('../assets/images/logo7.png')}
+            />
+          </View>
+          <View style={styles.address}>
+            <Text style={styles.addressText}>
+              Shop 28, Yousuf Colony
+              {'\n'}
+              Chaklala Scheme 3, Rawalpindi
+            </Text>
+          </View>
+          <View style={styles.dashedLine} />
+          
+          <View style={styles.receipt}>
+            {/* Receipt Header */}
+            <View style={styles.header}>
+              
+              <Text style={styles.headerText}>QTY</Text>
+              <Text style={styles.headerText}>ITEM</Text>
+              <Text style={styles.headerText}>PRICE</Text>
+              <Text style={styles.headerText}>TOTAL</Text>
+            </View>
+
+            {/* Receipt Items */}
+            {Array.from({ length: 15}, (_, index) => (
+              <View style={styles.itemRow} key={index}>
+                <Text style={styles.itemText}>2</Text>
+                <Text style={styles.itemText}>Product A</Text>
+                <Text style={styles.itemText}>$10.00</Text>
+                <Text style={styles.itemText}>$20.00</Text>
+              </View>
+            ))}
+         
+            {/* Total */}
+            <View style={styles.totalRow}>
+              <Text style={[styles.totalText, styles.alignRight]}>TOTAL</Text>
+              <Text style={[styles.totalAmount, styles.alignRight]}>$35.00</Text>
+            </View>
+          </View>
+          
+          {/* Horizontal Line Below Total */}
+          <View style={styles.dashedLine} />
         
-        <View style={styles.footerWrapper}>
-          <TouchableOpacity style={styles.confirmButton} onPress={captureAndDisplay}>
-            <Text style={styles.confirmText}>Download</Text>
-          </TouchableOpacity>
-        </View>
+        </ScrollView>
+   
+      </ScrollView>
+    </View>
+  </ViewShot>
+      </ScrollView>
+      <View style={styles.footerContainer}>
+        <TouchableOpacity style={styles.confirmButton} onPress={captureAndDisplay}>
+          <Text style={styles.confirmText}>Download</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
 };
-
 const styles = StyleSheet.create({
   safe: {
     flex: 1,
@@ -123,6 +151,8 @@ const styles = StyleSheet.create({
     position: 'absolute', // Position the footer at the bottom
     bottom: 0, // Align the footer to the bottom
     width: '100%', // Make the footer full width
+    justifyContent:'center',
+    alignItems:'center'
   },
   wrapper: {
     paddingHorizontal: 16,

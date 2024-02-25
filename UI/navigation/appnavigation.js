@@ -33,6 +33,8 @@ import { getCurrentUser } from "aws-amplify/auth";
 import {View, ActivityIndicator} from 'react-native';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import AddAccount from "../screens/AddAccount";
+import BluetoothConnectivity from "../screens/BluetoothConnectivity";
+import BluetoothConnectivity2 from "../screens/BluetoothConnectivity2";
 const Drawer = createDrawerNavigator();
 
 const AppNavigation = () => {
@@ -80,9 +82,9 @@ useEffect(() => {
   delay={0}
   duration={2200} 
   easing={Easing.inOut(Easing.ease)} 
-  tintColor={COLORS.primary}
+  tintColor={COLORS.secondary}
   onAnimationComplete={() => console.log('onAnimationComplete')}
-  backgroundColor="#3d5875" />
+  backgroundColor="white" />
       </View>
     );
   }
@@ -93,6 +95,8 @@ useEffect(() => {
         {user ? (
           <>
             <Drawer.Screen name="Home" component={TopTabNavigator} />
+            <Drawer.Screen name="Bluetooth" component={BluetoothConnectivity} />
+            <Drawer.Screen name="Bluetooth2" component={BluetoothConnectivity2} />
             <Drawer.Screen name="Settings" component={SettingsScreen} />
             <Drawer.Screen name="History" component={HistoryScreen} />
             <Drawer.Screen name="Navigator" component={Navigator} />
