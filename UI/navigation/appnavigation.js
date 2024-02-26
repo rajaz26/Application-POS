@@ -35,6 +35,7 @@ import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import AddAccount from "../screens/AddAccount";
 import BluetoothConnectivity from "../screens/BluetoothConnectivity";
 import BluetoothConnectivity2 from "../screens/BluetoothConnectivity2";
+import ConfirmSignUp2 from "../screens/ConfirmSignUp2";
 const Drawer = createDrawerNavigator();
 
 const AppNavigation = () => {
@@ -116,6 +117,7 @@ useEffect(() => {
             <Drawer.Screen name="Notifications" component={Notifications} />
             <Drawer.Screen name="PurchaseHistory" component={PurchaseHistory} />
             <Drawer.Screen name="AddAccount" component={AddAccount} />
+            <Drawer.Screen name="ConfirmSignUp2" component={ConfirmSignUp2} />
           </>
         ) : (
           <>

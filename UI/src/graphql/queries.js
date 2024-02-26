@@ -631,3 +631,42 @@ export const syncPurchaseOrders = /* GraphQL */ `
     }
   }
 `;
+export const userById = /* GraphQL */ `
+  query UserById(
+    $userId: ID!
+    $id: ModelIDKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelUserFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    userById(
+      userId: $userId
+      id: $id
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        userId
+        username
+        phonenumber
+        image
+        role
+        idcardimage
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeUsersId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;

@@ -34,6 +34,7 @@ const AddAccount = () => {
     const [phonenumber, setPhoneNumber] = useState('');
     const [password, setPassword] = useState('');
     const [idCardNumber, setIdCardNumber] = useState('');
+    const [selectedIdCardImage, setSelectedIdCardImage] = useState(null); // New state for ID card image
     const [loggedInUserEmail, setLoggedInUserEmail] = useState('');
   const { control, handleSubmit } = useForm(); 
   const client = generateClient();// Initialize React Hook Form
@@ -47,11 +48,14 @@ const AddAccount = () => {
   ];
   const handleChoosePhoto = () => {
     launchImageLibrary({}, (response) => {
-      if (response.uri) {
-        setSelectedImage(response);
+      if (response.assets && response.assets.length > 0) {
+        const selectedImageUri = response.assets[0].uri;
+        setSelectedImage(response.assets[0]); // Set the selected image
+        console.log("Selected image URI:", selectedImageUri); // Log the URI
       }
     });
   };
+  
 //   const handleLoading = () => {
 //     setLoading(true)
 //   }
@@ -62,36 +66,44 @@ const AddAccount = () => {
     setError(false)
     setErrorMessage('')
   }
-  
-//   useEffect(() => {
-//     const fetchLoggedInUserEmail = async () => {
-//       try {
-//         const mail = await fetchUserAttributes();
-//         setUserEmail(mail.email);
-//         console.log("email retrieved",userEmail);
-//         setLoggedInUserEmail(userEmail);
-//       } catch (error) {
-//         console.error('Error fetching logged-in user email:', error);
-//       }
-//     };
+  const handleChooseIdCardPhoto = () => {
+    launchImageLibrary({}, (response) => {
+      if (response.assets && response.assets.length > 0) {
+        setSelectedIdCardImage(response.assets[0]);
+        
+      }
+    });
+  };
+  useEffect(() => {
+    const fetchLoggedInUserEmail = async () => {
+      try {
+        const mail = await fetchUserAttributes();
+        setUserEmail(mail.email);
+        console.log("email retrieved",userEmail);
+        setLoggedInUserEmail(userEmail);
+      } catch (error) {
+        console.error('Error fetching logged-in user email:', error);
+      }
+    };
 
-//     fetchLoggedInUserEmail();
-//   }, []);
+    fetchLoggedInUserEmail();
+  }, []);
   const onSubmit = async () => {
     console.log("We Have entereed")
     setLoading(true);
     setLoadingMessage(true);
     Keyboard.dismiss();
     try {
-        let mail = await fetchUserAttributes();
-        console.log(mail)
-        if(!mail){
-          mail = await getCurrentUser();
-        }
-        console.log(mail)
+      // setUserEmail(await fetchUserAttributes().email);
+      //   console.log(userEmail)
+      //   if(!userEmail){
+      //     setUserEmail(await getCurrentUser().email);
+
+      //   }
+      //   console.log('email',userEmail)
        
-        setUserEmail(mail.email);
-        console.log("email retrieved",userEmail);
+      //   // setUserEmail(mail.email);
+      //   console.log("email retrieved",userEmail);
       const signUpResponse = await signUp({
         username:name,
         password,
@@ -107,23 +119,34 @@ const AddAccount = () => {
       console.log("Into User model");
 
       // Create user in the database using GraphQL mutation
-      const userInput = {
-        input: {
-          userId:cognitoUserId,
+      // const userInput = {
+      //   input: {
+      //     userId:cognitoUserId,
+      //     username:name,
+      //     phonenumber:phonenumber,
+      //     role:role,
+      //   }
+      // };
+      // console.log("User model about to be created",userInput.input);
+      // const createUserResponse = await client.graphql({
+      //   query: createUser,
+      //   variables: { input: userInput.input},
+      //   authMode: 'apiKey',
+      //  } );
+      navigation.navigate('ConfirmSignUp2', {
+        userData: {
+          cognitoUserId,
           username:name,
-          phonenumber:phonenumber,
-          role:role,
-        }
-      };
-      console.log("User model about to be created",userInput.input);
-      const createUserResponse = await client.graphql({
-        query: createUser,
-        variables: { input: userInput.input},
-        authMode: 'apiKey',
-       } );
+          phonenumber,
+          role,
+          userEmail,
+          selectedIdCardImageUri: selectedIdCardImage?.uri,
+        },
+      });
+  
        setLoadingMessage(false);
        setSuccess(true);
-    console.log('User created:', createUserResponse);
+    // console.log('User created:', createUserResponse);
     setName('')
     setPassword('')
     setPhoneNumber('')
@@ -193,13 +216,16 @@ const AddAccount = () => {
 
       {/* Lower View */}
       <View style={styles.lowerView}>
-      <TouchableOpacity style={styles.profileImageContainer} onPress={()=>handleChoosePhoto()}>
-      <Image
-          source={require('../assets/images/profile1.png')}
-          style={styles.profileImage}
-        />
-                        <Ionic style={styles.plusImage} size={38} color={'white'} name ='add-circle'/>
-    </TouchableOpacity>
+      <TouchableOpacity style={styles.profileImageContainer} onPress={handleChoosePhoto}>
+  {selectedImage ? (
+    // Display the selected image if available
+    <Image source={{ uri: selectedImage.uri }} style={styles.profileImage} />
+  ) : (
+    // Display a default image if no image has been selected
+    <Image source={require('../assets/images/profile1.png')} style={styles.profileImage} />
+  )}
+  <Ionic style={styles.plusImage} size={38} color={'white'} name='add-circle' />
+</TouchableOpacity>
    
         <ScrollView style={styles.scrolledView}>
  
@@ -215,7 +241,7 @@ const AddAccount = () => {
         placeholder='Full Name'
         placeholderTextColor='rgba(170, 170, 170,4)'
         onChangeText={(text) => setName(text)} 
-        value={name}// Update the name state
+        value={name}
       />
               </View>
             </View>
@@ -295,16 +321,17 @@ const AddAccount = () => {
                <View style={styles.imageContainer}>
                <FontAwesome name="address-card" size={28} color={COLORS.primary} />
                 </View>
-                <View style={styles.inputContainer}>
-                <TextInput
-        style={styles.formInput}
-        placeholder='ID Card Number'
-        placeholderTextColor='rgba(170, 170, 170,4)'
-        onChangeText={(value) => setIdCardNumber(value)} // Update the idCardNumber state
-        value={idCardNumber} // Bind the value of the input to the idCardNumber state
-      />
+                {/* <View style={styles.inputContainer}> */}
+                <TouchableOpacity  style={styles.inputContainer} onPress={handleChooseIdCardPhoto}>
+        {selectedIdCardImage ? (
+          <Image source={{uri: selectedIdCardImage.uri}} style={styles.idCardImage} />
+        ) : (
+          <Text style={styles.formInput}>ID Card Image</Text>
+        )}
+        <Ionic style={styles.plusImage} size={38} color={'white'} name='add-circle' />
+      </TouchableOpacity>
               </View>
-            </View>
+            {/* </View> */}
         </View>
         
         </ScrollView>
@@ -348,9 +375,7 @@ const styles = StyleSheet.create({
   },
   profileImage: {
     zIndex:1,
-    // position:'absolute',
-    // left:130,
-    // top:-70,
+    borderRadius:100,
     width: 130,
     height: 130,
   },
@@ -487,10 +512,20 @@ imageContainer:{
     flex:0,
     justifyContent:'center',
     alignItems:'center',
-    // paddingVertical:10,
-    
 },
-
+idCardImageContainer: {
+  alignItems: 'center',
+  justifyContent: 'center',
+},
+idCardImage: {
+  width: 150, 
+  height: 100, 
+  resizeMode: 'contain',
+},
+idCardPlaceholderText: {
+  fontSize: 16,
+  color: '#999',
+},
 inputContainer:{
     flex:1,
     paddingLeft:20,

@@ -1,180 +1,100 @@
 import { StyleSheet, Text, View,ScrollView,SafeAreaView,TouchableOpacity,Image} from 'react-native'
-import React,{useState} from 'react'
+import React, { useState, useEffect } from 'react';
 import Ionic from 'react-native-vector-icons/Ionicons';
 import { COLORS } from '../assets/theme/index.js';
 import { useNavigation } from '@react-navigation/native'; 
+import { generateClient } from 'aws-amplify/api';
+import { listUsers } from '../src/graphql/queries.js';
 import { SelectList } from 'react-native-dropdown-select-list';
 const StaffListScreen = () => {
     const data = [
-        {key:'1', value:'Cashier'},
-        {key:'2', value:'Purchaser'},
-        {key:'3', value:'Warehouse Manager'}
+        {key:'1', value:'CASHIER'},
+        {key:'2', value:'PURCHASER'},
+        {key:'3', value:'WAREHOUSE_MANAGER'}
       ];
     const [rank, setRank] = useState('Select Role');
     const [selected, setSelected] = React.useState('');
+    const [users, setUsers] = useState([]); // State to hold fetched users
+
+    const client = generateClient();
+
+    const fetchAllUsers = async () => {
+        try {
+            const { data } = await client.graphql({
+                query: listUsers,
+                authMode: 'apiKey',
+            });
+            console.log("Fetched users:", data.listUsers.items);
+            setUsers(data.listUsers.items); // Set the fetched users into state
+        } catch (error) {
+            console.error('Error fetching users:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchAllUsers(); // Fetch users when the component mounts
+    }, []);
 
  const navigation=useNavigation();
-  return (
+ const handleAddAccount = () => {
+    navigation.navigate('AddAccount');
+};
+
+return (
     <View style={styles.container}>
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.headerContainer}>
-                <TouchableOpacity style={styles.arrowBack}  onPress={()=> navigation.goBack()}>
-                    <Ionic size={25} color='white' name ='chevron-back-outline'/>
+                <TouchableOpacity style={styles.arrowBack} onPress={() => navigation.goBack()}>
+                    <Ionic size={25} color='white' name='chevron-back-outline'/>
                 </TouchableOpacity>
                 <Text style={styles.cashierHeading}>Staff List</Text>
             </View>
         </SafeAreaView>
         <View style={styles.listContainer}>
-        <View style={styles.selectedContainer} >
-        <SelectList 
-             setSelected={(rank) => setSelected(rank)} 
-                            data={data} search={false} 
-                            renderRightIcon={{size:30,}}
-                            save="value"
-                            placeholder={rank}
-                            boxStyles={{ borderWidth:2}} 
-                            arrowicon={ <Ionic style={{position:'absolute',right:10,top:14}} size={26} color='rgba(180, 180, 180,4)' name ='chevron-down-outline'/>}
-                            inputStyles={{fontSize:18.5,top:1,fontFamily:'Poppins-Regular',color:'rgba(140, 140, 140,4)'}}
-                            dropdownTextStyles={{ fontFamily:'Poppins-Regular',fontSize:15,color:'rgba(180, 180, 180,4)' }}
-                            />
-        </View>
-
+            <View style={styles.selectedContainer}>
+                <SelectList 
+                    setSelected={setSelected} 
+                    data={[
+                        {key:'1', value:'CASHIER'},
+                        {key:'2', value:'PURCHASER'},
+                        {key:'3', value:'WAREHOUSE_MANAGER'}
+                    ]}
+                    search={false}
+                    placeholder="Select Role"
+                    boxStyles={{borderWidth:2}} 
+                    arrowicon={<Ionic style={{position:'absolute',right:10,top:14}} size={26} color='rgba(180, 180, 180,4)' name='chevron-down-outline'/>}
+                    inputStyles={{fontSize:18.5,top:1,fontFamily:'Poppins-Regular',color:'rgba(140, 140, 140,4)'}}
+                />
+            </View>
             <ScrollView>
-            <View style={styles.billContainer}>
-                <Image style={styles.logoStyles} source={require("../assets/images/person.jpg")}/>
-                <View style={styles.billText}>
-                    <View style={styles.intro}>
-
-                    
-                    <View style={styles.cashierName}>
-                        <Text  style={styles.cashierText}>
-                        Raja Zain
-                        </Text>
-                        <Text  style={styles.billTime}>
-                        Joined : 21-08-2023
-                        </Text>
+                {users.map(user => (
+                    <View key={user.id} style={styles.billContainer}>
+                        <Image style={styles.logoStyles} source={user.image ? {uri: user.image} : require("../assets/images/person.jpg")}/>
+                        <View style={styles.billText}>
+                            <View style={styles.intro}>
+                                <View style={styles.cashierName}>
+                                    <Text style={styles.cashierText}>{user.username}</Text>
+                                    <Text style={styles.billTime}>Joined: {new Date(user.createdAt).toLocaleDateString()}</Text>
+                                </View>
+                            </View>
+                            <View>
+                                <View style={styles.billBottomText}>
+                                    <TouchableOpacity style={styles.billViewButton} onPress={() => navigation.navigate('Profile', {userId: user.id})}>
+                                        <Ionic size={26} color={COLORS.primary} name='chevron-forward-outline'/>
+                                    </TouchableOpacity>
+                                </View>
+                            </View>
+                        </View>
                     </View>
-                    </View>
-                    <View>
-                    <View  style={styles.billBottomText}>
-                    <TouchableOpacity  style={styles.billViewButton}>
-                            <Ionic size={26} color={COLORS.primary} name ='chevron-forward-outline'/>
-                    </TouchableOpacity>
-                    </View>
-                    </View>
-                </View>
-            </View>
-            <View style={styles.billContainer}>
-                <Image style={styles.logoStyles} source={require("../assets/images/person.jpg")}/>
-                <View style={styles.billText}>
-                    <View style={styles.intro}>
-
-                    
-                    <View style={styles.cashierName}>
-                        <Text  style={styles.cashierText}>
-                        Syed Saif
-                        </Text>
-                        <Text  style={styles.billTime}>
-                        Joined : 10-10-2023
-                        </Text>
-                    </View>
-                    </View>
-                    <View>
-                    <View  style={styles.billBottomText}>
-                    <TouchableOpacity  style={styles.billViewButton2}>
-                            <Ionic size={26} color={COLORS.primary} name ='chevron-forward-outline'/>
-                    </TouchableOpacity>
-                    </View>
-                    </View>
-                </View>
-            </View>
-            <View style={styles.billContainer}>
-                <Image style={styles.logoStyles} source={require("../assets/images/person.jpg")}/>
-                <View style={styles.billText}>
-                    <View style={styles.intro}>
-
-                    
-                    <View style={styles.cashierName}>
-                        <Text  style={styles.cashierText}>
-                        Mirza Abdullah
-                        </Text>
-                        <Text  style={styles.billTime}>
-                        Joined : 21-08-2023
-                        </Text>
-                    </View>
-                    </View>
-                    <View>
-                    <View  style={styles.billBottomText}>
-                    <TouchableOpacity  style={styles.billViewButton2}>
-                            <Ionic size={26} color={COLORS.primary} name ='chevron-forward-outline'/>
-                    </TouchableOpacity>
-                    </View>
-                    </View>
-                </View>
-            </View>
-            <View style={styles.billContainer}>
-                <Image style={styles.logoStyles} source={require("../assets/images/person.jpg")}/>
-                <View style={styles.billText}>
-                    <View style={styles.intro}>
-
-                    
-                    <View style={styles.cashierName}>
-                        <Text  style={styles.cashierText}>
-                        Sibghat
-                        </Text>
-                        <Text  style={styles.billTime}>
-                        Joined : 21-08-2023
-                        </Text>
-                    </View>
-                    </View>
-                    <View>
-                    <View  style={styles.billBottomText}>
-                    <TouchableOpacity  style={styles.billViewButton}>
-                            <Ionic size={26} color={COLORS.primary} name ='chevron-forward-outline'/>
-                    </TouchableOpacity>
-                    </View>
-                    </View>
-                </View>
-            </View>
-            <View style={styles.billContainer}>
-                <Image style={styles.logoStyles} source={require("../assets/images/person.jpg")}/>
-                <View style={styles.billText}>
-                    <View style={styles.intro}>
-
-                    
-                    <View style={styles.cashierName}>
-                        <Text  style={styles.cashierText}>
-                        Raja Zain
-                        </Text>
-                        <Text  style={styles.billTime}>
-                        Joined : 21-08-2023
-                        </Text>
-                    </View>
-                    </View>
-                    <View>
-                    <View  style={styles.billBottomText}>
-                    <TouchableOpacity  style={styles.billViewButton}>
-                            <Ionic size={26} color={COLORS.primary} name ='chevron-forward-outline'/>
-                    </TouchableOpacity>
-                    </View>
-                    </View>
-                </View>
-            </View>
-            <View style={styles.footerContainer}>
-            <View style={styles.footerWrapper}>
-                <TouchableOpacity style={styles.confirmButton} onPress={()=> navigation.navigate('AddAccount')}>
-                    <Text style={styles.confirmText}>Add Account</Text>
-                </TouchableOpacity>
-            </View>
-        </View>
+                ))}
             </ScrollView>
+            <TouchableOpacity style={styles.confirmButton} onPress={handleAddAccount}>
+                <Text style={styles.confirmText}>Add Account</Text>
+            </TouchableOpacity>
         </View>
-   </View>
-  )
-}
-
-export default StaffListScreen
-
+    </View>
+);
+};
 const styles = StyleSheet.create({
     container:{
         flex:1,
@@ -336,3 +256,4 @@ const styles = StyleSheet.create({
         top:2,
     }
 })
+export default StaffListScreen;

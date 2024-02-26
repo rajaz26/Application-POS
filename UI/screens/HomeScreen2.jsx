@@ -67,7 +67,7 @@ const HomeScreen2 = () => {
                     <Text style={styles.iconText}>History</Text>
                   </TouchableOpacity>
                   {userRole !== 'PURCHASER' ? (
-                  <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('Settings')}>
+                  <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('Profile')}>
                   {/* //<TouchableOpacity style={styles.iconContainer} onPress={createNewProduct}> */}
                     <Ionic name="settings" size={25} color={COLORS.primary} style={styles.homeIcon} />
                     <Text style={styles.iconText}>Settings</Text>

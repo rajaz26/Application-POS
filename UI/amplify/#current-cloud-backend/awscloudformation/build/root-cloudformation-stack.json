@@ -1,5 +1,5 @@
 {
-  "Description": "Root Stack for AWS Amplify CLI",
+  "Description": "Root Stack for AWS Amplify Console",
   "AWSTemplateFormatVersion": "2010-09-09",
   "Parameters": {
     "DeploymentBucketName": {
@@ -152,10 +152,24 @@
         }
       }
     },
+    "apiretailfyp": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": "https://s3.amazonaws.com/amplify-retailfyp-zaif-234005-deployment/amplify-cfn-templates/api/cloudformation-template.json",
+        "Parameters": {
+          "AppSyncApiName": "retailfyp",
+          "DynamoDBBillingMode": "PAY_PER_REQUEST",
+          "DynamoDBEnableServerSideEncryption": false,
+          "S3DeploymentBucket": "amplify-retailfyp-zaif-234005-deployment",
+          "S3DeploymentRootKey": "amplify-appsync-files/d0701aadbd145d67897a2d5e04cbbee95a1d1f84",
+          "env": "zaif"
+        }
+      }
+    },
     "authretailfypf13cba35": {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
-        "TemplateURL": "https://s3.amazonaws.com/amplify-retailfyp-dev-81950-deployment/amplify-cfn-templates/auth/retailfypf13cba35-cloudformation-template.json",
+        "TemplateURL": "https://s3.amazonaws.com/amplify-retailfyp-zaif-234005-deployment/amplify-cfn-templates/auth/retailfypf13cba35-cloudformation-template.json",
         "Parameters": {
           "identityPoolName": "retailfypf13cba35_identitypool_f13cba35",
           "allowUnauthenticatedIdentities": true,
@@ -201,28 +215,14 @@
           },
           "breakCircularDependency": true,
           "dependsOn": "",
-          "env": "dev"
-        }
-      }
-    },
-    "apiretailfyp": {
-      "Type": "AWS::CloudFormation::Stack",
-      "Properties": {
-        "TemplateURL": "https://s3.amazonaws.com/amplify-retailfyp-dev-81950-deployment/amplify-cfn-templates/api/cloudformation-template.json",
-        "Parameters": {
-          "AppSyncApiName": "retailfyp",
-          "DynamoDBBillingMode": "PAY_PER_REQUEST",
-          "DynamoDBEnableServerSideEncryption": false,
-          "S3DeploymentBucket": "amplify-retailfyp-dev-81950-deployment",
-          "S3DeploymentRootKey": "amplify-appsync-files/7cf8fcbb9ed341120af831257495b38f449f2ec3",
-          "env": "dev"
+          "env": "zaif"
         }
       }
     },
     "storagefypstorage": {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
-        "TemplateURL": "https://s3.amazonaws.com/amplify-retailfyp-dev-81950-deployment/amplify-cfn-templates/storage/cloudformation-template.json",
+        "TemplateURL": "https://s3.amazonaws.com/amplify-retailfyp-zaif-234005-deployment/amplify-cfn-templates/storage/cloudformation-template.json",
         "Parameters": {
           "bucketName": "fypimages",
           "selectedGuestPermissions": "s3:PutObject,s3:GetObject,s3:ListBucket,s3:DeleteObject",
@@ -248,7 +248,7 @@
           "s3PermissionsAuthenticatedUploads": "s3:PutObject",
           "s3PermissionsGuestPublic": "s3:PutObject,s3:GetObject,s3:DeleteObject",
           "s3PermissionsGuestUploads": "s3:PutObject",
-          "env": "dev"
+          "env": "zaif"
         }
       }
     },

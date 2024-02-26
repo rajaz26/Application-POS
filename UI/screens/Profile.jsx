@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -13,34 +13,139 @@ import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import {COLORS} from '../assets/theme/index';
 import { SelectList } from 'react-native-dropdown-select-list'
 import { useNavigation } from '@react-navigation/native'; 
-const Profile = () => {
-  const [editing, setEditing] = useState(false);
-  const [name, setName] = useState('Saif ur Rehman');
-  const [age, setAge] = useState('25');
-  const [role, setRole] = useState('Admin');
-  const [cnic, setCnic] = useState('12345-6789012-3');
-  const [contact, setContact] = useState('123-4567890');
-  const [username, setUsername] = useState('saif123');
-  const [joined, setJoined] = useState('18-10-2023');
+import {generateClient} from 'aws-amplify/api';
+import {getUser} from '../src/graphql/queries';
+import { fetchUserAttributes, getCurrentUser } from 'aws-amplify/auth';
+import { launchImageLibrary } from 'react-native-image-picker';
+
+const Profile = ({route}) => {
+  
+  const navigation = useNavigation();
+  const client = generateClient();
+  const defaultIdCardImage = require('../assets/images/profile.png');
   const [password, setPassword] = useState('password123');
-  const [bloodGroup, setBloodGroup] = useState('A+');
-  const [email, setEmail] = useState('saif@example.com');
-  const [gender, setGender] = useState('Male');
-  const [rank, setRank] = useState('Admin');
-  const navigation=useNavigation();
-  const [selected, setSelected] = React.useState("");
-  const data = [
-    {key:'1', value:'Admin'},
-    {key:'2', value:'Cashier'},
-]
-  const toggleEdit = () => {
-    if (editing) {
-      // Save changes
-      setEditing(false);
-    } else {
-      // Enable editing
-      setEditing(true);
+  const [editing, setEditing] = useState(false);
+  const [selectedRole, setSelectedRole] = useState('');
+  const [user, setUser] = useState({
+    username: '',
+    role: '',
+    phonenumber: '',
+    joined: '',
+    idcardimage: [],
+  });
+  const userByIdQuery = /* GraphQL */ `
+  query UserById($userId: ID!) {
+    userById(userId: $userId) {
+      items {
+        id
+        username
+        phonenumber
+        image
+        role
+        idcardimage
+        store {
+          id
+          name
+        }
+        bills {
+          items {
+            id
+          }
+        }
+        purchaseOrders {
+          items {
+            id
+          }
+        }
+      }
     }
+  }
+`;
+
+  const roles = [
+    {key: '1', value: 'CASHIER'},
+    {key: '2', value: 'PURCHASER'},
+    {key: '3', value: 'WAREHOUSE_MANAGER'},
+  ];
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        // Default to an ID from the route params; if not present, use the current user's ID
+        const effectiveUserId = route?.params?.userId || await getCurrentUserId();
+        console.log("************");
+        console.log("effectiveid",effectiveUserId);
+        console.log("id from routes",route?.params?.userId);
+        console.log("id from function",await getCurrentUserId());
+        console.log("************");
+        const response = await client.graphql({
+          query: getUser,
+          variables: { id: effectiveUserId },
+          authMode: 'apiKey',
+        });
+
+        if (response.data.getUser) {
+          setUser({
+            ...response.data.getUser,
+            joined: new Date(response.data.getUser.createdAt).toLocaleDateString(),
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
+  }, [route?.params?.userId]);
+
+  async function getCurrentUserId() {
+    let id = await fetchUserAttributes();
+   
+    if(!id){
+      id = await getCurrentUser();
+    }
+    id=id.sub;
+    console.log("id",id);
+    const { data } = await client.graphql({
+      query: userByIdQuery,
+      variables: { userId: id },
+      authMode: 'apiKey',
+  });
+  console.log(data);
+  }
+  useEffect(() => {
+    if (selectedRole) {
+      setUser((prevState) => ({...prevState, role: selectedRole}));
+    }
+  }, [selectedRole]);
+
+  const selectImage = () => {
+    const options = {
+      mediaType: 'photo',
+      quality: 1,
+    };
+
+    launchImageLibrary(options, (response) => {
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      } else {
+        const source = {uri: response.assets[0].uri};
+        handleInputChange('idcardimage', [source.uri]);
+      }
+    });
+  };
+
+  const toggleEdit = () => {
+    setEditing(!editing);
+  };
+
+  const handleInputChange = (key, value) => {
+    setUser((prevState) => ({
+      ...prevState,
+      [key]: value,
+    }));
   };
 
   return (
@@ -54,8 +159,8 @@ const Profile = () => {
         <TouchableOpacity style={styles.arrowBackIcon}  onPress={()=> navigation.goBack()}>
             <Ionic size={24} color='white' name ='chevron-back-outline'/>
         </TouchableOpacity>
-        <Text style={styles.name}>{name}</Text>
-        <Text style={styles.role}>{role}</Text>
+        <Text style={styles.name}>{user.username}</Text>
+        <Text style={styles.role}>{user.role}</Text>
       </View>
 
       {/* Lower View */}
@@ -66,23 +171,24 @@ const Profile = () => {
         />
         <ScrollView style={styles.scrolledView}>
  
-       
         <View style={styles.formInputContainer}>
             <View style={styles.formInputWrapper}>
                <View style={styles.imageContainer}>
                     <Ionic size={30} color={COLORS.primary} name ='person-outline'/>
                 </View>
                 <View style={styles.inputContainer}>
-                    {/* <TextInput style={styles.formInput}  placeholder='Product ID'  placeholderTextColor='rgba(170, 170, 170,4)'/> */}
                 {editing ? (
-                  <TextInput
-                    value={name}
-                    onChangeText={setName}
-                    style={styles.formInput}
-                    placeholderTextColor='rgba(170, 170, 170,4)'
-                  />
+                 <TextInput
+                 value={user.username}
+                 onChangeText={(text) => handleInputChange('username', text)}
+                 style={styles.formInput}
+                 placeholder="Username"
+                 editable={editing} // Make sure this is correctly controlled based on your state
+               />
+               
                 ) : (
-                  <Text style={styles.formInput}>{name}</Text>
+            <Text style={styles.formInput}>{user.username}</Text>
+
                 )}
                 </View>
             </View>
@@ -94,72 +200,45 @@ const Profile = () => {
                 </View>
                 <View style={styles.inputContainer}>
                     {/* <TextInput style={styles.formInput}  placeholder='Product ID'  placeholderTextColor='rgba(170, 170, 170,4)'/> */}
-                {editing ? (
-                   <View>
-                   {/* <Picker
-                     selectedValue={rank}
-                     onValueChange={setRank}
-                     style={styles.picker}>
-                     <Picker.Item label="Senior" value="Senior" />
-                     <Picker.Item label="Junior" value="Junior" />
-                     <Picker.Item label="Internee" value="Internee" />
-                     <Picker.Item label="New Recruit" value="New Recruit" />
-                   </Picker> */}
-                    <SelectList 
-                            setSelected={(rank) => setSelected(rank)} 
-                            data={data} search={false} 
-                            renderRightIcon={{size:30,}}
-                            save="value"
-                            placeholder={rank}
-                            boxStyles={{ borderWidth:0,left:-16}} 
-                            arrowicon={ <Ionic style={{position:'absolute',right:-15,top:14}} size={26} color='rgba(180, 180, 180,4)' name ='chevron-down-outline'/>}
-                            inputStyles={{fontSize:18.5,top:1,fontFamily:'Poppins-Regular',color:'rgba(140, 140, 140,4)'}}
-                            dropdownTextStyles={{ fontFamily:'Poppins-Regular',fontSize:15,color:'rgba(180, 180, 180,4)' }}
-                            />
-                 </View>
-                ) : (
-                  <Text style={styles.formInput}>{role}</Text>
-                )}
+                    {editing ? (
+  <SelectList
+  setSelected={setSelectedRole} // Use setSelectedRole to directly update the role in your state.
+  data={roles}
+  search={false}
+  save="value" // This will save the 'value' field of your selected item to the state.
+  placeholder={user.role || "Select Role"}
+  boxStyles={{ borderWidth: 0, left: -16 }}
+  arrowicon={<Ionic style={{ position: 'absolute', right: -15, top: 14 }} size={26} color='rgba(180, 180, 180,4)' name='chevron-down-outline'/>}
+  inputStyles={{ fontSize: 14.5, top: 1, fontFamily: 'Poppins-Regular', color: 'rgba(140, 140, 140,4)' }}
+  dropdownTextStyles={{ fontFamily: 'Poppins-Regular', fontSize: 15, color: 'rgba(180, 180, 180,4)' }}
+/>
+
+) : (
+  <Text style={styles.formInputRole}>{user.role}</Text>
+)}
+
                 </View>
             </View>
         </View>
-        <View style={styles.formInputContainer}>
-            <View style={styles.formInputWrapper}>
-               <View style={styles.imageContainer}>
-               <FontAwesome name="address-card" size={28} color={COLORS.primary} />
-                </View>
-                <View style={styles.inputContainer}>
-                    {/* <TextInput style={styles.formInput}  placeholder='Product ID'  placeholderTextColor='rgba(170, 170, 170,4)'/> */}
-                {editing ? (
-                  <TextInput
-                    value={cnic}
-                    onChangeText={setCnic}
-                    style={styles.formInput}
-                    placeholderTextColor='rgba(170, 170, 170,4)'
-                  />
-                ) : (
-                  <Text style={styles.formInput}>{cnic}</Text>
-                )}
-                </View>
-            </View>
-        </View>
-        
+       
         <View style={styles.formInputContainer}>
             <View style={styles.formInputWrapper}>
                <View style={styles.imageContainer}>
                     <Ionic size={30} color={COLORS.primary} name ='call-outline'/>
                 </View>
                 <View style={styles.inputContainer}>
-                    {/* <TextInput style={styles.formInput}  placeholder='Product ID'  placeholderTextColor='rgba(170, 170, 170,4)'/> */}
                 {editing ? (
-                  <TextInput
-                    value={contact}
-                    onChangeText={setContact}
-                    style={styles.formInput}
-                    placeholderTextColor='rgba(170, 170, 170,4)'
-                  />
+                 <TextInput
+                 value={user.phonenumber}
+                 onChangeText={(text) => handleInputChange('phonenumber', text)}
+                 style={styles.formInput}
+                 placeholder="Phonenumber"
+                 editable={editing} // Make sure this is correctly controlled based on your state
+               />
+               
                 ) : (
-                  <Text style={styles.formInput}>{contact}</Text>
+            <Text style={styles.formInput}>{user.phonenumber}</Text>
+
                 )}
                 </View>
             </View>
@@ -170,16 +249,18 @@ const Profile = () => {
                     <Ionic size={30} color={COLORS.primary} name ='laptop-outline'/>
                 </View>
                 <View style={styles.inputContainer}>
-                    {/* <TextInput style={styles.formInput}  placeholder='Product ID'  placeholderTextColor='rgba(170, 170, 170,4)'/> */}
                 {editing ? (
-                  <TextInput
-                    value={age}
-                    onChangeText={setAge}
-                    style={styles.formInput}
-                    placeholderTextColor='rgba(170, 170, 170,4)'
-                  />
+                 <TextInput
+                 value={user.joined}
+                 onChangeText={(text) => handleInputChange('joined', text)}
+                 style={styles.formInput}
+                 placeholder="Joined"
+                 editable={editing} // Make sure this is correctly controlled based on your state
+               />
+               
                 ) : (
-                  <Text style={styles.formInput}>Since  {joined}</Text>
+            <Text style={styles.formInput}>{user.joined}</Text>
+
                 )}
                 </View>
             </View>
@@ -202,20 +283,35 @@ const Profile = () => {
                   <Text style={styles.formInput}>{password}</Text>
                 )}
                 </View>
-                
             </View>
             
         </View>
+        <View style={styles.formInputContainer}>
+  <View style={styles.formInputWrapper}>
+    <View style={styles.imageContainer}>
+      <FontAwesome name="address-card" size={28} color={COLORS.primary} />
+    </View>
+    <TouchableOpacity onPress={editing ? selectImage : undefined} style={styles.idCardImageContainer}>
+      {user.idcardimage && user.idcardimage.length > 0 ? (
+        <Image source={{ uri: user.idcardimage[0] }} style={styles.idCardImage} />
+      ) : (
+        <Image source={defaultIdCardImage} style={styles.idCardImage} />
+      )}
+    </TouchableOpacity>
+  </View>
+</View>
+
+        
         </ScrollView>
         </View>
-        {role === 'Admin' && (
+      
           <View style={styles.saveWrapper}>
               <TouchableOpacity style={styles.saveButton} onPress={toggleEdit}>
                   <Ionic size={18} color={COLORS.primary} name ={editing ? 'save-outline' : 'brush-outline'}/>
                   <Text style={styles.saveText}>{editing ? 'Save' : 'Edit'}</Text>
               </TouchableOpacity>
           </View>
-        )}
+      
       </View>
   );
 };
@@ -270,7 +366,8 @@ const styles = StyleSheet.create({
     
   },
   scrolledView:{
-    
+    top:-15,
+    // borderWidth:2,
   },
   fieldRow: {
     flexDirection: 'row',
@@ -355,6 +452,7 @@ formInputWrapper:{
     paddingHorizontal:10,
 },
 formInput:{
+  width:'100%',
     flex:0,
     fontSize:18.5,
     top:6,
@@ -364,6 +462,16 @@ formInput:{
     alignItems:'center',
     color:'rgba(140, 140, 140,4)',
     textAlign:'center',
+},
+formInputRole:{
+  flex:0,
+  fontSize:17.5,
+  top:1,
+  fontFamily:'Poppins-Regular',
+  justifyContent:'center',
+  alignItems:'center',
+  color:'rgba(140, 140, 140,4)',
+  textAlign:'center',
 },
 formInputSize:{
     flex:0,
@@ -398,7 +506,10 @@ saveWrapper:{
   paddingTop:10,
   flex:0,
   justifyContent:'flex-end',
-  alignItems:'flex-end'
+  alignItems:'flex-end',
+  position:'absolute',
+  bottom:10,
+  right:10,
 },
 saveButton:{
   backgroundColor:COLORS.secondary,
@@ -418,6 +529,17 @@ saveText:{
   color:COLORS.primary,
   textAlign:'center',
 
+},
+idCardImageContainer: {
+  flex:1,
+  alignItems: 'center',
+  justifyContent: 'center',
+  paddingVertical: 10, 
+},
+idCardImage: {
+  width: 100, // Set your desired width
+  height: 50, // Set your desired height
+  resizeMode: 'cover', // Adjust as needed
 },
 });
 
