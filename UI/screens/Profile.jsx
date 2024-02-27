@@ -17,6 +17,7 @@ import {generateClient} from 'aws-amplify/api';
 import {getUser} from '../src/graphql/queries';
 import { fetchUserAttributes, getCurrentUser } from 'aws-amplify/auth';
 import { launchImageLibrary } from 'react-native-image-picker';
+import { deleteUser, updateUser } from '../src/graphql/mutations';
 
 const Profile = ({route}) => {
   
@@ -27,17 +28,20 @@ const Profile = ({route}) => {
   const [editing, setEditing] = useState(false);
   const [selectedRole, setSelectedRole] = useState('');
   const [user, setUser] = useState({
+    id:'',
     username: '',
     role: '',
     phonenumber: '',
     joined: '',
     idcardimage: [],
+    _version:'',
   });
   const userByIdQuery = /* GraphQL */ `
   query UserById($userId: ID!) {
     userById(userId: $userId) {
       items {
         id
+        userId
         username
         phonenumber
         image
@@ -46,17 +50,21 @@ const Profile = ({route}) => {
         store {
           id
           name
+          address
+          createdAt
+          updatedAt
+          _version
+          _deleted
+          _lastChangedAt
+          __typename
         }
-        bills {
-          items {
-            id
-          }
-        }
-        purchaseOrders {
-          items {
-            id
-          }
-        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeUsersId
+        __typename
       }
     }
   }
@@ -71,30 +79,61 @@ const Profile = ({route}) => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Default to an ID from the route params; if not present, use the current user's ID
-        const effectiveUserId = route?.params?.userId || await getCurrentUserId();
-        console.log("************");
-        console.log("effectiveid",effectiveUserId);
-        console.log("id from routes",route?.params?.userId);
-        console.log("id from function",await getCurrentUserId());
-        console.log("************");
-        const response = await client.graphql({
-          query: getUser,
-          variables: { id: effectiveUserId },
-          authMode: 'apiKey',
-        });
-
-        if (response.data.getUser) {
-          setUser({
-            ...response.data.getUser,
-            joined: new Date(response.data.getUser.createdAt).toLocaleDateString(),
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
+      //   // Default to an ID from the route params; if not present, use the current user's ID
+      let id = route?.params?.userId;
+      console.log("id1",id);
+      //   const effectiveUserId = await getCurrentUserId();
+      //   console.log("************");
+      //   console.log("effectiveid",effectiveUserId);
+      //   console.log("id from routes",route?.params?.userId);
+      //   console.log("id from function",await getCurrentUserId());
+      //   console.log("************");
+      //   const { data } = await client.graphql({
+      //     query: userByIdQuery,
+      //     variables: { userId: id },
+      //     authMode: 'apiKey',
+      // });
+      //   if (response.data.getUser) {
+      //     setUser({
+      //       ...response.data.getUser,
+      //       joined: new Date(response.data.getUser.createdAt).toLocaleDateString(),
+      //     });
+      //   }
+      if(!id){
+        id = await fetchUserAttributes();
+        id=id.sub;
       }
-    };
-
+      //  id = await fetchUserAttributes();
+   
+      if(!id){
+        id = await getCurrentUser();
+        id=id.sub;
+      }
+      // id=id.sub;
+      console.log("id",id);
+      const { data } = await client.graphql({
+        query: userByIdQuery,
+        variables: { userId: id },
+        authMode: 'apiKey',
+    });
+    const userItems=data.userById.items;
+    console.log("dATA",userItems);
+    if (userItems && userItems.length > 0) {
+      const userData = userItems[0];
+      setUser({
+        id:userData.id,
+        username: userData.username,
+        role: userData.role,
+        phonenumber: userData.phonenumber,
+        joined: new Date(userData.createdAt).toLocaleDateString(), 
+        idcardimage: userData.idcardimage || [],
+        _version:userData._version,
+      });
+    }
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+  }
+};
     fetchUserData();
   }, [route?.params?.userId]);
 
@@ -138,9 +177,75 @@ const Profile = ({route}) => {
   };
 
   const toggleEdit = () => {
-    setEditing(!editing);
+    if (editing) {
+      // When switching from editing to viewing mode, attempt to update the user
+      handleUpdateUser();
+    } else {
+      // Simply allow editing
+      setEditing(true);
+    }
   };
-
+  
+  const handleUpdateUser = async () => {
+    // Prepare the userInput object with the current state
+    const userInput = {
+      id: user.id,
+      username: user.username,
+      phonenumber: user.phonenumber,
+      role: user.role,
+      _version:user._version,
+      // other fields you need to update
+    };
+    console.log("userInput",userInput);
+    // API call to update user with the userInput object
+    try {
+      const response = await client.graphql({
+        query: updateUser,
+        variables: { input: userInput },
+        authMode: 'apiKey',
+      });
+  
+      // handle success
+      console.log('User updated:', response.data.updateUser);
+      setUser((prevState) => ({
+        ...prevState,
+        ...response.data.updateUser,
+      }));
+      alert('Profile updated successfully!');
+      setEditing(false); // Turn off edit mode
+    } catch (error) {
+      // handle error
+      console.error('Error updating user:', error);
+      alert('Failed to update profile.');
+    }
+  };
+  
+  const handleDeleteUser = async () => {
+    console.log("delete received id : ",user.id)
+    const deleteUserInput = {
+      
+      id: user.id, // Assuming the user's ID is stored in the component's state
+      // include the _version if your API is configured with DynamoDB versioning
+      _version: user._version,
+    };
+  
+    try {
+      const response = await client.graphql({
+        query: deleteUser,
+        variables: { input: deleteUserInput },
+        authMode: 'apiKey',
+      });
+  
+      console.log('User deleted:', response.data.deleteUser);
+      alert('Profile deleted successfully!');
+      // Navigate back or to another screen after deletion
+      navigation.navigate('Staff'); // Adjust according to your navigation setup
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      alert('Failed to delete profile.');
+    }
+  };
+  
   const handleInputChange = (key, value) => {
     setUser((prevState) => ({
       ...prevState,
@@ -309,6 +414,10 @@ const Profile = ({route}) => {
               <TouchableOpacity style={styles.saveButton} onPress={toggleEdit}>
                   <Ionic size={18} color={COLORS.primary} name ={editing ? 'save-outline' : 'brush-outline'}/>
                   <Text style={styles.saveText}>{editing ? 'Save' : 'Edit'}</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteUser}>
+                  <Ionic size={18} color='white' name ={'trash-outline'}/>
+                  <Text style={styles.deleteText}>{'Delete'}</Text>
               </TouchableOpacity>
           </View>
       
@@ -500,16 +609,10 @@ saveContainer:{
 },
 saveWrapper:{
   flex:0,
-  justifyContent:'center',
-  alignItems:'center',
-  paddingBottom:10,
-  paddingTop:10,
-  flex:0,
-  justifyContent:'flex-end',
-  alignItems:'flex-end',
-  position:'absolute',
-  bottom:10,
-  right:10,
+paddingVertical:5,
+flexDirection:'row',
+justifyContent:'space-around',
+alignItems:'center'
 },
 saveButton:{
   backgroundColor:COLORS.secondary,
@@ -527,6 +630,26 @@ saveText:{
   top:2,
   marginLeft:5,
   color:COLORS.primary,
+  textAlign:'center',
+
+},
+
+deleteButton:{
+  backgroundColor:'red',
+  width:100,
+  paddingVertical:5,
+  borderRadius:30,
+  marginRight:10,
+  flexDirection:'row',
+  justifyContent:'center',
+  alignItems:'center',
+},
+deleteText:{
+  fontFamily:'Poppins-Regular',
+  fontSize:17,
+  top:2,
+  marginLeft:5,
+  color:'white',
   textAlign:'center',
 
 },

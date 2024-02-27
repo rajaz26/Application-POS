@@ -131,6 +131,36 @@ export const getUser = /* GraphQL */ `
     }
   }
 `;
+
+export const userByIdQuery = /* GraphQL */ `
+  query UserById($userId: ID!) {
+    userById(userId: $userId) {
+      items {
+        id
+        username
+        phonenumber
+        image
+        role
+        idcardimage
+        store {
+          id
+          name
+        }
+        bills {
+          items {
+            id
+          }
+        }
+        purchaseOrders {
+          items {
+            id
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const listUsers = /* GraphQL */ `
   query ListUsers(
     $filter: ModelUserFilterInput

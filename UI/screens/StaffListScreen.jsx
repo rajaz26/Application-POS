@@ -79,7 +79,7 @@ return (
                             </View>
                             <View>
                                 <View style={styles.billBottomText}>
-                                    <TouchableOpacity style={styles.billViewButton} onPress={() => navigation.navigate('Profile', {userId: user.id})}>
+                                    <TouchableOpacity style={styles.billViewButton} onPress={() => navigation.navigate('Profile', {userId: user.userId})}>
                                         <Ionic size={26} color={COLORS.primary} name='chevron-forward-outline'/>
                                     </TouchableOpacity>
                                 </View>
