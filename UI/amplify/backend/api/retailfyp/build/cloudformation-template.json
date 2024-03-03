@@ -112,7 +112,7 @@
                     ]
                 },
                 "Description": "apikey",
-                "Expires": 1740426618
+                "Expires": 1740507830
             }
         },
         "GraphQLAPINONEDS95A13CF0": {
@@ -548,6 +548,12 @@
                         "Fn::GetAtt": [
                             "Store",
                             "Outputs.transformerrootstackStoreQuerygetStorepostAuth0FunctionQuerygetStorepostAuth0FunctionAppSyncFunction72FEF36FFunctionId"
+                        ]
+                    },
+                    "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name": {
+                        "Fn::GetAtt": [
+                            "GraphQLAPINONEDS95A13CF0",
+                            "Name"
                         ]
                     },
                     "referencetotransformerrootstackStoreNestedStackStoreNestedStackResource158BCF63OutputstransformerrootstackStoreMutationcreateStoreinit0FunctionMutationcreateStoreinit0FunctionAppSyncFunction10A476FFFunctionId": {

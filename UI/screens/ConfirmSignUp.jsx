@@ -3,15 +3,16 @@ import { StyleSheet, Text, TouchableOpacity, Alert, View, TextInput, Keyboard, M
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionic from 'react-native-vector-icons/Ionicons';
 import { COLORS } from '../assets/theme/index.js';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller,reset } from 'react-hook-form';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { confirmSignUp, resendSignUpCode } from 'aws-amplify/auth';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
-
+import { generateClient } from 'aws-amplify/api';
 const ConfirmSignUp = () => {
   const navigation = useNavigation();
   const route = useRoute();
-  const { username } = route.params;
+  const client = generateClient();
+  const { username,storeName } = route.params;
   const [confirmationCode, setConfirmationCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [codeCheck, setCodeCheck] = useState(false);
@@ -25,12 +26,25 @@ const ConfirmSignUp = () => {
     setCodeCheck(true);
     Keyboard.dismiss();
     setLoading(true);
+    
     try {
       await confirmSignUp({ username, confirmationCode: code });
       console.log('User confirmed successfully');
+      
+      console.log(storeName);
+      const newStore = {
+        name: storeName,
+      };
+      const createStoreResponse = await client.graphql({
+        query: createStore,
+        variables: { input: newStore},
+        authMode: 'apiKey',
+      });
+      console.log('Store Created Successfully',createStoreResponse);
       setModalMessage('Account Created Successfully');
       setModalVisible(true);
       setConfirmationCode(null);
+      reset();
     } catch (error) {
       console.error('Error confirming sign up', error);
       setModalMessage('Incorrect Code Entered');

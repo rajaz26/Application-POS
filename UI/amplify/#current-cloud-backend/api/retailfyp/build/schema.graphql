@@ -302,6 +302,7 @@ type Query {
   listPurchaseOrders(filter: ModelPurchaseOrderFilterInput, limit: Int, nextToken: String): ModelPurchaseOrderConnection
   syncPurchaseOrders(filter: ModelPurchaseOrderFilterInput, limit: Int, nextToken: String, lastSync: AWSTimestamp): ModelPurchaseOrderConnection
   userById(userId: ID!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelUserFilterInput, limit: Int, nextToken: String): ModelUserConnection
+  productByBarcode(barcode: String!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelProductFilterInput, limit: Int, nextToken: String): ModelProductConnection
 }
 
 input ModelStoreConditionInput {

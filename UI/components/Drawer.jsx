@@ -17,18 +17,22 @@ import { COLORS } from '../assets/theme';
 import { useNavigation } from '@react-navigation/native'; 
 import { signOut } from 'aws-amplify/auth';
 
-
 const Drawer = props => {
   const navigation = useNavigation();
   const handleSignOut = async () => {
-    console.log('signed out')
+    console.log('Signing out...');
+
     try {
-      await signOut();
-      console.log('signed out')
+        props.navigation.closeDrawer();
+        setTimeout(async () => {
+            await signOut();
+            console.log('Signed out');
+        }, 300);
     } catch (error) {
-      console.log('error signing out: ', error);
+        console.log('Error signing out: ', error);
     }
-  }
+}
+
   return (
     <View style={{flex: 1}}>
       <DrawerContentScrollView

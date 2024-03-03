@@ -10,8 +10,6 @@ import { uploadData, getUrl } from 'aws-amplify/storage';
 import { createProduct } from '../src/graphql/mutations';
 import { generateClient } from 'aws-amplify/api';
 import { useForm, Controller } from 'react-hook-form';
-import {v4 as uuid} from 'uuid';
-
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 const { width, height } = Dimensions.get('window');
 const AddProduct = () => {
@@ -28,7 +26,7 @@ const client = generateClient();
     manufacturer:'',
     category:'',
     warehouseQuantity: '',
-  shelfQuantity:''
+    shelfQuantity:''
   });
 
 
@@ -36,6 +34,68 @@ const client = generateClient();
   const [selectedImage, setSelectedImage] = useState(null);
   useEffect(() => {
   }, [selectedImage]); 
+
+  const handleChoosePhoto = () => {
+    launchImageLibrary({}, (response) => {
+      console.log(response);
+      if (response.assets && response.assets.length > 0) {
+        const imageUri = response.assets[0].uri;
+        setSelectedImage(imageUri); 
+      } else {
+        console.log('No image selected or unexpected response structure');
+      }
+    });
+  };
+
+  const uploadImageToS3 = async (imageUri, fileName) => {
+    try {
+        const response = await fetch(imageUri);
+        const blob = await response.blob();
+        console.log("image ::: "+imageUri);
+        console.log("bloob: "+blob);
+
+
+        const uploadResult = await uploadData({
+            key: fileName,
+            data: blob,
+            options: {
+                contentType: 'image/jpeg', 
+                accessLevel :'guest',
+                
+            }
+        }).result;
+        console.log('Upload success:', uploadResult);
+        return uploadResult.key; 
+    } catch (error) {
+        console.error('Upload error:', error);
+        throw error;
+    }
+};
+
+const getImageUrlFromS3 = async (fileKey) => {
+  try {
+      console.log("file key is here: " + fileKey);
+      
+      // Fetch the signed URL for the uploaded file
+      const getUrlResult = await getUrl({
+          key: fileKey,
+          options: {
+              accessLevel: 'guest',
+            //   expiresIn: 9000909,
+              useAccelerateEndpoint: true, 
+          },
+      });
+      
+      console.log('***************************Signed Image :', getUrlResult);
+      console.log('***************************Signed Image URL:', getUrlResult.url);
+      return getUrlResult.url; // Return the signed URL
+  } catch (error) {
+      console.error('Error getting image URL:', error);
+      throw error;
+  }
+};
+  
+
 
   const handleLoading = () => {
     setLoading(true)
@@ -46,89 +106,52 @@ const client = generateClient();
     setSuccessMessage(false);
     reset(); 
   }
-
-  const handleChoosePhoto = () => {
-        launchImageLibrary({}, (response) => {
-            console.log(response);
-            if (response.assets && response.assets.length > 0) {
-                const imageUri = response.assets[0].uri;
-                setSelectedImage(imageUri);
-            } else {
-                console.log('No image selected or unexpected response structure');
-            }
-        });
-    };
-
-    const uploadImageToS3 = async (imageUri, fileName) => {
-        try {
-            const response = await fetch(imageUri);
-            const blob = await response.blob();
+  const onSubmit = async (data) => {
+    console.log('Product Input:', data);
+    setLoading(true);
+    Keyboard.dismiss();
+    console.log(setLoading)
     
-            const uploadResult = await uploadData({
-                key: fileName,
-                data: blob,
-                options: {
-                    // accessLevel: 'guest', // Upload as guest
-                    contentType: 'image/jpeg',
-                }
-            }).result;
-            console.log('Upload success:', uploadResult);
-            return uploadResult.key; // Return the uploaded file key
-        } catch (error) {
-            console.error('Upload error:', error);
-            throw error;
-        }
-    };
+    try {
+      const fileName = `product-image-${Date.now()}.jpeg`;
+      console.log('Here 1');
+      const fileKey = await uploadImageToS3(selectedImage, fileName);
+      console.log('Here 2');
+      console.log('File uploaded with key:', fileKey);
+  
+      const imageUrl = await getImageUrlFromS3(fileKey);
+      console.log('S3 Image URL:', imageUrl);
+    console.log("url bamzi : "+imageUrl.toString());
+    // const imageUrl='abc'
+      const productWithImage = {
+        ...data,
+        category: selected,
+        image: imageUrl,
+      };
+      console.log("categorryyyyy checkkkk"+productWithImage.category);
+      const newProduct = await client.graphql({
+        query: createProduct,
+        variables: { input: productWithImage },
+        authMode: 'apiKey',
+      });
+      setSuccessMessage(true);
+      console.log('New product created:', newProduct.data.createProduct);
+      setProductInput({
+        name: '',
+        barcode: '',
+        price: '',
+        manufacturer:'',
+        category:'',
+      });
+      reset(); 
+      setSelectedImage(null);
+    } catch (error) {
+    setLoading(false);
+      console.error('Error creating product:', error);
+      Alert.alert('Login Error', error.message);
+    }
     
-
-    const getImageUrlFromS3 = async (fileKey) => {
-        try {
-            const getUrlResult = await getUrl({
-                key: fileKey,
-            });
-
-            console.log('Signed Image URL:', getUrlResult.url);
-            return getUrlResult.url;
-        } catch (error) {
-            console.error('Error getting image URL:', error);
-            throw error;
-        }
-    };
-
-    const onSubmit = async (data) => {
-        setLoading(true);
-        Keyboard.dismiss();
-
-        try {
-            const fileName = `product-image-${Date.now()}.jpeg`;
-            const fileKey = await uploadImageToS3(selectedImage, fileName); // Get the uploaded file key
-            //const imageUrl = await getImageUrlFromS3(fileKey); // Remove this line
-        
-            const productWithImage = {
-                ...data,
-                category: selected,
-                image: [fileKey], // Use the file key instead of the URL
-            };
-
-            const newProduct = await client.graphql({
-                query: createProduct,
-                variables: { input: productWithImage },
-                authMode: 'apiKey',
-              });
-
-            setSuccessMessage(true);
-            console.log('New product created:', newProduct);
-
-            // Reset form and state after successful creation
-            reset();
-            setSelectedImage(null);
-        } catch (error) {
-            setLoading(false);
-            console.error('Error creating product:', error);
-            Alert.alert('Error', 'Failed to create product. Please try again later.');
-        }
-    };
-
+  };
 //   setLoading(false);
  const data = [
     {key:'1', value:'Mobiles'},

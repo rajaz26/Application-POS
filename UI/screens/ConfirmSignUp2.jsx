@@ -6,6 +6,7 @@ import { COLORS } from '../assets/theme/index.js';
 import { useForm, Controller } from 'react-hook-form';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { confirmSignUp, resendSignUpCode } from 'aws-amplify/auth';
+import { uploadData, getUrl } from 'aws-amplify/storage';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { generateClient } from 'aws-amplify/api';
 import { createUser } from '../src/graphql/mutations';
@@ -24,45 +25,99 @@ const ConfirmSignUp2 = () => {
 
   const { handleSubmit, control, formState: { errors }, reset } = useForm(); 
 
-  const onConfirmPressed = async (userName, code) => {
-    console.log(userName,code);
-    console.log(userData);
-    setCodeCheck(true);
-    Keyboard.dismiss();
-    setLoading(true);
- 
+  const uploadImageToS3 = async (imageUri, fileName) => {
     try {
-      await confirmSignUp({ username:userName, confirmationCode: code });
-      console.log('User confirmed successfully');
-      const { cognitoUserId, username, phonenumber, role, userEmail } = route.params.userData;
-       const userInput = {
-        input: {
-          userId:cognitoUserId,
-          username:username,
-          phonenumber:phonenumber,
-          role:role,
-        //   idcardimage:selectedIdCardImageUri,
-        }
-      };
- 
-      console.log("User model about to be created",userInput.input);
-      const createUserResponse = await client.graphql({
-        query: createUser,
-        variables: { input: userInput.input},
-        authMode: 'apiKey',
-       } );
-      console.log('User created:', createUserResponse);
-      setModalMessage('Account Created Successfully');
-      setModalVisible(true);
-      setConfirmationCode(null);
+        const response = await fetch(imageUri);
+        const blob = await response.blob();
+        console.log("image ::: "+imageUri);
+        console.log("bloob: "+blob);
+
+
+        const uploadResult = await uploadData({
+            key: fileName,
+            data: blob,
+            options: {
+                contentType: 'image/jpeg', 
+                accessLevel :'guest',
+                
+            }
+        }).result;
+        console.log('Upload success:', uploadResult);
+        return uploadResult.key; 
     } catch (error) {
-      console.error('Error confirming sign up', error);
-      setModalMessage('Incorrect Code Entered');
-      setModalVisible(true);
-    } finally {
-      setLoading(false);
+        console.error('Upload error:', error);
+        throw error;
     }
-  };
+};
+
+const getImageUrlFromS3 = async (fileKey) => {
+  try {
+      console.log("file key is here: " + fileKey);
+      
+      // Fetch the signed URL for the uploaded file
+      const getUrlResult = await getUrl({
+          key: fileKey,
+          options: {
+              accessLevel: 'guest',
+            //   expiresIn: 9000909,
+              useAccelerateEndpoint: true, 
+          },
+      });
+      
+      console.log('***************************Signed Image :', getUrlResult);
+      console.log('***************************Signed Image URL:', getUrlResult.url);
+      return getUrlResult.url; // Return the signed URL
+  } catch (error) {
+      console.error('Error getting image URL:', error);
+      throw error;
+  }
+};
+  
+
+const onConfirmPressed = async (userName, code) => {
+  setLoading(true);
+  Keyboard.dismiss();
+
+  try {
+    await confirmSignUp({ username: userName, confirmationCode: code });
+    console.log('User confirmed successfully');
+
+    // Step 1: Upload Images to S3 and Step 2: Get URLs from S3
+    const profileImageFileName = `profile-${Date.now()}`;
+    const idCardImageFileName = `idcard-${Date.now()}`;
+    const profileImageKey = await uploadImageToS3(userData.profileImageUri, profileImageFileName);
+    const idCardImageKey = await uploadImageToS3(userData.selectedIdCardImageUri, idCardImageFileName);
+    const profileImageUrl = await getImageUrlFromS3(profileImageKey);
+    const idCardImageUrl = await getImageUrlFromS3(idCardImageKey);
+
+    // Step 3: Create User in Database
+    const userInput = {
+      userId: userData.cognitoUserId,
+      username: userData.username,
+      phonenumber: userData.phonenumber,
+      role: userData.role,
+      image:profileImageUrl, // Include profile image URL
+      idcardimage: [idCardImageUrl],  // Include ID card image URL
+    };
+
+    console.log("Creating user with image URLs in DB", userInput);
+    const createUserResponse = await client.graphql({
+      query: createUser,
+      variables: { input: userInput },
+      authMode: 'apiKey',
+    });
+
+    console.log('User created:', createUserResponse);
+    setModalMessage('Account Created Successfully');
+    setModalVisible(true);
+  } catch (error) {
+    console.error('Error during sign up confirmation or user creation', error);
+    setModalMessage('An error occurred. Please try again.');
+    setModalVisible(true);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const onResendPress = async (username) => {
     try {

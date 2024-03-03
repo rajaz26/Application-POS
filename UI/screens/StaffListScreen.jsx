@@ -14,7 +14,7 @@ const StaffListScreen = () => {
       ];
     const [rank, setRank] = useState('Select Role');
     const [selected, setSelected] = React.useState('');
-    const [users, setUsers] = useState([]); // State to hold fetched users
+    const [users, setUsers] = useState([]);
 
     const client = generateClient();
 
@@ -22,17 +22,24 @@ const StaffListScreen = () => {
         try {
             const { data } = await client.graphql({
                 query: listUsers,
+                variables: {
+                filter: {
+                    _deleted: {
+                        ne: true
+                    }
+                }
+            },
                 authMode: 'apiKey',
             });
             console.log("Fetched users:", data.listUsers.items);
-            setUsers(data.listUsers.items); // Set the fetched users into state
+            setUsers(data.listUsers.items);
         } catch (error) {
             console.error('Error fetching users:', error);
         }
     };
 
     useEffect(() => {
-        fetchAllUsers(); // Fetch users when the component mounts
+        fetchAllUsers();
     }, []);
 
  const navigation=useNavigation();
@@ -209,7 +216,7 @@ const styles = StyleSheet.create({
         height:70,
         width:70,
         borderWidth:1,
-        borderColor:'red',
+        borderColor:COLORS.primary,
         padding:10,
         borderRadius: 50, 
         overflow: 'hidden',

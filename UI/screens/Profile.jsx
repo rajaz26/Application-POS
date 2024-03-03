@@ -6,11 +6,14 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
-  ScrollView
+  ScrollView,
+  Alert,
+  Keyboard
 } from 'react-native';
 import Ionic from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import {COLORS} from '../assets/theme/index';
+import { uploadData, getUrl,remove } from 'aws-amplify/storage';
 import { SelectList } from 'react-native-dropdown-select-list'
 import { useNavigation } from '@react-navigation/native'; 
 import {generateClient} from 'aws-amplify/api';
@@ -18,14 +21,19 @@ import {getUser} from '../src/graphql/queries';
 import { fetchUserAttributes, getCurrentUser } from 'aws-amplify/auth';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { deleteUser, updateUser } from '../src/graphql/mutations';
-
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
 const Profile = ({route}) => {
   
   const navigation = useNavigation();
   const client = generateClient();
+  const [loading, setLoading] = useState(false);
   const defaultIdCardImage = require('../assets/images/profile.png');
+  const [originalProfileImage, setOriginalProfileImage] = useState('');
+  const [originalIdCardImage, setOriginalIdCardImage] = useState('');
   const [password, setPassword] = useState('password123');
   const [editing, setEditing] = useState(false);
+  const [successMessage, setSuccessMessage] = useState(false);
+ const [isEditing, setIsEditing] = useState(false);
   const [selectedRole, setSelectedRole] = useState('');
   const [user, setUser] = useState({
     id:'',
@@ -35,7 +43,77 @@ const Profile = ({route}) => {
     joined: '',
     idcardimage: [],
     _version:'',
+    image:'',
   });
+  const handleUpdateUser = async () => {
+    setLoading(true);
+    Keyboard.dismiss();
+  
+    let newProfileImage = user.image;
+    let newIdCardImage = user.idcardimage[0];
+  
+    if (user.image !== originalProfileImage && originalProfileImage) {
+      try {
+        const fileNameToRemove = extractFileNameFromUrl(originalProfileImage);
+        if (fileNameToRemove) {
+          await handleImageRemove(originalProfileImage);
+        }
+        newProfileImage = await handleImageUpload(user.image);
+      } catch (error) {
+        console.error("Failed to update profile image:", error);
+      }
+    }
+if (user.idcardimage[0] !== originalIdCardImage && originalIdCardImage) {
+  try {
+    const fileNameToRemove = extractFileNameFromUrl(originalIdCardImage);
+    if (fileNameToRemove) {
+      await handleImageRemove(originalIdCardImage);
+    }
+    newIdCardImage = await handleImageUpload(user.idcardimage[0]);
+  } catch (error) {
+    console.error("Failed to update ID card image:", error);
+  }
+}
+
+    const userInput = {
+      id: user.id,
+      username: user.username,
+      phonenumber: user.phonenumber,
+      role: user.role,
+      image: newProfileImage,
+      idcardimage: [newIdCardImage],
+      _version: user._version,
+    };
+
+    try {
+      const response = await client.graphql({
+        query: updateUser,
+        variables: { input: userInput },
+        authMode: 'apiKey',
+      });
+      console.log('User updated:', response.data.updateUser);
+      setUser((prevState) => ({
+        ...prevState,
+        ...response.data.updateUser,
+        originalProfileImage: newProfileImage,
+        originalIdCardImage: newIdCardImage,
+      }));
+      Alert.alert('Profile updated successfully!');
+      setEditing(false);
+    } catch (error) {
+      console.error('Error updating user:', error);
+      Alert.alert('Failed to update profile.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleImageUpload = async (imageUri) => {
+    const fileName = `user-${Date.now()}.jpeg`; 
+    const fileKey = await uploadImageToS3(imageUri, fileName);
+    return await getImageUrlFromS3(fileKey);
+  };
+  
   const userByIdQuery = /* GraphQL */ `
   query UserById($userId: ID!) {
     userById(userId: $userId) {
@@ -79,7 +157,7 @@ const Profile = ({route}) => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-      //   // Default to an ID from the route params; if not present, use the current user's ID
+  
       let id = route?.params?.userId;
       console.log("id1",id);
       //   const effectiveUserId = await getCurrentUserId();
@@ -103,8 +181,6 @@ const Profile = ({route}) => {
         id = await fetchUserAttributes();
         id=id.sub;
       }
-      //  id = await fetchUserAttributes();
-   
       if(!id){
         id = await getCurrentUser();
         id=id.sub;
@@ -127,8 +203,11 @@ const Profile = ({route}) => {
         phonenumber: userData.phonenumber,
         joined: new Date(userData.createdAt).toLocaleDateString(), 
         idcardimage: userData.idcardimage || [],
+        image:userData.image,
         _version:userData._version,
       });
+      setOriginalProfileImage(userData.image);
+      setOriginalIdCardImage(userData.idcardimage);
     }
   } catch (error) {
     console.error('Error fetching user data:', error);
@@ -150,7 +229,6 @@ const Profile = ({route}) => {
       variables: { userId: id },
       authMode: 'apiKey',
   });
-  console.log(data);
   }
   useEffect(() => {
     if (selectedRole) {
@@ -158,74 +236,139 @@ const Profile = ({route}) => {
     }
   }, [selectedRole]);
 
-  const selectImage = () => {
+  const selectImage = (imageType) => {
     const options = {
       mediaType: 'photo',
       quality: 1,
     };
-
+  
     launchImageLibrary(options, (response) => {
       if (response.didCancel) {
         console.log('User cancelled image picker');
       } else if (response.error) {
         console.log('ImagePicker Error: ', response.error);
       } else {
-        const source = {uri: response.assets[0].uri};
-        handleInputChange('idcardimage', [source.uri]);
+        const source = { uri: response.assets[0].uri };
+        if (imageType === 'profile') {
+          handleInputChange('image', source.uri);
+        } else if (imageType === 'idcard') {
+          handleInputChange('idcardimage', [source.uri]);
+        }
       }
     });
   };
-
+  
   const toggleEdit = () => {
     if (editing) {
-      // When switching from editing to viewing mode, attempt to update the user
       handleUpdateUser();
     } else {
-      // Simply allow editing
       setEditing(true);
     }
   };
-  
-  const handleUpdateUser = async () => {
-    // Prepare the userInput object with the current state
-    const userInput = {
-      id: user.id,
-      username: user.username,
-      phonenumber: user.phonenumber,
-      role: user.role,
-      _version:user._version,
-      // other fields you need to update
-    };
-    console.log("userInput",userInput);
-    // API call to update user with the userInput object
-    try {
-      const response = await client.graphql({
-        query: updateUser,
-        variables: { input: userInput },
-        authMode: 'apiKey',
-      });
-  
-      // handle success
-      console.log('User updated:', response.data.updateUser);
-      setUser((prevState) => ({
-        ...prevState,
-        ...response.data.updateUser,
-      }));
-      alert('Profile updated successfully!');
-      setEditing(false); // Turn off edit mode
-    } catch (error) {
-      // handle error
-      console.error('Error updating user:', error);
-      alert('Failed to update profile.');
-    }
+  const showConfirmationDialog = () => {
+    Alert.alert(
+      "Confirm Deletion",
+      "Are you sure you want to delete this profile?", 
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Deletion cancelled"),
+          style: "cancel"
+        },
+        { text: "OK", onPress: () => handleDeleteUser() }
+      ],
+      { cancelable: false }
+    );
   };
+  
+  
+  const handleLoading = () => {
+    setLoading(true)
+    setSuccessMessage(true);
+  }
+  const handleSuccessButtonPress= () => {
+    setLoading(false)
+    setSuccessMessage(false);
+
+  }
+  const uploadImageToS3 = async (imageUri, fileName) => {
+    try {
+        const response = await fetch(imageUri);
+        const blob = await response.blob();
+        console.log("image ::: "+imageUri);
+        console.log("bloob: "+blob);
+
+
+        const uploadResult = await uploadData({
+            key: fileName,
+            data: blob,
+            options: {
+                contentType: 'image/jpeg', 
+                accessLevel :'guest',
+                
+            }
+        }).result;
+        console.log('Upload success:', uploadResult);
+        return uploadResult.key; 
+    } catch (error) {
+        console.error('Upload error:', error);
+        throw error;
+    }
+};
+
+const getImageUrlFromS3 = async (fileKey) => {
+  try {
+      console.log("file key is here: " + fileKey);
+      const getUrlResult = await getUrl({
+          key: fileKey,
+          options: {
+              accessLevel: 'guest',
+            //   expiresIn: 9000909,
+              useAccelerateEndpoint: true, 
+          },
+      });
+      
+      console.log('***************************Signed Image :', getUrlResult);
+      console.log('***************************Signed Image URL:', getUrlResult.url);
+      return getUrlResult.url; 
+  } catch (error) {
+      console.error('Error getting image URL:', error);
+      throw error;
+  }
+};
+const extractFileNameFromUrl = (url) => {
+  if (!url) return null;
+  const urlString = Array.isArray(url) ? url[0] : url;
+  console.log("urlString", urlString);
+  if (urlString) {
+    const regex = /[\w-]+\.jpeg/;
+    const matches = urlString.match(regex);
+    return matches ? matches[0] : null;
+  } else {
+    return null;
+  }
+};
+
+
+
+  const handleImageRemove = async (imageUrl) => {
+    const fileName = extractFileNameFromUrl(imageUrl);
+    await remove({ key: fileName });
+  };
+  async function uploadImageAndGetUrl(imageUri) {
+    const fileName = `user-${Date.now()}`;
+    const fileKey = await uploadImageToS3(imageUri, fileName);
+    return await getImageUrlFromS3(fileKey);
+  }
+  async function removeImageFromStorage(imageUrl) {
+    const fileName = imageUrl.split('/').pop();
+    await remove({ key: fileName });
+  }
   
   const handleDeleteUser = async () => {
     console.log("delete received id : ",user.id)
     const deleteUserInput = {
-      
-      id: user.id, // Assuming the user's ID is stored in the component's state
-      // include the _version if your API is configured with DynamoDB versioning
+      id: user.id,
       _version: user._version,
     };
   
@@ -235,15 +378,25 @@ const Profile = ({route}) => {
         variables: { input: deleteUserInput },
         authMode: 'apiKey',
       });
-  
+
+      console.log("deleting images");
+      if (originalProfileImage) {
+        const profileImageFileName = extractFileNameFromUrl(originalProfileImage);
+        profileImageFileName && await remove({ key: profileImageFileName });
+      }
+      console.log("deleting id card images");
+      if (originalIdCardImage) {
+        const idCardImageFileName = extractFileNameFromUrl(originalIdCardImage);
+        idCardImageFileName && await remove({ key: idCardImageFileName });
+      }
       console.log('User deleted:', response.data.deleteUser);
-      alert('Profile deleted successfully!');
-      // Navigate back or to another screen after deletion
-      navigation.navigate('Staff'); // Adjust according to your navigation setup
+      Alert.alert('Profile deleted successfully!');
+      navigation.navigate('Staff'); 
     } catch (error) {
       console.error('Error deleting user:', error);
-      alert('Failed to delete profile.');
+      Alert.alert('Failed to delete profile.');
     }
+    
   };
   
   const handleInputChange = (key, value) => {
@@ -251,11 +404,34 @@ const Profile = ({route}) => {
       ...prevState,
       [key]: value,
     }));
+    
   };
 
   return (
     <View style={styles.container}>
       {/* Upper View */}
+      {loading && (
+      <View style={styles.loadingContainer}>
+      <AnimatedCircularProgress
+  size={120}
+  width={15}
+  fill={100}
+  prefill={0} 
+  duration={2000} 
+  delay={0}
+  tintColor={COLORS.secondary}
+  onAnimationComplete={() => console.log('onAnimationComplete')}
+  backgroundColor="#3d5875" />
+    <View style={styles.successMessageContainer}>
+      <Text style={styles.loadingText}>updating Product</Text>
+      <TouchableOpacity
+        style={styles.successButton}
+        onPress={handleSuccessButtonPress}>
+        <Text style={styles.buttonText}>Go Back</Text>
+      </TouchableOpacity>
+    </View>
+      </View>
+     )}
       <View style={styles.upperView}>
         {/* <Image
           source={require('../assets/images/profile.png')}
@@ -264,16 +440,22 @@ const Profile = ({route}) => {
         <TouchableOpacity style={styles.arrowBackIcon}  onPress={()=> navigation.goBack()}>
             <Ionic size={24} color='white' name ='chevron-back-outline'/>
         </TouchableOpacity>
+        <View style={styles.headerData}>
         <Text style={styles.name}>{user.username}</Text>
         <Text style={styles.role}>{user.role}</Text>
+        </View>
       </View>
 
       {/* Lower View */}
       <View style={styles.lowerView}>
-      <Image
+      {/* <Image
           source={require('../assets/images/profile.png')}
           style={styles.profileImage}
-        />
+        /> */}
+        <TouchableOpacity onPress={() => selectImage('profile')} style={styles.profileImageHeader} >
+  <Image source={user.image ? { uri: user.image } : require("../assets/images/person.jpg")} style={styles.profileImage} />
+  {editing && <Ionic style={styles.iconStyle} name='camera' />}
+</TouchableOpacity>
         <ScrollView style={styles.scrolledView}>
  
         <View style={styles.formInputContainer}>
@@ -288,7 +470,7 @@ const Profile = ({route}) => {
                  onChangeText={(text) => handleInputChange('username', text)}
                  style={styles.formInput}
                  placeholder="Username"
-                 editable={editing} // Make sure this is correctly controlled based on your state
+                 editable={editing}
                />
                
                 ) : (
@@ -307,10 +489,10 @@ const Profile = ({route}) => {
                     {/* <TextInput style={styles.formInput}  placeholder='Product ID'  placeholderTextColor='rgba(170, 170, 170,4)'/> */}
                     {editing ? (
   <SelectList
-  setSelected={setSelectedRole} // Use setSelectedRole to directly update the role in your state.
+  setSelected={setSelectedRole} 
   data={roles}
   search={false}
-  save="value" // This will save the 'value' field of your selected item to the state.
+  save="value" 
   placeholder={user.role || "Select Role"}
   boxStyles={{ borderWidth: 0, left: -16 }}
   arrowicon={<Ionic style={{ position: 'absolute', right: -15, top: 14 }} size={26} color='rgba(180, 180, 180,4)' name='chevron-down-outline'/>}
@@ -338,7 +520,7 @@ const Profile = ({route}) => {
                  onChangeText={(text) => handleInputChange('phonenumber', text)}
                  style={styles.formInput}
                  placeholder="Phonenumber"
-                 editable={editing} // Make sure this is correctly controlled based on your state
+                 editable={editing}
                />
                
                 ) : (
@@ -360,7 +542,7 @@ const Profile = ({route}) => {
                  onChangeText={(text) => handleInputChange('joined', text)}
                  style={styles.formInput}
                  placeholder="Joined"
-                 editable={editing} // Make sure this is correctly controlled based on your state
+                 editable={editing} 
                />
                
                 ) : (
@@ -396,13 +578,17 @@ const Profile = ({route}) => {
     <View style={styles.imageContainer}>
       <FontAwesome name="address-card" size={28} color={COLORS.primary} />
     </View>
-    <TouchableOpacity onPress={editing ? selectImage : undefined} style={styles.idCardImageContainer}>
-      {user.idcardimage && user.idcardimage.length > 0 ? (
-        <Image source={{ uri: user.idcardimage[0] }} style={styles.idCardImage} />
-      ) : (
-        <Image source={defaultIdCardImage} style={styles.idCardImage} />
-      )}
-    </TouchableOpacity>
+    <TouchableOpacity onPress={() => selectImage('idcard')} style={styles.idCardImageContainer}>
+    {user.idcardimage && user.idcardimage.length > 0 ? (
+    <Image source={{ uri: user.idcardimage[0] }} style={styles.idCardImage} />
+  ) : (
+  
+    <View style={styles.idCardImagePlaceholder}>
+      <Text style={styles.idCardImagePlaceholderText}>ID Card Image</Text>
+    </View>
+  )}
+  {editing && <Ionic style={styles.iconStyle} name='camera' />}
+</TouchableOpacity>
   </View>
 </View>
 
@@ -415,7 +601,7 @@ const Profile = ({route}) => {
                   <Ionic size={18} color={COLORS.primary} name ={editing ? 'save-outline' : 'brush-outline'}/>
                   <Text style={styles.saveText}>{editing ? 'Save' : 'Edit'}</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.deleteButton} onPress={handleDeleteUser}>
+              <TouchableOpacity style={styles.deleteButton} onPress={showConfirmationDialog}>
                   <Ionic size={18} color='white' name ={'trash-outline'}/>
                   <Text style={styles.deleteText}>{'Delete'}</Text>
               </TouchableOpacity>
@@ -446,6 +632,12 @@ const styles = StyleSheet.create({
     top:50,
     left:8
 },
+headerData:{
+  // borderWidth:2,
+  bottom:20,
+  justifyContent:'center',
+  alignItems:'center'
+},
   lowerView: {
     flex: 2.5,
     backgroundColor: 'white',
@@ -455,23 +647,37 @@ const styles = StyleSheet.create({
   profileImage: {
     zIndex:1,
     position:'absolute',
-    left:130,
+    left:115,
     top:-70,
     width: 125,
     height: 125,
     borderRadius: 60,
     marginBottom: 10,
+    borderColor:'white',
+    borderWidth:1,
+  },
+  profileImageHeader: {
+    zIndex:1,
+    position:'absolute',
+    // left:115,
+    // top:-70,
+    width: 125,
+    height: 125,
+    borderRadius: 60,
+    marginBottom: 10,
+    borderColor:'white',
+    borderWidth:1,
   },
   name: {
     fontSize: 25,
     color: 'white',
     fontFamily:'Poppins-Regular',
-    bottom:20,
+    // bottom:20,
   },
   role: {
     fontSize: 14,
     color: COLORS.secondary,
-    bottom:24,
+    // bottom:24,
     
   },
   scrolledView:{
@@ -596,6 +802,8 @@ imageContainer:{
     justifyContent:'center',
     alignItems:'center',
     // paddingVertical:10,
+    // bottom:55,
+    // right:20,
 },
 
 inputContainer:{
@@ -663,6 +871,38 @@ idCardImage: {
   width: 100, // Set your desired width
   height: 50, // Set your desired height
   resizeMode: 'cover', // Adjust as needed
+},
+loadingContainer: {
+  ...StyleSheet.absoluteFillObject,
+  position:'absolute',
+  zIndex:999999,
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+loadingText:{
+  color:'white',
+  fontSize:24,
+  fontFamily:'Poppins-Regular',
+  top:15,
+},
+successMessageContainer:{
+  flex:0,
+ alignItems:'center'
+},
+successButton: {
+  backgroundColor: COLORS.secondary,
+  width: 150,
+  paddingVertical: 8,
+  borderRadius: 30,
+  top:20,
+},
+buttonText: {
+  fontFamily: 'Poppins-SemiBold',
+  fontSize: 18,
+  color: COLORS.primary,
+  textAlign: 'center',
+  top:1,
 },
 });
 

@@ -6,24 +6,67 @@ import { COLORS } from '../assets/theme/index.js';
 import { Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native'; 
 import RNFetchBlob from 'rn-fetch-blob';
+import { BluetoothEscposPrinter } from 'react-native-bluetooth-escpos-printer';
 const { width, height } = Dimensions.get('window');
 
 
-const ConfirmBill = () => {
+const ConfirmBill = ({route}) => {
     const navigation=useNavigation();
-    const convertImageToBase64 = () => {
-        const imageUrl = 'https://upload.wikimedia.org/wikipedia/en/6/61/Tang_drinkmix_logo.png';
-        RNFetchBlob.fetch('GET', imageUrl, {})
-          .then((res) => {
-            // The image is now in base64 format
-            let base64Str = res.base64();
-            console.log(base64Str);
-            // You can handle the base64 string here - display it, store it, or send it to a server
-          })
-          .catch((error) => {
-            console.error(error);
+    const { scannedProducts, totalBillAmount } = route.params;
+    const handleAddProduct = () => {
+        navigation.navigate('Scan', { scannedProducts: scannedProducts });
+    };
+    const printReceipt = async () => {
+        try {
+          // Initialize Printer
+          await BluetoothEscposPrinter.printerInit();
+          await BluetoothEscposPrinter.printerLeftSpace(0);
+          await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.CENTER);
+          await BluetoothEscposPrinter.setBlob(0);
+          await BluetoothEscposPrinter.printText("Khattak Store\n", {
+            encoding: 'GBK',
+            codepage: 0,
+            widthtimes: 3,
+            heigthtimes: 3,
+            fonttype: 1
           });
+          await BluetoothEscposPrinter.printText("Yousuf Colony\n", {
+            encoding: 'GBK',
+            codepage: 0,
+            widthtimes: 1,
+            heigthtimes: 1,
+            fonttype: 1
+          });
+          await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.LEFT);
+          await BluetoothEscposPrinter.printText("Cashier: cashier01\n", {});
+          await BluetoothEscposPrinter.printText("--------------------------------\n", {});
+    
+          scannedProducts.forEach(async (item) => {
+            let itemLine = `${item.name} x ${item.quantity} = ${item.amount.toFixed(2)}\n`;
+            await BluetoothEscposPrinter.printText(itemLine, {});
+          });
+    
+          await BluetoothEscposPrinter.printText("--------------------------------\n", {});
+          await BluetoothEscposPrinter.printText(`Total: ${totalBillAmount.toFixed(2)}\n`, {});
+          await BluetoothEscposPrinter.printText("Thank you for your purchase!\n\n\n", {});
+        } catch (error) {
+          console.error("Failed to print receipt:", error);
+        }
       };
+    
+    // const convertImageToBase64 = () => {
+    //     const imageUrl = 'https://upload.wikimedia.org/wikipedia/en/6/61/Tang_drinkmix_logo.png';
+    //     RNFetchBlob.fetch('GET', imageUrl, {})
+    //       .then((res) => {
+    //         // The image is now in base64 format
+    //         let base64Str = res.base64();
+    //         console.log(base64Str);
+    //         // You can handle the base64 string here - display it, store it, or send it to a server
+    //       })
+    //       .catch((error) => {
+    //         console.error(error);
+    //       });
+    //   };
   return (
     
     <SafeAreaView style={styles.headContainer}>
@@ -36,134 +79,42 @@ const ConfirmBill = () => {
             <Ionic style={styles.logo}  size={90} color={'black'} name ='logo-behance'/>
         </View>
         <View style={styles.mainLogo}>
-            <Text style={styles.totalBill}>PKR 45,900.00</Text>
-        </View>
+    <Text style={styles.totalBill}>PKR {totalBillAmount.toFixed(2)}</Text>
+</View>
+
         <View style={styles.columnHeadingContainer}>
             <View  style={styles.columnHeading}>
                 <Text style={styles.headingText1}>ITEM</Text>
                 <Text style={styles.headingText}>QTY</Text>
                 <Text style={styles.headingText}>PRICE</Text>
+                <Text style={styles.headingText}>TOTAL</Text>
                 <Text  style={styles.headingText}>DEL</Text>
             </View>
         </View>
         
 
         <ScrollView  style={styles.scrollView}>
-            <View  style={styles.billsContainer}>
+        {scannedProducts.map((product, index) => (
+            <View  key={product.id || index} style={styles.billsContainer}>
                 <View style={styles.billValuesContainer}>
                     <View style={styles.itemText}>
                         <Text style={styles.billValues1}>
-                            Knorr Maggi
+                            {product.name}
                         </Text>
                     </View>
                     <View style={styles.valueQty}>
                         <Text style={styles.billValues}>
-                            1
+                            {product.quantity}
                         </Text>                  
                     </View>
                     <View style={styles.valuePrice}>
                         <Text style={styles.billValues}>
-                            110
+                            {product.price}
                         </Text>
-                    </View>    
-                    <TouchableOpacity style={styles.deleteBill}>
-                        <Ionic style={styles.trash}  size={21.5} color={'red'} name ='trash'/>
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.billValuesContainer1}>
-                    <View style={styles.itemText}>
-                        <Text style={styles.billValues1}>
-                            Tang 100mL
-                        </Text>
-                    </View>
-                    <View style={styles.valueQty}>
-                        <Text style={styles.billValues}>
-                            1
-                        </Text>                  
-                    </View>
+                    </View>  
                     <View style={styles.valuePrice}>
                         <Text style={styles.billValues}>
-                            110
-                        </Text>
-                    </View>    
-                    <TouchableOpacity style={styles.deleteBill}>
-                        <Ionic style={styles.trash}  size={21.5} color={'red'} name ='trash'/>
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.billValuesContainer1}>
-                    <View style={styles.itemText}>
-                        <Text style={styles.billValues1}>
-                            Daal Moong 1kg
-                        </Text>
-                    </View>
-                    <View style={styles.valueQty}>
-                        <Text style={styles.billValues}>
-                            1
-                        </Text>                  
-                    </View>
-                    <View style={styles.valuePrice}>
-                        <Text style={styles.billValues}>
-                            110
-                        </Text>
-                    </View>    
-                    <TouchableOpacity style={styles.deleteBill}>
-                        <Ionic style={styles.trash}  size={21.5} color={'red'} name ='trash'/>
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.billValuesContainer1}>
-                    <View style={styles.itemText}>
-                        <Text style={styles.billValues1}>
-                            Prince busicuit
-                        </Text>
-                    </View>
-                    <View style={styles.valueQty}>
-                        <Text style={styles.billValues}>
-                            1
-                        </Text>                  
-                    </View>
-                    <View style={styles.valuePrice}>
-                        <Text style={styles.billValues}>
-                            110
-                        </Text>
-                    </View>    
-                    <TouchableOpacity style={styles.deleteBill}>
-                        <Ionic style={styles.trash}  size={21.5} color={'red'} name ='trash'/>
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.billValuesContainer1}>
-                    <View style={styles.itemText}>
-                        <Text style={styles.billValues1}>
-                            Cherry Black Polish
-                        </Text>
-                    </View>
-                    <View style={styles.valueQty}>
-                        <Text style={styles.billValues}>
-                            1
-                        </Text>                  
-                    </View>
-                    <View style={styles.valuePrice}>
-                        <Text style={styles.billValues}>
-                            110
-                        </Text>
-                    </View>    
-                    <TouchableOpacity style={styles.deleteBill}>
-                        <Ionic style={styles.trash}  size={21.5} color={'red'} name ='trash'/>
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.billValuesContainer1}>
-                    <View style={styles.itemText}>
-                        <Text style={styles.billValues1}>
-                            Colgate MaxFresh
-                        </Text>
-                    </View>
-                    <View style={styles.valueQty}>
-                        <Text style={styles.billValues}>
-                            1
-                        </Text>                  
-                    </View>
-                    <View style={styles.valuePrice}>
-                        <Text style={styles.billValues}>
-                            201
+                            {product.amount}
                         </Text>
                     </View>    
                     <TouchableOpacity style={styles.deleteBill}>
@@ -171,17 +122,18 @@ const ConfirmBill = () => {
                     </TouchableOpacity>
                 </View>
             </View>
+             ))}
         </ScrollView>
         <View style={styles.footerContainer}>
             <View style={styles.footerWrapper}>
-                <TouchableOpacity style={styles.confirmButton}>
+                <TouchableOpacity style={styles.confirmButton} onPress={printReceipt}>
                     <Text style={styles.confirmText}>Confirm Bill</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.confirmButton} onPress={convertImageToBase64}>
+                {/* <TouchableOpacity style={styles.confirmButton} onPress={convertImageToBase64}>
             <Text style={styles.confirmText}>Convert Image to Base64</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
-                <TouchableOpacity style={styles.addButton}>
+                <TouchableOpacity style={styles.addButton} onPress={handleAddProduct}>
                     <Text style={styles.addText}>Add Product</Text>
                 </TouchableOpacity>
             </View>
@@ -243,16 +195,18 @@ const styles = StyleSheet.create({
         justifyContent:'space-around',
         alignItems:'center',
         color:'white',
+        paddingRight:2,
     },
     headingText1:{
         color:'white',
         fontSize:15,
-        flex:0.5,
+        flex:0.8,
         left:5,
     },
     headingText:{
         color:'white',
         fontSize:15,
+
     },
     billValuesContainer:{
         flex:1,
@@ -265,7 +219,7 @@ const styles = StyleSheet.create({
         alignItems:'center',
         color:'white',
         paddingHorizontal:12,
-        borderColor:'rgba(180, 180, 180,4)'
+        borderColor:'rgba(180, 180, 180,4)',
     },
     billValuesContainer1:{
         flex:0,
@@ -285,23 +239,23 @@ const styles = StyleSheet.create({
         fontSize:15,
         right:3,
         color:'gray',
-        
+
     },
     billValues1:{
         fontSize:16,
-        color:'gray'
+        color:'gray',
     },
     valueQty:{
-        flex:0.2,flexDirection:'row',justifyContent:'center',alignItems:'center',        
+        flex:0.2,flexDirection:'row',justifyContent:'center',alignItems:'center',right:3, 
+  
     },
     valuePrice:{
-        flex:0.8,flexDirection:'row',justifyContent:'center',alignItems:'center',
+        flex:0.5,flexDirection:'row',justifyContent:'center',alignItems:'center',
     },
   
     itemText:{
-        flex:1.4,
-        paddingLeft:4,
-        
+        flex:1.5,
+        paddingLeft:4,        
     },
     footerWrapper:{
         flex:0,

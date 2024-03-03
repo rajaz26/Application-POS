@@ -19,6 +19,7 @@ const HomeScreen2 = () => {
     navigation.openDrawer();
   };
   
+  
   // const handleSignOut = async() => {
   //   console.log('SignOut funtion');
   //   const authUser = await getCurrentUser({ bypassCache: true });
@@ -67,7 +68,7 @@ const HomeScreen2 = () => {
                     <Text style={styles.iconText}>History</Text>
                   </TouchableOpacity>
                   {userRole !== 'PURCHASER' ? (
-                  <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('Profile')}>
+                  <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('Bluetooth')}>
                   {/* //<TouchableOpacity style={styles.iconContainer} onPress={createNewProduct}> */}
                     <Ionic name="settings" size={25} color={COLORS.primary} style={styles.homeIcon} />
                     <Text style={styles.iconText}>Settings</Text>
@@ -96,19 +97,19 @@ const HomeScreen2 = () => {
             ) : (
               <TouchableOpacity
                 style={styles.iconContainer}
-                onPress={() => navigation.navigate('Bluetooth2')}
+                onPress={() => navigation.navigate('Bluetooth')}
               >
                 <Ionic name="stats-chart" size={28} color={COLORS.primary} />
                 <Text style={styles.iconText}>Stats</Text>
               </TouchableOpacity>
             )}
             
-                  {/* <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('ProductsList', {
+                  <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('ProductsList', {
                     productsObj: productsObj,
                   })
-                }> */}
-                 <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('Bluetooth')
                 }>
+                 {/* <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('Bluetooth')
+                }> */}
                     <Ionic name="list" size={28} color={COLORS.primary} style={styles.homeIcon} />
                     <Text style={styles.iconText}>Products</Text>
                   </TouchableOpacity>

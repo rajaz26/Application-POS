@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect,useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,13 +9,13 @@ import {
   Image,
   Keyboard,
   ScrollView,
-} from 'react-native';
+} from 'react-native'; 
 import {listProducts} from '../src/graphql/queries'
 import { generateClient } from 'aws-amplify/api';
 import ImageResizeMode from 'react-native/Libraries/Image/ImageResizeMode'
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {COLORS} from '../assets/theme';
-import {useNavigation} from '@react-navigation/native';
+import {useNavigation,useFocusEffect } from '@react-navigation/native';
 import { connect } from 'react-redux';
 const ProductsScreen = ({route}) => {
   const client = generateClient();
@@ -24,28 +24,27 @@ const ProductsScreen = ({route}) => {
     try {
       const { data } = await client.graphql({
         query: listProducts,
-        expiresIn: 9000909,
-        authMode: 'apiKey',
+        variables: {
+          filter: {
+              _deleted: {
+                  ne: true
+                        }
+                  }
+                },
+          authMode:'apiKey'
       });
-      console.log("data is : ",data.listProducts.items)
       const { items } = data.listProducts;
-      items.forEach(item => {
-        // Split the image string by commas to get an array of URLs
-        const imageUrls = item.image.split(',').map(url => url.trim());
-        
-        // Loop through each URL in the array and log it
-        imageUrls.forEach(url => {
-          console.log("imagessssssssssssssss",url);
-        });
-      });
       setProductsObj(items);
     } catch (error) {
       console.error('Error fetching products:', error);
     }
   };
-  useEffect(() => {
-    fetchAllProducts();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      fetchAllProducts();
+      // The empty array as a dependency means this effect runs on mount and focus
+    }, [products])
+  );
   useEffect(() => {
     console.log("skrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
     productsObj.forEach(product => {
@@ -53,6 +52,7 @@ const ProductsScreen = ({route}) => {
       console.log("\n"); // Add an empty line between each product
     });
     console.log("skrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
+    
   },[productsObj]); // Log productsObj whenever it changes
 
   const navigation = useNavigation();
@@ -78,8 +78,8 @@ const ProductsScreen = ({route}) => {
     setSearchQuery(query);
     const filtered = products.filter(
       product =>
-        product.name.toLowerCase().includes(query.toLowerCase()) ||
-        product.brand.toLowerCase().includes(query.toLowerCase()),
+        product.name?.toLowerCase().includes(query.toLowerCase()) ||
+        product.brand?.toLowerCase().includes(query.toLowerCase()),
     );
     setFilteredProducts(filtered);
 
@@ -104,6 +104,7 @@ const ProductsScreen = ({route}) => {
   };
 
   const renderProductCard = ({item}) => (
+ 
     <TouchableOpacity
       style={styles.productCard}
       onPress={() =>
@@ -114,9 +115,7 @@ const ProductsScreen = ({route}) => {
       <View style={styles.productImageContainer}>
         {/* Image */}
         <Image
-        // source={{ uri: item.images && item.images.length > 0 ? item.images[0] : 'https://upload.wikimedia.org/wikipedia/en/6/61/Tang_drinkmix_logo.png' }}
-        source={{ uri: item.imageKey ? `https://fypimages81950-dev.s3.ap-south-1.amazonaws.com/public/${item.imageKey}` : 'https://upload.wikimedia.org/wikipedia/en/6/61/Tang_drinkmix_logo.png' }}
-        //
+        source={{ uri:item.image}}
         style={styles.productImage}
         onError={(error) => console.log("Image loading error:", error)}
       />

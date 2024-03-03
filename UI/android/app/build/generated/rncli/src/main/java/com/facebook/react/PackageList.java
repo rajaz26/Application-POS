@@ -39,10 +39,16 @@ import com.swmansion.reanimated.ReanimatedPackage;
 import com.th3rdwave.safeareacontext.SafeAreaContextPackage;
 // react-native-screens
 import com.swmansion.rnscreens.RNScreensPackage;
+// react-native-sound
+import com.zmxv.RNSound.RNSoundPackage;
+// react-native-sound-player
+import com.johnsonsu.rnsoundplayer.RNSoundPlayerPackage;
 // react-native-svg
 import com.horcrux.svg.SvgPackage;
 // react-native-torch
 import com.cubicphuse.RCTTorch.RCTTorchPackage;
+// react-native-track-player
+import com.doublesymmetry.trackplayer.TrackPlayer;
 // react-native-vector-icons
 import com.oblador.vectoricons.VectorIconsPackage;
 // react-native-view-shot
@@ -112,8 +118,11 @@ public class PackageList {
       new ReanimatedPackage(),
       new SafeAreaContextPackage(),
       new RNScreensPackage(),
+      new RNSoundPackage(),
+      new RNSoundPlayerPackage(),
       new SvgPackage(),
       new RCTTorchPackage(),
+      new TrackPlayer(),
       new VectorIconsPackage(),
       new RNViewShotPackage(),
       new CameraPackage(),

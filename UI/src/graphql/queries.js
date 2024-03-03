@@ -131,36 +131,6 @@ export const getUser = /* GraphQL */ `
     }
   }
 `;
-
-export const userByIdQuery = /* GraphQL */ `
-  query UserById($userId: ID!) {
-    userById(userId: $userId) {
-      items {
-        id
-        username
-        phonenumber
-        image
-        role
-        idcardimage
-        store {
-          id
-          name
-        }
-        bills {
-          items {
-            id
-          }
-        }
-        purchaseOrders {
-          items {
-            id
-          }
-        }
-      }
-    }
-  }
-`;
-
 export const listUsers = /* GraphQL */ `
   query ListUsers(
     $filter: ModelUserFilterInput
@@ -692,6 +662,47 @@ export const userById = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeUsersId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const productByBarcode = /* GraphQL */ `
+  query ProductByBarcode(
+    $barcode: String!
+    $id: ModelIDKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelProductFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    productByBarcode(
+      barcode: $barcode
+      id: $id
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        name
+        barcode
+        image
+        price
+        manufacturer
+        category
+        warehouseQuantity
+        shelfQuantity
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeProductsId
         __typename
       }
       nextToken

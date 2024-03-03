@@ -247,6 +247,7 @@ export const deleteUser = /* GraphQL */ `
     }
   }
 `;
+
 export const createProduct = /* GraphQL */ `
   mutation CreateProduct(
     $input: CreateProductInput!

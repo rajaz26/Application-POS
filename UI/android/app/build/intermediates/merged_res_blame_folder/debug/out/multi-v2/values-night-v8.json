@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.uifyp.app-mergeDebugResources-38:/values-night-v8/values-night-v8.xml",
+            "outputFile": "com.uifyp.app-mergeDebugResources-48:/values-night-v8/values-night-v8.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\PMLS\\.gradle\\caches\\transforms-3\\b14585e0ae3314e7a64bac79062dab1c\\transformed\\appcompat-1.4.1\\res\\values-night-v8\\values-night-v8.xml",
+                    "source": "C:\\Users\\PMLS\\.gradle\\caches\\transforms-3\\8a4582fcf4777cd70591117a23078262\\transformed\\appcompat-1.5.0\\res\\values-night-v8\\values-night-v8.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9",
                         "startColumns": "4,4,4,4,4,4,4,4",

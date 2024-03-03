@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   StyleSheet,
   Text,
@@ -8,21 +8,29 @@ import {
   TextInput,
   Button,
 } from 'react-native';
+// import beep from '../android/app/src/main/res/raw/beep.mp3';
+// import SoundPlayer from 'react-native-sound-player'
+// import TrackPlayer from 'react-native-track-player';
 import { useCameraDevices, Camera } from 'react-native-vision-camera';
 import { useScanBarcodes, BarcodeFormat } from 'vision-camera-code-scanner';
 import { COLORS } from '../assets/theme';
 import { useNavigation } from '@react-navigation/native'; 
 import Ionic from 'react-native-vector-icons/Ionicons';
-
-export default function Scan() {
+import {generateClient} from 'aws-amplify/api';
+import Sound from 'react-native-sound';
+export default function Scan({route}) {
+  Sound.setCategory('Playback');
   const [hasPermission, setHasPermission] = React.useState(false);
-  const [isScanning, setIsScanning] = React.useState(false);
+  const [isScanning, setIsScanning] = React.useState(true);
   const [scannedBarcodes, setScannedBarcodes] = React.useState([]);
+  const [totalBillAmount, setTotalBillAmount] = useState(0);
+  const [scannedProducts, setScannedProducts] = useState([]);
   const [manualEntryModalVisible, setManualEntryModalVisible] = React.useState(false);
   const [manualBarcode, setManualBarcode] = React.useState('');
   const [billModalVisible, setBillModalVisible] = React.useState(false);
   const devices = useCameraDevices();
   const device = devices.back;
+  const client = generateClient();
   const navigation = useNavigation();
   const [frameProcessor, barcodes] = useScanBarcodes(
     [
@@ -37,6 +45,24 @@ export default function Scan() {
       checkInverted: true,
     }
   );
+  const ProductByBarcode = /* GraphQL */ `
+  query ProductByBarcode($barcode: String!) {
+    productByBarcode(barcode: $barcode) {
+      items {
+        id
+        name
+        barcode
+        image
+        price
+        manufacturer
+        category
+        warehouseQuantity
+        shelfQuantity
+      }
+    }
+  }
+  
+`;
 
   React.useEffect(() => {
     (async () => {
@@ -44,11 +70,74 @@ export default function Scan() {
       setHasPermission(status === 'authorized');
     })();
   }, []);
+// Initialize the sound
+// const beep = new Sound('beep.mp3', Sound.MAIN_BUNDLE, (error) => {
+//   if (error) {
+//     console.log('Failed to load the sound', error);
+//     return;
+//   }
+//   console.log('Duration in seconds: ' + beep.getDuration() + 'number of channels: ' + beep.getNumberOfChannels());
+// });
+
+// const playSound=async()=>{
+
+  
+//   await TrackPlayer.setupPlayer();
+
+//     // Add a track to the queue
+//     await TrackPlayer.add({
+//         id: 'trackId',
+//         url: require('../assets/sounds/beep.mp3'),
+//         title: 'Track Title',
+//         artist: 'Track Artist',
+       
+//     });
+
+//     // Start playing it
+//     await TrackPlayer.play();
+// }
+// console.log("beep: : ",beep);
+// var whoosh = new Sound('beep', Sound.MAIN_BUNDLE, (error) => {
+//   const v=new Sound(beep, Sound.MAIN_BUNDLE);
+//   console.log("v:",v);
+//   if (error) {
+//     console.log('failed to load the sound', error);
+//     return;
+//   }
+ 
+//   console.log('duration in seconds: ' + whoosh.getDuration() + 'number of channels: ' + whoosh.getNumberOfChannels());
+
+//   // Play the sound with an onEnd callback
+//   whoosh.play((success) => {
+//     if (success) {
+//       console.log('successfully finished playing');
+//     } else {
+//       console.log('playback failed due to audio decoding errors');
+//     }
+//   });
+// });
+
+// }
+// const playBeep = () => {
+//   beep.play((success) => {
+//     if (success) {
+//       console.log('Successfully finished playing');
+//     } else {
+//       console.log('Playback failed due to audio decoding errors');
+//     }
+//   });
+// };
 
   const toggleScanning = () => {
     setIsScanning((prevState) => !prevState);
   };
+  const startScanning = () => {
+    setIsScanning(true);
+  };
 
+  const stopScanning = () => {
+    setIsScanning(false);
+  };
   const toggleManualEntryModal = () => {
     setManualBarcode('');
     setManualEntryModalVisible(!manualEntryModalVisible);
@@ -58,13 +147,17 @@ export default function Scan() {
     setBillModalVisible(!billModalVisible);
   };
 
-  const addManualBarcode = () => {
+  const addManualBarcode = async () => {
     if (manualBarcode) {
+  
+      const manualBarcodeObject = { displayValue: manualBarcode, format: 'MANUAL' };
+      await handleBarcodeScanned(manualBarcodeObject); 
+
       setManualBarcode('');
-      setScannedBarcodes((prevBarcodes) => [...prevBarcodes, manualBarcode]);
-      toggleManualEntryModal();
+      toggleManualEntryModal(); 
     }
   };
+  
 
   const showScannedBarcodes = () => {
     toggleBillModal();
@@ -73,10 +166,10 @@ export default function Scan() {
   const renderScannedBarcodes = () => {
     return (
       <View style={styles.modalContainer}>
-        <Text style={styles.modalTitle}>Scanned Barcodes:</Text>
-        {scannedBarcodes.map((barcode, index) => (
+        <Text style={styles.modalTitle}>Scanned Products:</Text>
+        {scannedProducts.map((product, index) => (
           <Text key={index} style={styles.scannedText}>
-            {barcode}
+            {`${product.name} (Quantity: ${product.quantity})`}
           </Text>
         ))}
         <TouchableOpacity onPress={toggleBillModal} style={styles.closeButton}>
@@ -85,32 +178,89 @@ export default function Scan() {
       </View>
     );
   };
-
-  const handleBarcodeScanned = (barcode) => {
-    if (!isScanning) {
+  
+  const handleBarcodeScanned = async (barcode) => {
+    if (!isScanning && manualBarcode === '') {
       return;
     }
-
     setIsScanning(false);
-    setScannedBarcodes((prevBarcodes) => [...prevBarcodes, barcode.displayValue]);
+  
+    try {
+      const barcodeValue = barcode.displayValue || manualBarcode;
+      console.log("Scanned barcode:", barcodeValue);
+  
+      const productDetailsResponse = await client.graphql({
+        query: ProductByBarcode,
+        variables: { barcode: barcodeValue },
+        authMode: 'apiKey',
+      });
+      console.log("Product",productDetailsResponse.data);
+    // playSound();
+      if (productDetailsResponse.data.productByBarcode.items.length > 0) {
+        const newProductDetails = productDetailsResponse.data.productByBarcode.items[0];
+        console.log("Product",newProductDetails);
+        const existingProductIndex = scannedProducts.findIndex(product => product.barcode === newProductDetails.barcode);
+  
+        if (existingProductIndex !== -1) {
+          
+          const updatedScannedProducts = [...scannedProducts];
+          // updatedScannedProducts[existingProductIndex].quantity = (updatedScannedProducts[existingProductIndex].quantity || 1) + 1;
+          // existingProduct.amount = existingProduct.quantity * existingProduct.price; // Calculate amount
+          const existingProduct = updatedScannedProducts[existingProductIndex];
+          existingProduct.quantity += 1;
+          existingProduct.amount = existingProduct.quantity * existingProduct.price;
+          setScannedProducts(updatedScannedProducts);
+        } else {
+        
+          // setScannedProducts(prevProducts => [...prevProducts, { ...newProductDetails, quantity: 1 }]);
+          const amount = newProductDetails.price; // Since quantity will be 1 for a new product
+          setScannedProducts(prevProducts => [...prevProducts, { ...newProductDetails, quantity: 1, amount: amount }]);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching product details:', error);
+    }
+  
+    
+    if (manualBarcode !== '') {
+      setManualBarcode('');
+    }
   };
+  useEffect(() => {
+    const total = scannedProducts.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+    setTotalBillAmount(total);
+}, [scannedProducts]);
 
+const handleConfirmPressed = () => {
+  console.log("Accumulated product details:", scannedProducts, "Total Bill Amount:", totalBillAmount);
+  navigation.navigate('ConfirmBill', { scannedProducts: scannedProducts, totalBillAmount: totalBillAmount });
+};
+
+  
   React.useEffect(() => {
     barcodes.forEach(handleBarcodeScanned);
   }, [barcodes]);
+
+  React.useEffect(() => {
+    if (route.params?.scannedProducts) {
+        // Merge passed scannedProducts with current list, or handle as needed
+        setScannedProducts([...scannedProducts, ...route.params.scannedProducts]);
+    }
+}, [route.params?.scannedProducts]);
 
   return (
     device != null &&
     hasPermission && (
       <View style={styles.container}>
-        <Camera
-          style={StyleSheet.absoluteFill}
-          device={device}
-          isActive={isScanning}
-          frameProcessor={frameProcessor}
-          frameProcessorFps={5}
-        />
-        <TouchableOpacity
+      <Camera
+  style={StyleSheet.absoluteFill}
+  device={device}
+  isActive={true} 
+  frameProcessor={frameProcessor}
+  frameProcessorFps={5}
+/>
+        
+        {/* <TouchableOpacity
           onPress={toggleScanning}
           style={[
             styles.scanButton,
@@ -124,6 +274,18 @@ export default function Scan() {
             ]}
           >
             {isScanning ? 'Continue Scanning' : 'Start Scanning'}
+          </Text>
+        </TouchableOpacity> */}
+        <TouchableOpacity
+          onPressIn={startScanning} // Start scanning on button press
+          onPressOut={stopScanning} // Stop scanning on button release
+          style={[
+            styles.scanButton,
+            isScanning ? styles.scanButtonPressed : styles.scanButtonNotPressed, // Change style based on scanning state
+          ]}
+        >
+          <Text style={styles.buttonText}>
+            {isScanning ? 'Scanning...' : 'Hold to Scan'}
           </Text>
         </TouchableOpacity>
         <View style={styles.buttonContainer}>
@@ -139,14 +301,14 @@ export default function Scan() {
         
         
         
-        {scannedBarcodes.length > 0 && (
+        {scannedProducts.length > 0 && (
           <TouchableOpacity onPress={showScannedBarcodes} style={styles.showButton}>
             <Ionic size={25} color={'white'} name="newspaper-outline" />
             <Text style={styles.buttonTextShow}>Bill</Text>
           </TouchableOpacity>
         )}
-          {scannedBarcodes.length > 0 && (
-            <TouchableOpacity  style={styles.confirmButton} onPress={()=> navigation.navigate('Receipt')}>
+          {scannedProducts.length > 0 && (
+            <TouchableOpacity  style={styles.confirmButton} onPress={handleConfirmPressed}>
               <Ionic size={25} color={'white'} name="newspaper-outline" />
               <Text style={styles.buttonTextShow}>Confirm</Text>
             </TouchableOpacity>
@@ -326,5 +488,20 @@ const styles = StyleSheet.create({
     color: 'white',
     fontFamily: 'Poppins-Regular',
   },
-  
+  scanButton: {
+    padding: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 10,
+    position: 'absolute',
+    bottom: 30,
+    right: 5,
+    borderRadius: 10,
+  },
+  scanButtonPressed: {
+    backgroundColor: COLORS.secondary, // Color when button is pressed
+  },
+  scanButtonNotPressed: {
+    backgroundColor: COLORS.primary, // Default color
+  },
 });

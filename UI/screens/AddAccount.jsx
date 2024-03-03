@@ -18,6 +18,7 @@ import { useForm, Controller } from 'react-hook-form'; // Import React Hook Form
 import { useNavigation } from '@react-navigation/native';
 import { generateClient } from 'aws-amplify/api';
 import { createUser } from '../src/graphql/mutations';
+import { uploadData, getUrl } from 'aws-amplify/storage';
 import { signUp} from 'aws-amplify/auth';
 import { fetchUserAttributes, getCurrentUser } from 'aws-amplify/auth';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
@@ -34,10 +35,10 @@ const AddAccount = () => {
     const [phonenumber, setPhoneNumber] = useState('');
     const [password, setPassword] = useState('');
     const [idCardNumber, setIdCardNumber] = useState('');
-    const [selectedIdCardImage, setSelectedIdCardImage] = useState(null); // New state for ID card image
+    const [selectedIdCardImage, setSelectedIdCardImage] = useState(null); 
     const [loggedInUserEmail, setLoggedInUserEmail] = useState('');
   const { control, handleSubmit } = useForm(); 
-  const client = generateClient();// Initialize React Hook Form
+  const client = generateClient();
   const navigation=useNavigation();
   const [selectedImage, setSelectedImage] = useState(null);
   const [selected, setSelected] = React.useState('');
@@ -46,19 +47,30 @@ const AddAccount = () => {
     {key:'2', value:'PURCHASER'},
     {key:'3', value:'WAREHOUSE_MANAGER'}
   ];
+  // const handleChoosePhoto = () => {
+  //   launchImageLibrary({}, (response) => {
+  //     if (response.assets && response.assets.length > 0) {
+  //       const selectedImageUri = response.assets[0].uri;
+  //       setSelectedImage(response.assets[0]); // Set the selected image
+  //       console.log("Selected image URI:", selectedImageUri); // Log the URI
+  //     }
+  //   });
+  // };
+  
   const handleChoosePhoto = () => {
     launchImageLibrary({}, (response) => {
+      console.log(response);
       if (response.assets && response.assets.length > 0) {
-        const selectedImageUri = response.assets[0].uri;
-        setSelectedImage(response.assets[0]); // Set the selected image
-        console.log("Selected image URI:", selectedImageUri); // Log the URI
+        const imageUri = response.assets[0].uri;
+        setSelectedImage(imageUri); 
+      } else {
+        console.log('No image selected or unexpected response structure');
       }
     });
   };
+
   
-//   const handleLoading = () => {
-//     setLoading(true)
-//   }
+
   const handleSuccessButtonPress= () => {
     setLoading(false)
     setLoadingMessage(false)
@@ -66,6 +78,7 @@ const AddAccount = () => {
     setError(false)
     setErrorMessage('')
   }
+  
   const handleChooseIdCardPhoto = () => {
     launchImageLibrary({}, (response) => {
       if (response.assets && response.assets.length > 0) {
@@ -140,13 +153,13 @@ const AddAccount = () => {
           phonenumber,
           role,
           userEmail,
+          profileImageUri: selectedImage,
           selectedIdCardImageUri: selectedIdCardImage?.uri,
         },
       });
   
        setLoadingMessage(false);
        setSuccess(true);
-    // console.log('User created:', createUserResponse);
     setName('')
     setPassword('')
     setPhoneNumber('')
@@ -218,10 +231,9 @@ const AddAccount = () => {
       <View style={styles.lowerView}>
       <TouchableOpacity style={styles.profileImageContainer} onPress={handleChoosePhoto}>
   {selectedImage ? (
-    // Display the selected image if available
+  
     <Image source={{ uri: selectedImage.uri }} style={styles.profileImage} />
   ) : (
-    // Display a default image if no image has been selected
     <Image source={require('../assets/images/profile1.png')} style={styles.profileImage} />
   )}
   <Ionic style={styles.plusImage} size={38} color={'white'} name='add-circle' />
@@ -289,9 +301,9 @@ const AddAccount = () => {
         style={styles.formInput}
         placeholder='Contact Number'
         placeholderTextColor='rgba(170, 170, 170,4)'
-        keyboardType='phone-pad' // Set keyboardType to phone-pad to show numeric keyboard
-        onChangeText={(value) => setPhoneNumber(value)} // Update the phoneNumber state
-        value={phonenumber} // Bind the value of the input to the phoneNumber state
+        keyboardType='phone-pad'
+        onChangeText={(value) => setPhoneNumber(value)} 
+        value={phonenumber} 
       />
               </View>
         </View>
@@ -309,9 +321,9 @@ const AddAccount = () => {
         style={styles.formInput}
         placeholder='Password'
         placeholderTextColor='rgba(170, 170, 170,4)'
-        secureTextEntry={true} // Set secureTextEntry to true to hide the password characters
-        onChangeText={(value) => setPassword(value)} // Update the password state
-        value={password} // Bind the value of the input to the password state
+        secureTextEntry={true}
+        onChangeText={(value) => setPassword(value)} 
+        value={password} 
       />
               </View>
             </View>

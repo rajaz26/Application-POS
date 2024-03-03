@@ -421,6 +421,17 @@ export const schema = {
                     "properties": {}
                 },
                 {
+                    "type": "key",
+                    "properties": {
+                        "name": "byBarcode",
+                        "queryField": "productByBarcode",
+                        "fields": [
+                            "barcode",
+                            "id"
+                        ]
+                    }
+                },
+                {
                     "type": "auth",
                     "properties": {
                         "rules": [

@@ -7,6 +7,7 @@ import { COLORS } from '../assets/theme/index.js';
 import { useNavigation } from '@react-navigation/native';
 import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { signUp } from 'aws-amplify/auth';
+import { createStore } from '../src/graphql/mutations.js';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 const SignUpScreen = () => {
   const navigation = useNavigation();
@@ -26,11 +27,15 @@ const SignUpScreen = () => {
       setLoading(false);
       return;
     }
-
     console.log('start');
     try {
       console.log('try');
       console.log(data.username)
+  //     const storeName = data.storeName;
+  // const newStore = {
+  //   name: storeName,
+  // };
+ 
       const username=data.username;
       const password=data.password;
       const email=data.email;
@@ -40,16 +45,19 @@ const SignUpScreen = () => {
       options: {
         userAttributes: {
           email,
-          
         },
       }
       });
-      
       console.log('Sign-up success', user);
+      // const createStoreResponse = await client.graphql({
+      //   query: createStore,
+      //   variables: { input: newStore},
+      //   authMode: 'apiKey',
+      // });
       reset();
       
       if (data && data.username) {
-        navigation.navigate('ConfirmSignUp', { username: data.username });
+        navigation.navigate('ConfirmSignUp', { username: data.username, storeName: data.storeName });
       } else {
         console.error('Username not found in data:', data);
       }
@@ -115,7 +123,17 @@ const SignUpScreen = () => {
             defaultValue=""
           />
           {errors.confirmPassword && <Text style={{ color: 'red' }}>This field is required</Text>}
+          <Text style={styles.formText}>Store Name</Text>
+<Controller
+  control={control}
+  rules={{ required: true }}
+  render={({ field }) => <TextInput style={styles.formInput} {...field} onChangeText={field.onChange} value={field.value} />}
+  name="storeName"
+  defaultValue=""
+/>
+{errors.storeName && <Text style={{ color: 'red' }}>This field is required</Text>}
         </View>
+       
         <View style={styles.signupButtonContainer}>
           <TouchableOpacity style={styles.signupButton} onPress={handleSubmit(onSubmit)}>
             <Text style={styles.signupText}>{loading ? 'Loading':'Sign Up'}</Text>
@@ -150,7 +168,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     justifyContent: 'flex-start',
     alignItems: 'center',
-    marginTop: 15,
+    bottom:20,
   },
   arrowLeftContainer: {
     padding: 8,
@@ -159,10 +177,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFD700',
   },
   imageStyle: {
-    height: 130, width: 130
+    height: 110, width: 110
   },
   formContainer: {
-    flex: 2.5,
+    flex: 4,
     backgroundColor: 'white',
     padding: 8,
     borderTopRightRadius: 50,

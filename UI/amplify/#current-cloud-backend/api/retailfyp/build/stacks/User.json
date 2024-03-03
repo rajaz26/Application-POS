@@ -614,7 +614,7 @@
               {
                 "Ref": "UserTable"
               },
-              "\"))\n$util.qr($ctx.stash.put(\"deltaSyncTableTtl\", 30))\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
+              "\"))\n$util.qr($ctx.stash.put(\"deltaSyncTableTtl\", 30))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"ap-south-1:9a7c6a09-58cf-4ecc-9d5a-5b7eb271e57e\"))\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
             ]
           ]
         },
@@ -713,7 +713,7 @@
               {
                 "Ref": "UserTable"
               },
-              "\"))\n$util.qr($ctx.stash.put(\"deltaSyncTableTtl\", 30))\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
+              "\"))\n$util.qr($ctx.stash.put(\"deltaSyncTableTtl\", 30))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"ap-south-1:9a7c6a09-58cf-4ecc-9d5a-5b7eb271e57e\"))\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
             ]
           ]
         },
@@ -848,7 +848,7 @@
               {
                 "Ref": "UserTable"
               },
-              "\"))\n$util.qr($ctx.stash.put(\"deltaSyncTableTtl\", 30))\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
+              "\"))\n$util.qr($ctx.stash.put(\"deltaSyncTableTtl\", 30))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"ap-south-1:9a7c6a09-58cf-4ecc-9d5a-5b7eb271e57e\"))\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
             ]
           ]
         },
@@ -950,7 +950,7 @@
               {
                 "Ref": "UserTable"
               },
-              "\"))\n$util.qr($ctx.stash.put(\"deltaSyncTableTtl\", 30))\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
+              "\"))\n$util.qr($ctx.stash.put(\"deltaSyncTableTtl\", 30))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"ap-south-1:9a7c6a09-58cf-4ecc-9d5a-5b7eb271e57e\"))\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
             ]
           ]
         },
@@ -1106,7 +1106,7 @@
               {
                 "Ref": "UserTable"
               },
-              "\"))\n$util.qr($ctx.stash.put(\"deltaSyncTableTtl\", 30))\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
+              "\"))\n$util.qr($ctx.stash.put(\"deltaSyncTableTtl\", 30))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"ap-south-1:9a7c6a09-58cf-4ecc-9d5a-5b7eb271e57e\"))\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
             ]
           ]
         },
@@ -1259,7 +1259,7 @@
               {
                 "Ref": "UserTable"
               },
-              "\"))\n$util.qr($ctx.stash.put(\"deltaSyncTableTtl\", 30))\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
+              "\"))\n$util.qr($ctx.stash.put(\"deltaSyncTableTtl\", 30))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"ap-south-1:9a7c6a09-58cf-4ecc-9d5a-5b7eb271e57e\"))\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
             ]
           ]
         },
@@ -1296,7 +1296,7 @@
               {
                 "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
               },
-              "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
+              "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"identityPoolId\", \"ap-south-1:9a7c6a09-58cf-4ecc-9d5a-5b7eb271e57e\"))\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
             ]
           ]
         },
@@ -1333,7 +1333,7 @@
               {
                 "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
               },
-              "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
+              "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"identityPoolId\", \"ap-south-1:9a7c6a09-58cf-4ecc-9d5a-5b7eb271e57e\"))\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
             ]
           ]
         },
@@ -1370,7 +1370,7 @@
               {
                 "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
               },
-              "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
+              "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"identityPoolId\", \"ap-south-1:9a7c6a09-58cf-4ecc-9d5a-5b7eb271e57e\"))\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
             ]
           ]
         },
@@ -1469,7 +1469,7 @@
               {
                 "Ref": "UserTable"
               },
-              "\"))\n$util.qr($ctx.stash.put(\"deltaSyncTableTtl\", 30))\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
+              "\"))\n$util.qr($ctx.stash.put(\"deltaSyncTableTtl\", 30))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"ap-south-1:9a7c6a09-58cf-4ecc-9d5a-5b7eb271e57e\"))\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
             ]
           ]
         },
