@@ -35,7 +35,7 @@ type User {
   role: UserRole!
   idcardimage: [String]
   store: Store
-  bills(filter: ModelBillFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelBillConnection
+  bills: String
   purchaseOrders(filter: ModelPurchaseOrderFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelPurchaseOrderConnection
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
@@ -85,7 +85,7 @@ type BillItem {
 
 type Bill {
   id: ID!
-  cashier: User!
+  cashier: String!
   items(filter: ModelBillItemFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelBillItemConnection
   totalAmount: Float!
   status: BillStatus!
@@ -96,7 +96,6 @@ type Bill {
   _deleted: Boolean
   _lastChangedAt: AWSTimestamp!
   storeBillsId: ID
-  userBillsId: ID
 }
 
 type PurchaseOrder {
@@ -303,6 +302,7 @@ type Query {
   syncPurchaseOrders(filter: ModelPurchaseOrderFilterInput, limit: Int, nextToken: String, lastSync: AWSTimestamp): ModelPurchaseOrderConnection
   userById(userId: ID!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelUserFilterInput, limit: Int, nextToken: String): ModelUserConnection
   productByBarcode(barcode: String!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelProductFilterInput, limit: Int, nextToken: String): ModelProductConnection
+  billByCashierId(cashier: String!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelBillFilterInput, limit: Int, nextToken: String): ModelBillConnection
 }
 
 input ModelStoreConditionInput {
@@ -403,6 +403,7 @@ input ModelUserFilterInput {
   image: ModelStringInput
   role: ModelUserRoleInput
   idcardimage: ModelStringInput
+  bills: ModelStringInput
   and: [ModelUserFilterInput]
   or: [ModelUserFilterInput]
   not: ModelUserFilterInput
@@ -417,6 +418,7 @@ input ModelUserConditionInput {
   image: ModelStringInput
   role: ModelUserRoleInput
   idcardimage: ModelStringInput
+  bills: ModelStringInput
   and: [ModelUserConditionInput]
   or: [ModelUserConditionInput]
   not: ModelUserConditionInput
@@ -432,6 +434,7 @@ input CreateUserInput {
   image: String
   role: UserRole!
   idcardimage: [String]
+  bills: String
   _version: Int
   storeUsersId: ID
 }
@@ -444,6 +447,7 @@ input UpdateUserInput {
   image: String
   role: UserRole
   idcardimage: [String]
+  bills: String
   _version: Int
   storeUsersId: ID
 }
@@ -461,6 +465,7 @@ input ModelSubscriptionUserFilterInput {
   image: ModelSubscriptionStringInput
   role: ModelSubscriptionStringInput
   idcardimage: ModelSubscriptionStringInput
+  bills: ModelSubscriptionStringInput
   and: [ModelSubscriptionUserFilterInput]
   or: [ModelSubscriptionUserFilterInput]
   _deleted: ModelBooleanInput
@@ -642,6 +647,7 @@ input ModelBillStatusInput {
 
 input ModelBillFilterInput {
   id: ModelIDInput
+  cashier: ModelStringInput
   totalAmount: ModelFloatInput
   status: ModelBillStatusInput
   and: [ModelBillFilterInput]
@@ -649,10 +655,10 @@ input ModelBillFilterInput {
   not: ModelBillFilterInput
   _deleted: ModelBooleanInput
   storeBillsId: ModelIDInput
-  userBillsId: ModelIDInput
 }
 
 input ModelBillConditionInput {
+  cashier: ModelStringInput
   totalAmount: ModelFloatInput
   status: ModelBillStatusInput
   and: [ModelBillConditionInput]
@@ -660,25 +666,24 @@ input ModelBillConditionInput {
   not: ModelBillConditionInput
   _deleted: ModelBooleanInput
   storeBillsId: ModelIDInput
-  userBillsId: ModelIDInput
 }
 
 input CreateBillInput {
   id: ID
+  cashier: String!
   totalAmount: Float!
   status: BillStatus!
   _version: Int
   storeBillsId: ID
-  userBillsId: ID
 }
 
 input UpdateBillInput {
   id: ID!
+  cashier: String
   totalAmount: Float
   status: BillStatus
   _version: Int
   storeBillsId: ID
-  userBillsId: ID
 }
 
 input DeleteBillInput {
@@ -688,6 +693,7 @@ input DeleteBillInput {
 
 input ModelSubscriptionBillFilterInput {
   id: ModelSubscriptionIDInput
+  cashier: ModelSubscriptionStringInput
   totalAmount: ModelSubscriptionFloatInput
   status: ModelSubscriptionStringInput
   and: [ModelSubscriptionBillFilterInput]

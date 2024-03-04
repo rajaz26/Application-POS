@@ -139,11 +139,7 @@ export const createUser = /* GraphQL */ `
         _lastChangedAt
         __typename
       }
-      bills {
-        nextToken
-        startedAt
-        __typename
-      }
+      bills
       purchaseOrders {
         nextToken
         startedAt
@@ -183,11 +179,7 @@ export const updateUser = /* GraphQL */ `
         _lastChangedAt
         __typename
       }
-      bills {
-        nextToken
-        startedAt
-        __typename
-      }
+      bills
       purchaseOrders {
         nextToken
         startedAt
@@ -227,11 +219,7 @@ export const deleteUser = /* GraphQL */ `
         _lastChangedAt
         __typename
       }
-      bills {
-        nextToken
-        startedAt
-        __typename
-      }
+      bills
       purchaseOrders {
         nextToken
         startedAt
@@ -247,7 +235,6 @@ export const deleteUser = /* GraphQL */ `
     }
   }
 `;
-
 export const createProduct = /* GraphQL */ `
   mutation CreateProduct(
     $input: CreateProductInput!
@@ -403,6 +390,7 @@ export const createBillItem = /* GraphQL */ `
       manufacturer
       bill {
         id
+        cashier
         totalAmount
         status
         createdAt
@@ -411,7 +399,6 @@ export const createBillItem = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeBillsId
-        userBillsId
         __typename
       }
       createdAt
@@ -457,6 +444,7 @@ export const updateBillItem = /* GraphQL */ `
       manufacturer
       bill {
         id
+        cashier
         totalAmount
         status
         createdAt
@@ -465,7 +453,6 @@ export const updateBillItem = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeBillsId
-        userBillsId
         __typename
       }
       createdAt
@@ -511,6 +498,7 @@ export const deleteBillItem = /* GraphQL */ `
       manufacturer
       bill {
         id
+        cashier
         totalAmount
         status
         createdAt
@@ -519,7 +507,6 @@ export const deleteBillItem = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeBillsId
-        userBillsId
         __typename
       }
       createdAt
@@ -540,22 +527,7 @@ export const createBill = /* GraphQL */ `
   ) {
     createBill(input: $input, condition: $condition) {
       id
-      cashier {
-        id
-        userId
-        username
-        phonenumber
-        image
-        role
-        idcardimage
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        storeUsersId
-        __typename
-      }
+      cashier
       items {
         nextToken
         startedAt
@@ -580,7 +552,6 @@ export const createBill = /* GraphQL */ `
       _deleted
       _lastChangedAt
       storeBillsId
-      userBillsId
       __typename
     }
   }
@@ -592,22 +563,7 @@ export const updateBill = /* GraphQL */ `
   ) {
     updateBill(input: $input, condition: $condition) {
       id
-      cashier {
-        id
-        userId
-        username
-        phonenumber
-        image
-        role
-        idcardimage
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        storeUsersId
-        __typename
-      }
+      cashier
       items {
         nextToken
         startedAt
@@ -632,7 +588,6 @@ export const updateBill = /* GraphQL */ `
       _deleted
       _lastChangedAt
       storeBillsId
-      userBillsId
       __typename
     }
   }
@@ -644,22 +599,7 @@ export const deleteBill = /* GraphQL */ `
   ) {
     deleteBill(input: $input, condition: $condition) {
       id
-      cashier {
-        id
-        userId
-        username
-        phonenumber
-        image
-        role
-        idcardimage
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        storeUsersId
-        __typename
-      }
+      cashier
       items {
         nextToken
         startedAt
@@ -684,7 +624,6 @@ export const deleteBill = /* GraphQL */ `
       _deleted
       _lastChangedAt
       storeBillsId
-      userBillsId
       __typename
     }
   }
@@ -704,6 +643,7 @@ export const createPurchaseOrder = /* GraphQL */ `
         image
         role
         idcardimage
+        bills
         createdAt
         updatedAt
         _version
@@ -753,6 +693,7 @@ export const updatePurchaseOrder = /* GraphQL */ `
         image
         role
         idcardimage
+        bills
         createdAt
         updatedAt
         _version
@@ -802,6 +743,7 @@ export const deletePurchaseOrder = /* GraphQL */ `
         image
         role
         idcardimage
+        bills
         createdAt
         updatedAt
         _version

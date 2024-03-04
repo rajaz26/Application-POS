@@ -68,7 +68,7 @@ type EagerUser = {
   readonly role: UserRole | keyof typeof UserRole;
   readonly idcardimage?: (string | null)[] | null;
   readonly store?: Store | null;
-  readonly bills?: (Bill | null)[] | null;
+  readonly bills?: string | null;
   readonly purchaseOrders?: (PurchaseOrder | null)[] | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
@@ -88,7 +88,7 @@ type LazyUser = {
   readonly role: UserRole | keyof typeof UserRole;
   readonly idcardimage?: (string | null)[] | null;
   readonly store: AsyncItem<Store | undefined>;
-  readonly bills: AsyncCollection<Bill>;
+  readonly bills?: string | null;
   readonly purchaseOrders: AsyncCollection<PurchaseOrder>;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
@@ -199,7 +199,7 @@ type EagerBill = {
     readOnlyFields: 'createdAt' | 'updatedAt';
   };
   readonly id: string;
-  readonly cashier: User;
+  readonly cashier: string;
   readonly items: BillItem[];
   readonly totalAmount: number;
   readonly status: BillStatus | keyof typeof BillStatus;
@@ -207,7 +207,6 @@ type EagerBill = {
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly storeBillsId?: string | null;
-  readonly userBillsId?: string | null;
 }
 
 type LazyBill = {
@@ -216,7 +215,7 @@ type LazyBill = {
     readOnlyFields: 'createdAt' | 'updatedAt';
   };
   readonly id: string;
-  readonly cashier: AsyncItem<User>;
+  readonly cashier: string;
   readonly items: AsyncCollection<BillItem>;
   readonly totalAmount: number;
   readonly status: BillStatus | keyof typeof BillStatus;
@@ -224,7 +223,6 @@ type LazyBill = {
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly storeBillsId?: string | null;
-  readonly userBillsId?: string | null;
 }
 
 export declare type Bill = LazyLoading extends LazyLoadingDisabled ? EagerBill : LazyBill

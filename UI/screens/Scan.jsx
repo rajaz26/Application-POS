@@ -18,6 +18,8 @@ import { useNavigation } from '@react-navigation/native';
 import Ionic from 'react-native-vector-icons/Ionicons';
 import {generateClient} from 'aws-amplify/api';
 import Sound from 'react-native-sound';
+import { createBill, createBillItem, updateBill } from '../src/graphql/mutations';
+import { fetchUserAttributes, getCurrentUser } from 'aws-amplify/auth';
 export default function Scan({route}) {
   Sound.setCategory('Playback');
   const [hasPermission, setHasPermission] = React.useState(false);
@@ -28,9 +30,12 @@ export default function Scan({route}) {
   const [manualEntryModalVisible, setManualEntryModalVisible] = React.useState(false);
   const [manualBarcode, setManualBarcode] = React.useState('');
   const [billModalVisible, setBillModalVisible] = React.useState(false);
+  const [currentBillId, setCurrentBillId] = useState(null);
   const devices = useCameraDevices();
   const device = devices.back;
   const client = generateClient();
+   // Assume these are part of your component's state or global variables
+
   const navigation = useNavigation();
   const [frameProcessor, barcodes] = useScanBarcodes(
     [
@@ -70,63 +75,7 @@ export default function Scan({route}) {
       setHasPermission(status === 'authorized');
     })();
   }, []);
-// Initialize the sound
-// const beep = new Sound('beep.mp3', Sound.MAIN_BUNDLE, (error) => {
-//   if (error) {
-//     console.log('Failed to load the sound', error);
-//     return;
-//   }
-//   console.log('Duration in seconds: ' + beep.getDuration() + 'number of channels: ' + beep.getNumberOfChannels());
-// });
 
-// const playSound=async()=>{
-
-  
-//   await TrackPlayer.setupPlayer();
-
-//     // Add a track to the queue
-//     await TrackPlayer.add({
-//         id: 'trackId',
-//         url: require('../assets/sounds/beep.mp3'),
-//         title: 'Track Title',
-//         artist: 'Track Artist',
-       
-//     });
-
-//     // Start playing it
-//     await TrackPlayer.play();
-// }
-// console.log("beep: : ",beep);
-// var whoosh = new Sound('beep', Sound.MAIN_BUNDLE, (error) => {
-//   const v=new Sound(beep, Sound.MAIN_BUNDLE);
-//   console.log("v:",v);
-//   if (error) {
-//     console.log('failed to load the sound', error);
-//     return;
-//   }
- 
-//   console.log('duration in seconds: ' + whoosh.getDuration() + 'number of channels: ' + whoosh.getNumberOfChannels());
-
-//   // Play the sound with an onEnd callback
-//   whoosh.play((success) => {
-//     if (success) {
-//       console.log('successfully finished playing');
-//     } else {
-//       console.log('playback failed due to audio decoding errors');
-//     }
-//   });
-// });
-
-// }
-// const playBeep = () => {
-//   beep.play((success) => {
-//     if (success) {
-//       console.log('Successfully finished playing');
-//     } else {
-//       console.log('Playback failed due to audio decoding errors');
-//     }
-//   });
-// };
 
   const toggleScanning = () => {
     setIsScanning((prevState) => !prevState);
@@ -158,10 +107,52 @@ export default function Scan({route}) {
     }
   };
   
+  const showScannedBarcodes = async () => {
+    if (!currentBillId) {
+        console.error("No bill available to finalize.");
+        return;
+    }
 
-  const showScannedBarcodes = () => {
-    toggleBillModal();
-  };
+    try {
+        // Calculate the total bill amount from scanned products
+        const totalBillAmount = scannedProducts.reduce((acc, product) => acc + (product.quantity * product.price), 0);
+        
+        console.log("Finalizing Bill with Total Amount:", totalBillAmount);
+        
+        // Update the existing bill with the total amount and change its status to "PAID"
+        const updateBillInput = {
+            id: currentBillId,
+            totalAmount: totalBillAmount,
+            status: "PAID",
+            
+        };
+
+        const updateBillResponse = await client.graphql({
+            query: updateBill,
+            variables: { input: updateBillInput },
+            authMode: 'apiKey',
+        });
+
+        console.log("Bill Finalized Successfully", updateBillResponse);
+        
+        // Reset currentBillId for future transactions
+        setCurrentBillId(null);
+
+        // Clear scanned products for future transactions
+        
+        setScannedProducts([]); // Assuming you have a setter to update the UI or state
+
+        // Optionally, display a success message or navigate the user to a confirmation screen
+
+    } catch (error) {
+        console.error("Error finalizing the bill:", error);
+    }
+    finally{
+      toggleBillModal(); 
+    }
+    // Close the bill modal or perform any other UI cleanup
+    // Ensure toggleBillModal is defined and accessible
+};
 
   const renderScannedBarcodes = () => {
     return (
@@ -180,52 +171,84 @@ export default function Scan({route}) {
   };
   
   const handleBarcodeScanned = async (barcode) => {
-    if (!isScanning && manualBarcode === '') {
-      return;
-    }
+    if (!isScanning && manualBarcode === '') return;
     setIsScanning(false);
-  
+
     try {
-      const barcodeValue = barcode.displayValue || manualBarcode;
-      console.log("Scanned barcode:", barcodeValue);
-  
-      const productDetailsResponse = await client.graphql({
-        query: ProductByBarcode,
-        variables: { barcode: barcodeValue },
-        authMode: 'apiKey',
-      });
-      console.log("Product",productDetailsResponse.data);
-    // playSound();
-      if (productDetailsResponse.data.productByBarcode.items.length > 0) {
-        const newProductDetails = productDetailsResponse.data.productByBarcode.items[0];
-        console.log("Product",newProductDetails);
-        const existingProductIndex = scannedProducts.findIndex(product => product.barcode === newProductDetails.barcode);
-  
-        if (existingProductIndex !== -1) {
-          
-          const updatedScannedProducts = [...scannedProducts];
-          // updatedScannedProducts[existingProductIndex].quantity = (updatedScannedProducts[existingProductIndex].quantity || 1) + 1;
-          // existingProduct.amount = existingProduct.quantity * existingProduct.price; // Calculate amount
-          const existingProduct = updatedScannedProducts[existingProductIndex];
-          existingProduct.quantity += 1;
-          existingProduct.amount = existingProduct.quantity * existingProduct.price;
-          setScannedProducts(updatedScannedProducts);
-        } else {
-        
-          // setScannedProducts(prevProducts => [...prevProducts, { ...newProductDetails, quantity: 1 }]);
-          const amount = newProductDetails.price; // Since quantity will be 1 for a new product
-          setScannedProducts(prevProducts => [...prevProducts, { ...newProductDetails, quantity: 1, amount: amount }]);
+        const barcodeValue = barcode.displayValue || manualBarcode;
+        console.log("Scanned barcode:", barcodeValue);
+
+        // Fetch product details based on the barcode
+        const productDetailsResponse = await client.graphql({
+            query: ProductByBarcode,
+            variables: { barcode: barcodeValue },
+            authMode: 'apiKey',
+        });
+
+        if (productDetailsResponse.data.productByBarcode.items.length > 0) {
+            const productDetails = productDetailsResponse.data.productByBarcode.items[0];
+
+            // Ensure a Bill is created for the first scanned product
+            const ensureBillCreated = async () => {
+                if (!currentBillId) {
+                    const userAttributes = await fetchUserAttributes();
+                    const billResponse = await client.graphql({
+                        query: createBill,
+                        variables: {
+                            input: {
+                                cashier: userAttributes.sub, // Assuming fetchUserAttributes returns an object with a sub property
+                                totalAmount: 0, // Will be updated when finalizing the bill
+                                status: 'PENDING',
+                            },
+                        },
+                        authMode: 'apiKey',
+                    });
+                    const newBillId = billResponse.data.createBill.id;
+                    setCurrentBillId(newBillId); // Update the currentBillId state
+                    console.log("New Bill Created with ID:", newBillId);
+                    return newBillId; // Return newBillId for immediate use
+                }
+                return currentBillId;
+            };
+
+            const billId = await ensureBillCreated(); // Ensure bill is created and get the billId
+
+            // Create a BillItem for the scanned product using the ensured billId
+            await client.graphql({
+                query: createBillItem,
+                variables: {
+                    input: {
+                        productBillItemsId: productDetails.id,
+                        quantity: 1, // Or actual scanned quantity
+                        productPrice: productDetails.price,
+                        subtotal: productDetails.price, // For 1 item; adjust for actual quantity
+                        billItemsId: billId, // Associate with the current or new Bill
+                    },
+                },
+                authMode: 'apiKey',
+            });
+
+            console.log("BillItem created for product", productDetails.name);
+
+            // Add the product to scannedProducts state
+            const updatedProduct = { ...productDetails, quantity: 1 }; // Adjust for actual quantity
+            setScannedProducts((prevProducts) => [...prevProducts, updatedProduct]);
         }
-      }
     } catch (error) {
-      console.error('Error fetching product details:', error);
+        console.error("Error handling barcode scan:", error);
     }
-  
-    
+
     if (manualBarcode !== '') {
-      setManualBarcode('');
+        setManualBarcode('');
     }
-  };
+
+    // Update the total bill amount
+    const total = scannedProducts.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+    setTotalBillAmount(total);
+};
+
+
+
   useEffect(() => {
     const total = scannedProducts.reduce((acc, curr) => acc + (curr.amount || 0), 0);
     setTotalBillAmount(total);

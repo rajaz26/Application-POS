@@ -111,11 +111,7 @@ export const getUser = /* GraphQL */ `
         _lastChangedAt
         __typename
       }
-      bills {
-        nextToken
-        startedAt
-        __typename
-      }
+      bills
       purchaseOrders {
         nextToken
         startedAt
@@ -146,6 +142,7 @@ export const listUsers = /* GraphQL */ `
         image
         role
         idcardimage
+        bills
         createdAt
         updatedAt
         _version
@@ -181,6 +178,7 @@ export const syncUsers = /* GraphQL */ `
         image
         role
         idcardimage
+        bills
         createdAt
         updatedAt
         _version
@@ -330,6 +328,7 @@ export const getBillItem = /* GraphQL */ `
       manufacturer
       bill {
         id
+        cashier
         totalAmount
         status
         createdAt
@@ -338,7 +337,6 @@ export const getBillItem = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeBillsId
-        userBillsId
         __typename
       }
       createdAt
@@ -420,22 +418,7 @@ export const getBill = /* GraphQL */ `
   query GetBill($id: ID!) {
     getBill(id: $id) {
       id
-      cashier {
-        id
-        userId
-        username
-        phonenumber
-        image
-        role
-        idcardimage
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        storeUsersId
-        __typename
-      }
+      cashier
       items {
         nextToken
         startedAt
@@ -460,7 +443,6 @@ export const getBill = /* GraphQL */ `
       _deleted
       _lastChangedAt
       storeBillsId
-      userBillsId
       __typename
     }
   }
@@ -474,6 +456,7 @@ export const listBills = /* GraphQL */ `
     listBills(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
+        cashier
         totalAmount
         status
         createdAt
@@ -482,7 +465,6 @@ export const listBills = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeBillsId
-        userBillsId
         __typename
       }
       nextToken
@@ -506,6 +488,7 @@ export const syncBills = /* GraphQL */ `
     ) {
       items {
         id
+        cashier
         totalAmount
         status
         createdAt
@@ -514,7 +497,6 @@ export const syncBills = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeBillsId
-        userBillsId
         __typename
       }
       nextToken
@@ -535,6 +517,7 @@ export const getPurchaseOrder = /* GraphQL */ `
         image
         role
         idcardimage
+        bills
         createdAt
         updatedAt
         _version
@@ -656,6 +639,7 @@ export const userById = /* GraphQL */ `
         image
         role
         idcardimage
+        bills
         createdAt
         updatedAt
         _version
@@ -703,6 +687,42 @@ export const productByBarcode = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeProductsId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const billByCashierId = /* GraphQL */ `
+  query BillByCashierId(
+    $cashier: String!
+    $id: ModelIDKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelBillFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    billByCashierId(
+      cashier: $cashier
+      id: $id
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        cashier
+        totalAmount
+        status
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeBillsId
         __typename
       }
       nextToken

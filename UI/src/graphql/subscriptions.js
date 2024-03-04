@@ -127,11 +127,7 @@ export const onCreateUser = /* GraphQL */ `
         _lastChangedAt
         __typename
       }
-      bills {
-        nextToken
-        startedAt
-        __typename
-      }
+      bills
       purchaseOrders {
         nextToken
         startedAt
@@ -168,11 +164,7 @@ export const onUpdateUser = /* GraphQL */ `
         _lastChangedAt
         __typename
       }
-      bills {
-        nextToken
-        startedAt
-        __typename
-      }
+      bills
       purchaseOrders {
         nextToken
         startedAt
@@ -209,11 +201,7 @@ export const onDeleteUser = /* GraphQL */ `
         _lastChangedAt
         __typename
       }
-      bills {
-        nextToken
-        startedAt
-        __typename
-      }
+      bills
       purchaseOrders {
         nextToken
         startedAt
@@ -372,6 +360,7 @@ export const onCreateBillItem = /* GraphQL */ `
       manufacturer
       bill {
         id
+        cashier
         totalAmount
         status
         createdAt
@@ -380,7 +369,6 @@ export const onCreateBillItem = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeBillsId
-        userBillsId
         __typename
       }
       createdAt
@@ -423,6 +411,7 @@ export const onUpdateBillItem = /* GraphQL */ `
       manufacturer
       bill {
         id
+        cashier
         totalAmount
         status
         createdAt
@@ -431,7 +420,6 @@ export const onUpdateBillItem = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeBillsId
-        userBillsId
         __typename
       }
       createdAt
@@ -474,6 +462,7 @@ export const onDeleteBillItem = /* GraphQL */ `
       manufacturer
       bill {
         id
+        cashier
         totalAmount
         status
         createdAt
@@ -482,7 +471,6 @@ export const onDeleteBillItem = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeBillsId
-        userBillsId
         __typename
       }
       createdAt
@@ -500,22 +488,7 @@ export const onCreateBill = /* GraphQL */ `
   subscription OnCreateBill($filter: ModelSubscriptionBillFilterInput) {
     onCreateBill(filter: $filter) {
       id
-      cashier {
-        id
-        userId
-        username
-        phonenumber
-        image
-        role
-        idcardimage
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        storeUsersId
-        __typename
-      }
+      cashier
       items {
         nextToken
         startedAt
@@ -540,7 +513,6 @@ export const onCreateBill = /* GraphQL */ `
       _deleted
       _lastChangedAt
       storeBillsId
-      userBillsId
       __typename
     }
   }
@@ -549,22 +521,7 @@ export const onUpdateBill = /* GraphQL */ `
   subscription OnUpdateBill($filter: ModelSubscriptionBillFilterInput) {
     onUpdateBill(filter: $filter) {
       id
-      cashier {
-        id
-        userId
-        username
-        phonenumber
-        image
-        role
-        idcardimage
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        storeUsersId
-        __typename
-      }
+      cashier
       items {
         nextToken
         startedAt
@@ -589,7 +546,6 @@ export const onUpdateBill = /* GraphQL */ `
       _deleted
       _lastChangedAt
       storeBillsId
-      userBillsId
       __typename
     }
   }
@@ -598,22 +554,7 @@ export const onDeleteBill = /* GraphQL */ `
   subscription OnDeleteBill($filter: ModelSubscriptionBillFilterInput) {
     onDeleteBill(filter: $filter) {
       id
-      cashier {
-        id
-        userId
-        username
-        phonenumber
-        image
-        role
-        idcardimage
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        storeUsersId
-        __typename
-      }
+      cashier
       items {
         nextToken
         startedAt
@@ -638,7 +579,6 @@ export const onDeleteBill = /* GraphQL */ `
       _deleted
       _lastChangedAt
       storeBillsId
-      userBillsId
       __typename
     }
   }
@@ -657,6 +597,7 @@ export const onCreatePurchaseOrder = /* GraphQL */ `
         image
         role
         idcardimage
+        bills
         createdAt
         updatedAt
         _version
@@ -705,6 +646,7 @@ export const onUpdatePurchaseOrder = /* GraphQL */ `
         image
         role
         idcardimage
+        bills
         createdAt
         updatedAt
         _version
@@ -753,6 +695,7 @@ export const onDeletePurchaseOrder = /* GraphQL */ `
         image
         role
         idcardimage
+        bills
         createdAt
         updatedAt
         _version

@@ -202,19 +202,10 @@ export const schema = {
                 },
                 "bills": {
                     "name": "bills",
-                    "isArray": true,
-                    "type": {
-                        "model": "Bill"
-                    },
+                    "isArray": false,
+                    "type": "String",
                     "isRequired": false,
-                    "attributes": [],
-                    "isArrayNullable": true,
-                    "association": {
-                        "connectionType": "HAS_MANY",
-                        "associatedWith": [
-                            "userBillsId"
-                        ]
-                    }
+                    "attributes": []
                 },
                 "purchaseOrders": {
                     "name": "purchaseOrders",
@@ -593,17 +584,9 @@ export const schema = {
                 "cashier": {
                     "name": "cashier",
                     "isArray": false,
-                    "type": {
-                        "model": "User"
-                    },
+                    "type": "String",
                     "isRequired": true,
-                    "attributes": [],
-                    "association": {
-                        "connectionType": "BELONGS_TO",
-                        "targetNames": [
-                            "userBillsId"
-                        ]
-                    }
+                    "attributes": []
                 },
                 "items": {
                     "name": "items",
@@ -674,13 +657,6 @@ export const schema = {
                     "type": "ID",
                     "isRequired": false,
                     "attributes": []
-                },
-                "userBillsId": {
-                    "name": "userBillsId",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": false,
-                    "attributes": []
                 }
             },
             "syncable": true,
@@ -689,6 +665,17 @@ export const schema = {
                 {
                     "type": "model",
                     "properties": {}
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byCashierId",
+                        "queryField": "billByCashierId",
+                        "fields": [
+                            "cashier",
+                            "id"
+                        ]
+                    }
                 },
                 {
                     "type": "auth",
@@ -855,5 +842,5 @@ export const schema = {
     },
     "nonModels": {},
     "codegenVersion": "3.4.4",
-    "version": "381f0cc322b797e4727eecfd2906d08b"
+    "version": "82017757c5e48e0448c3b0636dabad22"
 };
