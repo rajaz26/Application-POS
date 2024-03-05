@@ -19,6 +19,7 @@ import Profile from '../screens/Profile';
 import Stats from '../screens/Stats';
 import Product from '../screens/Product';
 import Scan from '../screens/Scan';
+import Scan2 from '../screens/Scan2';
 import CustomDrawer from '../components/Drawer';
 import { NavigationContainer } from '@react-navigation/native';
 import HomeScreen2 from '../screens/HomeScreen2';
@@ -113,6 +114,7 @@ useEffect(() => {
             <Drawer.Screen name="Stats" component={Stats} />
             <Drawer.Screen name="Product" component={Product} />
             <Drawer.Screen name="Scan" component={Scan} />
+            <Drawer.Screen name="Scan2" component={Scan2} />
             <Drawer.Screen name="Upload" component={UploadPurchase} />
             <Drawer.Screen name="Notifications" component={Notifications} />
             <Drawer.Screen name="PurchaseHistory" component={PurchaseHistory} />

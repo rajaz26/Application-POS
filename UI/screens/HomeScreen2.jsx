@@ -13,7 +13,7 @@ import { getCurrentUser, signInWithRedirect, signOut } from "aws-amplify/auth";
 const HomeScreen2 = () => {
   const client = generateClient();
   // const userRole = useSelector((state) => state.user.role);
-  const userRole = 'GENERAL_MANAGER';
+  const userRole = 'WAREHOUSE_MANAGER';
   const navigation = useNavigation();
   const openDrawer = () => {
     navigation.openDrawer();
@@ -89,7 +89,7 @@ const HomeScreen2 = () => {
             {userRole !== 'GENERAL_MANAGER' ? (
               <TouchableOpacity
                 style={styles.iconContainer}
-                onPress={() => navigation.navigate('Scan')}
+                onPress={() => navigation.navigate('Scan2')}
               >
                 <Ionic name="scan" size={28} color={COLORS.primary} />
                 <Text style={styles.iconText}>Scan</Text>
