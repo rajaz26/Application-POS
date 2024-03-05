@@ -14,7 +14,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import FontAwesome from 'react-native-vector-icons/FontAwesome5';
 import {COLORS} from '../assets/theme/index';
 import { SelectList } from 'react-native-dropdown-select-list';
-import { useForm, Controller } from 'react-hook-form'; // Import React Hook Form
+import { useForm, Controller } from 'react-hook-form';
 import { useNavigation } from '@react-navigation/native';
 import { generateClient } from 'aws-amplify/api';
 import { createUser } from '../src/graphql/mutations';
@@ -281,7 +281,7 @@ const AddAccount = () => {
         search={false} 
         renderRightIcon={{ size: 30 }}
         save="value"
-        placeholder={role} // Set placeholder to the current role state
+        placeholder={role} 
         boxStyles={{ borderWidth: 0, left: -16 }} 
         arrowicon={<Ionic style={{ position: 'absolute', right: -15, top: 14 }} size={26} color='rgba(180, 180, 180,4)' name='chevron-down-outline' />}
         inputStyles={{ fontSize: 18.5, top: 1, fontFamily: 'Poppins-Regular', color: 'rgba(140, 140, 140,4)' }}

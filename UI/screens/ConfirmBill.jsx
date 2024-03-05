@@ -1,24 +1,73 @@
-import { StyleSheet, Text, View ,TouchableOpacity,ScrollView,Image} from 'react-native'
-import React from 'react'
+import React, {useState, useEffect, useRef} from 'react';
+import { Animated, StyleSheet, Text, View, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Ionic from 'react-native-vector-icons/Ionicons';
 import { COLORS } from '../assets/theme/index.js';
 import { Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native'; 
-import RNFetchBlob from 'rn-fetch-blob';
+// import RNFetchBlob from 'rn-fetch-blob';
 import { BluetoothEscposPrinter } from 'react-native-bluetooth-escpos-printer';
+import { generateClient } from 'aws-amplify/api';
+import { deleteBill, deleteBillItem, updateBill, updateProduct } from '../src/graphql/mutations';
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
+import { getProduct } from '../src/graphql/queries.js';
+
 const { width, height } = Dimensions.get('window');
 
 
 const ConfirmBill = ({route}) => {
     const navigation=useNavigation();
-    const { scannedProducts, totalBillAmount } = route.params;
+    const { scannedProductsList, totalBillAmountValue, currentBillId, version } = route.params;
+    const [loading, setLoading] = useState(false);
+    const [scannedProducts, setScannedProducts] = useState(scannedProductsList || []);
+    const [totalBillAmount, setTotalBillAmount] = useState(totalBillAmountValue||0);
+    
+    const client = generateClient();
     const handleAddProduct = () => {
-        navigation.navigate('Scan', { scannedProducts: scannedProducts });
+        navigation.navigate('Scan', { scannedProductsList: scannedProducts });
     };
+    const [billStatus, setBillStatus] = useState('UNPAID'); 
+
+    const fadeAnim = useRef(new Animated.Value(0)).current;
+
+    useEffect(() => {
+      if (billStatus === 'PAID') {
+        
+        Animated.timing(fadeAnim, {
+          toValue: 1, 
+          duration: 1900, 
+          useNativeDriver: true,
+        }).start();
+      }
+    }, [billStatus]);
+  
     const printReceipt = async () => {
+        setLoading(true);
         try {
-          // Initialize Printer
+            const updateBillInput = {
+              id: currentBillId,
+              totalAmount: totalBillAmount,
+              status: "PAID",
+              _version: version,
+            };
+      
+            await client.graphql({
+              query: updateBill,
+              variables: { input: updateBillInput },
+              authMode: 'apiKey',
+            });
+      
+            console.log("Bill Finalized Successfully");
+            await updateProductShelfQuantity();
+            console.log("Shelf Quantity Updated Successfully");
+            setLoading(false);
+            setBillStatus('PAID');
+          } catch (error) {
+            setLoading(false);
+            console.error("Error finalizing the bill:", error);
+          }
+        
+        try {
           await BluetoothEscposPrinter.printerInit();
           await BluetoothEscposPrinter.printerLeftSpace(0);
           await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.CENTER);
@@ -53,23 +102,86 @@ const ConfirmBill = ({route}) => {
           console.error("Failed to print receipt:", error);
         }
       };
+      const updateProductShelfQuantity = async () => {
+        try {
+          for (const product of scannedProducts) {
+            const currentProductDetails = await client.graphql({
+              query: getProduct, 
+              variables: { id: product.productId },
+              authMode: 'apiKey',
+            });
+            console.log("Product Fetched",currentProductDetails);
+            const currentShelfQuantity = currentProductDetails.data.getProduct.shelfQuantity;
+            const newShelfQuantity = currentShelfQuantity - product.quantity;
+            await client.graphql({
+              query: updateProduct,
+              variables: {
+                input: {
+                  id: product.productId,
+                  shelfQuantity: newShelfQuantity,
+                },
+              },
+              authMode: 'apiKey',
+            });
+      
+            console.log(`Updated product ${product.name} with new shelf quantity: ${newShelfQuantity}`);
+          }
+        } catch (error) {
+          console.error("Error updating product shelf quantity:", error);
+        }
+      };
+      
+      const deleteBillItemFunction = async (id,billItemVersion) => {
+        try {
+            console.log("Bill item about to be deleted", id, billItemVersion);
+            console.log("Product to be deleted", scannedProducts.find(product => product.id === id));
+            console.log("All bill items before deletion", scannedProducts);
+            await client.graphql({
+                query: deleteBillItem, 
+                variables: { input: { id: id,_version:billItemVersion } },
+                authMode: 'apiKey',
+            });
+            console.log("Bill item deleted successfully");
+            const updatedProducts = scannedProducts.filter(product => product.id !== id && !product._deleted);
+            console.log("Updated Products",updatedProducts);
+            setScannedProducts(updatedProducts);    
+        } catch (error) {
+            console.error("Error deleting bill item:", error);
+        }
+    };
+ 
+
+    useEffect(() => {
+        if (route.params?.scannedProductsList) {
+            const filteredProducts = route.params.scannedProductsList.filter(product => !product._deleted);
+            setScannedProducts(filteredProducts);
+        }
+    }, [route.params?.scannedProductsList]);
     
-    // const convertImageToBase64 = () => {
-    //     const imageUrl = 'https://upload.wikimedia.org/wikipedia/en/6/61/Tang_drinkmix_logo.png';
-    //     RNFetchBlob.fetch('GET', imageUrl, {})
-    //       .then((res) => {
-    //         // The image is now in base64 format
-    //         let base64Str = res.base64();
-    //         console.log(base64Str);
-    //         // You can handle the base64 string here - display it, store it, or send it to a server
-    //       })
-    //       .catch((error) => {
-    //         console.error(error);
-    //       });
-    //   };
+
+    useEffect(() => {
+        const total = scannedProducts.reduce((acc, curr) => acc + (curr.subtotal || 0), 0);
+        setTotalBillAmount(total);
+    }, [scannedProducts]);
+
+
   return (
     
     <SafeAreaView style={styles.headContainer}>
+         {loading && (
+      <View style={styles.loadingContainer}>
+      <AnimatedCircularProgress
+        size={120}
+        width={15}
+        duration={2200} 
+        delay={10}
+        fill={100}
+        tintColor={COLORS.secondary}
+        onAnimationComplete={() => console.log('onAnimationComplete')}
+        backgroundColor="#3d5875" 
+    />
+      </View>
+     )}
         <View style={styles.header}>
             <TouchableOpacity style={styles.arrowBackIcon}  onPress={()=> navigation.goBack()}>
                 <Ionic size={24} color={COLORS.primary} name ='chevron-back-outline'/>
@@ -95,7 +207,7 @@ const ConfirmBill = ({route}) => {
 
         <ScrollView  style={styles.scrollView}>
         {scannedProducts.map((product, index) => (
-            <View  key={product.id || index} style={styles.billsContainer}>
+            <View  key={`${product.id}_${index}`} style={styles.billsContainer}>
                 <View style={styles.billValuesContainer}>
                     <View style={styles.itemText}>
                         <Text style={styles.billValues1}>
@@ -114,16 +226,22 @@ const ConfirmBill = ({route}) => {
                     </View>  
                     <View style={styles.valuePrice}>
                         <Text style={styles.billValues}>
-                            {product.amount}
+                            {product.subtotal}
                         </Text>
                     </View>    
-                    <TouchableOpacity style={styles.deleteBill}>
+                    <TouchableOpacity style={styles.deleteBill} onPress={() => deleteBillItemFunction(product.id,product._version)}>
                         <Ionic style={styles.trash}  size={21.5} color={'red'} name ='trash'/>
                     </TouchableOpacity>
                 </View>
             </View>
              ))}
         </ScrollView>
+        {billStatus === 'PAID' && (
+        
+        <Animated.View style={[styles.paidContainer, {opacity: fadeAnim}]}>
+          <Text style={styles.paidText}>PAID</Text>
+        </Animated.View>
+      )}
         <View style={styles.footerContainer}>
             <View style={styles.footerWrapper}>
                 <TouchableOpacity style={styles.confirmButton} onPress={printReceipt}>
@@ -149,6 +267,14 @@ const styles = StyleSheet.create({
         flex:1,
         backgroundColor:'white',
     },
+    loadingContainer: {
+        ...StyleSheet.absoluteFillObject,
+        position:'absolute',
+        zIndex:999999,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
     header:{
        marginTop:25,
         flex:0,
@@ -241,6 +367,16 @@ const styles = StyleSheet.create({
         color:'gray',
 
     },
+    paidContainer: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginVertical: 10,
+      },
+      paidText: {
+        fontSize: 50, 
+        fontWeight: 'bold',
+        color: 'green',
+      },
     billValues1:{
         fontSize:16,
         color:'gray',
@@ -298,5 +434,4 @@ const styles = StyleSheet.create({
         fontFamily:'Poppins-Regular',
         top:2,
     }
-
 })

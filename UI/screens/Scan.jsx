@@ -18,7 +18,7 @@ import { useNavigation } from '@react-navigation/native';
 import Ionic from 'react-native-vector-icons/Ionicons';
 import {generateClient} from 'aws-amplify/api';
 import Sound from 'react-native-sound';
-import { createBill, createBillItem, updateBill } from '../src/graphql/mutations';
+import { createBill, createBillItem, updateBill, updateBillItem } from '../src/graphql/mutations';
 import { fetchUserAttributes, getCurrentUser } from 'aws-amplify/auth';
 export default function Scan({route}) {
   Sound.setCategory('Playback');
@@ -31,6 +31,9 @@ export default function Scan({route}) {
   const [manualBarcode, setManualBarcode] = React.useState('');
   const [billModalVisible, setBillModalVisible] = React.useState(false);
   const [currentBillId, setCurrentBillId] = useState(null);
+  const [cameraActive, setCameraActive] = useState(true);
+  const [cameraKey, setCameraKey] = useState(1);
+
   const [version, setVersion] = useState(null);
   const devices = useCameraDevices();
   const device = devices.back;
@@ -58,7 +61,6 @@ export default function Scan({route}) {
         id
         name
         barcode
-        image
         price
         manufacturer
         category
@@ -88,6 +90,10 @@ export default function Scan({route}) {
   const stopScanning = () => {
     setIsScanning(false);
   };
+  const refreshCamera = () => {
+    setCameraKey(prevKey => prevKey + 1);
+  };
+  
   const toggleManualEntryModal = () => {
     setManualBarcode('');
     setManualEntryModalVisible(!manualEntryModalVisible);
@@ -109,46 +115,7 @@ export default function Scan({route}) {
   };
   
   const showScannedBarcodes = async () => {
-    if (!currentBillId) {
-        console.error("No bill available to finalize.");
-        return;
-    }
-
-    try {
-        const totalBillAmount = scannedProducts.reduce((acc, product) => acc + (product.quantity * product.price), 0);
-        
-        console.log("Finalizing Bill with Total Amount:", totalBillAmount);
-        
-       
-        const updateBillInput = {
-            id: currentBillId,
-            totalAmount: totalBillAmount,
-            status: "PAID",
-            _version:version,
-
-        };
-
-        const updateBillResponse = await client.graphql({
-            query: updateBill,
-            variables: { input: updateBillInput },
-            authMode: 'apiKey',
-        });
-
-        console.log("Bill Finalized Successfully", updateBillResponse);
-        
-        
-        setCurrentBillId(null);
- 
-        setScannedProducts([]);
-
-        
-    } catch (error) {
-        console.error("Error finalizing the bill:", error);
-    }
-    finally{
-      toggleBillModal(); 
-    }
-    
+toggleBillModal();    
 };
 
   const renderScannedBarcodes = () => {
@@ -160,99 +127,154 @@ export default function Scan({route}) {
             {`${product.name} (Quantity: ${product.quantity})`}
           </Text>
         ))}
+        
+        <Text style={styles.scannedText}>Total Bill Amount: PKR {totalBillAmount.toFixed(2)}</Text>
         <TouchableOpacity onPress={toggleBillModal} style={styles.closeButton}>
           <Text style={styles.closeButtonText}>Close</Text>
         </TouchableOpacity>
       </View>
     );
   };
-  
   const handleBarcodeScanned = async (barcode) => {
     if (!isScanning && manualBarcode === '') return;
     setIsScanning(false);
-
+  
     try {
         const barcodeValue = barcode.displayValue || manualBarcode;
         console.log("Scanned barcode:", barcodeValue);
-
-      
-        const productDetailsResponse = await client.graphql({
-            query: ProductByBarcode,
-            variables: { barcode: barcodeValue },
-            authMode: 'apiKey',
-        });
-
-        if (productDetailsResponse.data.productByBarcode.items.length > 0) {
-            const productDetails = productDetailsResponse.data.productByBarcode.items[0];
-
-           
-            const ensureBillCreated = async () => {
-                if (!currentBillId) {
-                    const userAttributes = await fetchUserAttributes();
-                    const billResponse = await client.graphql({
-                        query: createBill,
-                        variables: {
-                            input: {
-                                cashier: userAttributes.sub, 
-                                totalAmount: 0,
-                                status: 'PENDING',
-                            },
-                        },
-                        authMode: 'apiKey',
-                    });
-                    const newBillId = billResponse.data.createBill.id;
-                    setCurrentBillId(newBillId); 
-                    const billVersion=billResponse.data.createBill._version;
-                    setVersion(billVersion);
-                    console.log("bill version",version);
-                    console.log("New Bill Created :", billResponse.data.createBill);
-                    console.log("bill version",billVersion);
-                    return newBillId; 
-                }
-                return currentBillId;
-            };
-
-            const billId = await ensureBillCreated();
-            await client.graphql({
-                query: createBillItem,
-                variables: {
-                    input: {
-                        productBillItemsId: productDetails.id,
-                        quantity: 1, 
-                        productPrice: productDetails.price,
-                        subtotal: productDetails.price, 
-                        billItemsId: billId, 
-                    },
-                },
+  
+        const existingProductIndex = scannedProducts.findIndex(p => p.barcode === barcodeValue);
+  
+        if (existingProductIndex !== -1) {
+          console.log("Existing barcode");
+          console.log("Bill item before updating:", scannedProducts[existingProductIndex]);
+  
+          let updatedScannedProducts = [...scannedProducts];
+          let productToUpdate = updatedScannedProducts[existingProductIndex];
+          
+          productToUpdate.quantity += 1;
+          productToUpdate.subtotal = productToUpdate.quantity * productToUpdate.price; 
+          try {
+              const response = await client.graphql({
+                  query: updateBillItem,
+                  variables: {
+                      input: {
+                          id: productToUpdate.id,
+                          quantity: productToUpdate.quantity,
+                          subtotal: productToUpdate.subtotal,
+                          _version: productToUpdate._version,
+                      },
+                  },
+                  authMode: 'apiKey',
+              });
+  
+              productToUpdate._version = response.data.updateBillItem._version;
+              console.log("Bill item after updating:", productToUpdate);
+  
+              setScannedProducts(updatedScannedProducts);
+          } catch (error) {
+              console.error("Error updating bill item:", error);
+          }
+      } else {
+          console.log("New barcode");
+  
+            const productDetailsResponse = await client.graphql({
+                query: ProductByBarcode,
+                variables: { barcode: barcodeValue },
                 authMode: 'apiKey',
             });
-
-            console.log("BillItem created for product", productDetails.name);
-            const updatedProduct = { ...productDetails, quantity: 1 };
-            setScannedProducts((prevProducts) => [...prevProducts, updatedProduct]);
+  
+            if (productDetailsResponse.data.productByBarcode.items.length > 0) {
+                const productDetails = productDetailsResponse.data.productByBarcode.items[0]; 
+                
+                const billId = await ensureBillCreated(); 
+                const billItemResponse = await client.graphql({
+                    query: createBillItem,
+                    variables: {
+                        input: {
+                            productBillItemsId: productDetails.id,
+                            quantity: 1,
+                            productPrice: productDetails.price,
+                            subtotal: productDetails.price, 
+                            billItemsId: billId, 
+                            manufacturer:productDetails.manufacturer,
+                            category:productDetails.category,
+                          
+                        },
+                    },
+                    authMode: 'apiKey',
+                });
+                console.log("New Bill Item created ", billItemResponse );
+           
+                const newProductDetails = {
+                    productId:productDetails.id,
+                    price:productDetails.price,
+                    quantity: 1,
+                    id: billItemResponse.data.createBillItem.id,
+                    _version: billItemResponse.data.createBillItem._version,
+                    subtotal: productDetails.price,
+                    barcode: barcodeValue,
+                    _deleted: billItemResponse.data.createBillItem._deleted,
+                    name: productDetails.name,
+                    barcode:productDetails.barcode,
+                };
+                setScannedProducts([...scannedProducts, newProductDetails]);
+            }
         }
     } catch (error) {
         console.error("Error handling barcode scan:", error);
     }
-
-    if (manualBarcode !== '') {
-        setManualBarcode('');
+  
+    if (manualBarcode !== '') setManualBarcode('');
+    console.log("Scanned Products:", scannedProducts);
+  };
+  
+  const ensureBillCreated = async () => {
+    if (!currentBillId) {
+        const userAttributes = await fetchUserAttributes();
+        const billResponse = await client.graphql({
+            query: createBill,
+            variables: {
+                input: {
+                    cashier: userAttributes.sub,
+                    totalAmount: 0,
+                    status: 'PENDING',
+            
+                },
+            },
+            authMode: 'apiKey',
+        });
+        const newBillId = billResponse.data.createBill.id;
+        setCurrentBillId(newBillId);
+        setVersion(billResponse.data.createBill._version);
+        return newBillId;
     }
-
-    const total = scannedProducts.reduce((acc, curr) => acc + (curr.amount || 0), 0);
-    setTotalBillAmount(total);
-};
-
-
-
-  useEffect(() => {
-    const total = scannedProducts.reduce((acc, curr) => acc + (curr.amount || 0), 0);
-    setTotalBillAmount(total);
+    return currentBillId;
+  };
+  
+useEffect(() => {
+  const total = scannedProducts.reduce((acc, curr) => acc + (curr.subtotal || 0), 0);
+  setTotalBillAmount(total);
 }, [scannedProducts]);
+
 
 const handleConfirmPressed = () => {
   console.log("Accumulated product details:", scannedProducts, "Total Bill Amount:", totalBillAmount);
-  navigation.navigate('ConfirmBill', { scannedProducts: scannedProducts, totalBillAmount: totalBillAmount });
+  
+    if (scannedProducts.length > 0) {
+      navigation.navigate('ConfirmBill', {
+        scannedProductsList: scannedProducts,
+        totalBillAmountValue: totalBillAmount,
+        currentBillId: currentBillId,
+        version: version,
+      });
+    } else {
+      alert('Scan a product first.');
+    
+  };
+  
+  // navigation.navigate('ConfirmBill', { scannedProducts: scannedProducts, totalBillAmount: totalBillAmount });
+
 };
 
   
@@ -260,24 +282,27 @@ const handleConfirmPressed = () => {
     barcodes.forEach(handleBarcodeScanned);
   }, [barcodes]);
 
-  React.useEffect(() => {
-    if (route.params?.scannedProducts) {
-        // Merge passed scannedProducts with current list, or handle as needed
-        setScannedProducts([...scannedProducts, ...route.params.scannedProducts]);
+  useEffect(() => {
+    if (route.params?.scannedProductsList) {
+      setScannedProducts(route.params.scannedProductsList);
     }
-}, [route.params?.scannedProducts]);
+  }, []);
+  
+
 
   return (
     device != null &&
     hasPermission && (
       <View style={styles.container}>
-      <Camera
-  style={StyleSheet.absoluteFill}
-  device={device}
-  isActive={true} 
-  frameProcessor={frameProcessor}
-  frameProcessorFps={5}
-/>
+
+<Camera
+    key={cameraKey}
+    style={StyleSheet.absoluteFill}
+    device={device}
+    isActive={true}
+    frameProcessor={frameProcessor}
+    frameProcessorFps={5}
+  />
         
         {/* <TouchableOpacity
           onPress={toggleScanning}
@@ -328,10 +353,17 @@ const handleConfirmPressed = () => {
         )}
           {scannedProducts.length > 0 && (
             <TouchableOpacity  style={styles.confirmButton} onPress={handleConfirmPressed}>
-              <Ionic size={25} color={'white'} name="newspaper-outline" />
+              <Ionic size={25} color={'white'} name="print-outline" />
               <Text style={styles.buttonTextShow}>Confirm</Text>
             </TouchableOpacity>
         )}
+
+<TouchableOpacity onPress={refreshCamera} style={styles.confirmButton}>
+<Ionic size={25} color={'white'} name="camera-outline" />
+  <Text style={styles.buttonTextShow}>Refresh</Text>
+  <Text style={styles.buttonTextShow}>Camera</Text>
+</TouchableOpacity>
+
        </View>
         <Modal
           visible={manualEntryModalVisible}
@@ -518,9 +550,9 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   scanButtonPressed: {
-    backgroundColor: COLORS.secondary, // Color when button is pressed
+    backgroundColor: COLORS.secondary, 
   },
   scanButtonNotPressed: {
-    backgroundColor: COLORS.primary, // Default color
+    backgroundColor: COLORS.primary, 
   },
 });
