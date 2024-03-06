@@ -17,7 +17,7 @@ const SignUpScreen = () => {
     setLoading(true);
     Keyboard.dismiss();
     console.log('data received:', data);
-    if (!data.username || !data.password || !data.confirmPassword || !data.email) {
+    if (!data.username || !data.password || !data.confirmPassword || !data.email || !data.phonenumber) {
       console.error('Please fill in all the required fields');
       setLoading(false);
       return;
@@ -39,6 +39,7 @@ const SignUpScreen = () => {
       const username=data.username;
       const password=data.password;
       const email=data.email;
+      // const phonenumber=data.phonenumber;
       const user = await signUp({
         username,
         password,
@@ -49,6 +50,7 @@ const SignUpScreen = () => {
       }
       });
       console.log('Sign-up success', user);
+      const userId=user.userId;
       // const createStoreResponse = await client.graphql({
       //   query: createStore,
       //   variables: { input: newStore},
@@ -57,7 +59,7 @@ const SignUpScreen = () => {
       reset();
       
       if (data && data.username) {
-        navigation.navigate('ConfirmSignUp', { username: data.username, storeName: data.storeName });
+        navigation.navigate('ConfirmSignUp', { username: data.username, phonenumber: data.phonenumber, userId:userId });
       } else {
         console.error('Username not found in data:', data);
       }
@@ -123,15 +125,15 @@ const SignUpScreen = () => {
             defaultValue=""
           />
           {errors.confirmPassword && <Text style={{ color: 'red' }}>This field is required</Text>}
-          <Text style={styles.formText}>Store Name</Text>
+          <Text style={styles.formText}>Phone Number</Text>
 <Controller
   control={control}
   rules={{ required: true }}
   render={({ field }) => <TextInput style={styles.formInput} {...field} onChangeText={field.onChange} value={field.value} />}
-  name="storeName"
+  name="phonenumber"
   defaultValue=""
 />
-{errors.storeName && <Text style={{ color: 'red' }}>This field is required</Text>}
+{errors.phonenumber && <Text style={{ color: 'red' }}>This field is required</Text>}
         </View>
        
         <View style={styles.signupButtonContainer}>

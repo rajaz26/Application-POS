@@ -6,7 +6,7 @@ import {
   View,
   Modal,
   TextInput,
-  Button,
+  Alert
 } from 'react-native';
 // import beep from '../android/app/src/main/res/raw/beep.mp3';
 // import SoundPlayer from 'react-native-sound-player'
@@ -199,7 +199,6 @@ toggleBillModal();
                             billItemsId: billId, 
                             manufacturer:productDetails.manufacturer,
                             category:productDetails.category,
-                          
                         },
                     },
                     authMode: 'apiKey',
@@ -288,7 +287,28 @@ const handleConfirmPressed = () => {
     }
   }, []);
   
+  const handleRefreshConfirm = () => {
+    Alert.alert(
+      "Refresh List",
+      "Are you sure you want to refresh the scanned products list? This action cannot be undone.",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel"
+        },
+        { text: "OK", onPress: () => refreshScannedProductsList() }
+      ],
+      { cancelable: false }
+    );
+  };
+  
+  const refreshScannedProductsList = () => {
+    setScannedProducts([]);
+    console.log("Scanned products list has been refreshed.");
+  };
 
+  
 
   return (
     device != null &&
@@ -355,6 +375,12 @@ const handleConfirmPressed = () => {
             <TouchableOpacity  style={styles.confirmButton} onPress={handleConfirmPressed}>
               <Ionic size={25} color={'white'} name="print-outline" />
               <Text style={styles.buttonTextShow}>Confirm</Text>
+            </TouchableOpacity>
+        )}
+        {scannedProducts.length > 0 && (
+            <TouchableOpacity  style={styles.confirmButton} onPress={handleRefreshConfirm}>
+              <Ionic size={25} color={'white'} name="refresh-outline" />
+              <Text style={styles.buttonTextShow}>Clear</Text>
             </TouchableOpacity>
         )}
 

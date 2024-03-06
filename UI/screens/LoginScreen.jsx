@@ -15,12 +15,16 @@ import {
   useAuthenticator
 } from '@aws-amplify/ui-react-native';
 import { signOut } from 'aws-amplify/auth';
+import { setUserDetails } from '../store/userSlice.js';
+import { useDispatch } from 'react-redux';
+import { generateClient } from 'aws-amplify/api';
 
 const LoginScreen = () => {
   const navigation=useNavigation();
   const { handleSubmit, control, formState: { errors }, reset } = useForm(); 
   const [loading, setLoading] = useState(null);
-
+  const dispatch = useDispatch();
+  const client = generateClient();
 const handleSignOut = async () => {
   console.log('signed out')
   try {
@@ -30,6 +34,41 @@ const handleSignOut = async () => {
     console.log('error signing out: ', error);
   }
 }
+
+const userByIdQuery = /* GraphQL */ `
+query UserById($userId: ID!) {
+  userById(userId: $userId) {
+    items {
+      id
+      userId
+      username
+      phonenumber
+      image
+      role
+      idcardimage
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeUsersId
+      __typename
+    }
+  }
+}
+`;
+
   const onSubmit = async (data) => {
     Keyboard.dismiss();
     if(loading){
@@ -50,7 +89,24 @@ const handleSignOut = async () => {
       reset();
       console.log(data);
        const authUser = await getCurrentUser({bypassCache: true});
-        console.log('User just logged in',authUser);
+       const idUser=authUser.userId;
+        console.log('User just logged in',idUser);
+        const userData  = await client.graphql({
+          query: userByIdQuery,
+          variables: { userId: idUser },
+          authMode: 'apiKey',
+        });
+        console.log(userData);
+        const userDetails = userData.data.userById.items[0];
+    if ( await userDetails) {
+      
+      // Dispatch setUserDetails action with all necessary details
+      dispatch(setUserDetails({
+        userId: userDetails.userId,
+        username: userDetails.username,
+        role: userDetails.role,
+      }));
+    }
       navigation.navigate('Home', { screen: 'Dashboard' });
     } catch (error) {
       console.error('Login error has occurred', error);

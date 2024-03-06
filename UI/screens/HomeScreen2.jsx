@@ -1,36 +1,114 @@
 import { SafeAreaView, StyleSheet, Image,Text, TouchableOpacity, View } from 'react-native'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import SalesLineChart from '../components/SalesLineChart'
 import { COLORS } from '../assets/theme'
 import Ionic from 'react-native-vector-icons/Ionicons';
 import {productsObj} from '../assets/Products';
 import { useNavigation } from '@react-navigation/native'; 
-import { useSelector } from 'react-redux'; 
+import { useSelector} from 'react-redux'; 
 import { createProduct } from '../src/graphql/mutations';
-// import { API, graphqlOperation } from 'aws-amplify/api';
+import { useDispatch } from 'react-redux';
+import { setUserDetails } from '../store/userSlice';
+import { fetchUserAttributes } from 'aws-amplify/auth';
 import { generateClient } from 'aws-amplify/api';
+
 import { getCurrentUser, signInWithRedirect, signOut } from "aws-amplify/auth";
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
 const HomeScreen2 = () => {
+  const dispatch = useDispatch();
   const client = generateClient();
-  // const userRole = useSelector((state) => state.user.role);
-  const userRole = 'WAREHOUSE_MANAGER';
+ const userRole = useSelector((state) => state.user.role);
+ const [loading, setLoading] = useState(true); 
+//const userRole = 'GENERAL_MANAGER';
   const navigation = useNavigation();
   const openDrawer = () => {
     navigation.openDrawer();
   };
   
+  useEffect(() => {
+    console.log("User role from Redux store:", userRole);
+  }, [userRole]);
+
   
-  // const handleSignOut = async() => {
-  //   console.log('SignOut funtion');
-  //   const authUser = await getCurrentUser({ bypassCache: true });
-  //   console.log(authUser);
-  //   await signOut();
-  //   console.log('SignOut funtion done');
-  //   console.log(authUser);
-  // };
+const userByIdQuery = /* GraphQL */ `
+query UserById($userId: ID!) {
+  userById(userId: $userId) {
+    items {
+      id
+      userId
+      username
+      phonenumber
+      image
+      role
+      idcardimage
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeUsersId
+      __typename
+    }
+  }
+}
+`;
+useEffect(() => {
+  const fetchUserDetails = async () => {
+    try {
+      const currentUser = await fetchUserAttributes();
+      const userId = currentUser.sub; 
+
+      const { data } = await client.graphql({
+        query: userByIdQuery,
+        variables: { userId: userId },
+        authMode: 'apiKey',
+      });
+
+      const userDetails = data.userById.items[0]; 
+      if (userDetails) {
+        dispatch(setUserDetails({
+          userId: userDetails.userId,
+          username: userDetails.username,
+          role: userDetails.role,
+        }));
+        setLoading(false); 
+      }
+    } catch (error) {
+      console.error("Error fetching user details:", error);
+      setLoading(false); 
+    }
+  };
+
+  fetchUserDetails();
+}, [dispatch]);
+
 
   return (
     <View style={{flex:1,backgroundColor:COLORS.primary}}>
+      {loading && 
+      <View style={styles.loadingContainer}>
+       <AnimatedCircularProgress
+  size={120}
+  width={15}
+  fill={100}
+  prefill={0} 
+  delay={10}
+  duration={2200} 
+  tintColor={COLORS.secondary}
+  onAnimationComplete={() => console.log('onAnimationComplete')}
+  backgroundColor="white" />
+  </View>}
         <View style={styles.wrapper}>
           
         {userRole === 'GENERAL_MANAGER' && (
@@ -51,6 +129,9 @@ const HomeScreen2 = () => {
           (userRole === 'CASHIER' || userRole === 'WAREHOUSE_MANAGER' || userRole === 'PURCHASER') ? {justifyContent:'space-evenly' } : null,
         ]}> 
                 <View style={styles.menuContainer}>
+                <TouchableOpacity style={styles.drawerIcon2} onPress={openDrawer}>
+                     <Ionic name="menu-outline" size={30} color={COLORS.primary}  style={styles.drawerIcon2} />
+                  </TouchableOpacity>  
                   <Text style={styles.menuText}>Menu</Text>
                 </View>
                 <View style={styles.iconWrapper}>    
@@ -478,13 +559,16 @@ const styles = StyleSheet.create({
   },
   menuContainer:{
     marginTop:10,
-    paddingHorizontal:30,
+  left:5,
     marginBottom:10,
+    flexDirection:'row',
+    alignItems:'center',
   },
   menuText:{
     fontFamily:'Poppins-SemiBold',
     fontSize:17,
     color:'gray',
+    top:2,
   },
   previousText:{
     fontFamily:'Poppins-SemiBold',
@@ -495,10 +579,24 @@ const styles = StyleSheet.create({
   safeArea:{
     flex:1,
   },
+  loadingContainer: {
+    ...StyleSheet.absoluteFillObject,
+    position:'absolute',
+    zIndex:999999,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   drawerIcon:{
     position:'absolute',
     left:10,
     top:10,
+  },
+  drawerIcon2:{
+    // position:'absolute',
+    // left:10,
+    // top:10,
+    marginRight:5,
   },
   body:{
     backgroundColor:'white',

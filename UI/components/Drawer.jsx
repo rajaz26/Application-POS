@@ -16,9 +16,13 @@ import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { COLORS } from '../assets/theme';
 import { useNavigation } from '@react-navigation/native'; 
 import { signOut } from 'aws-amplify/auth';
+import { useDispatch, useSelector } from 'react-redux';
+import { clearUserDetails } from '../store/userSlice';
 
 const Drawer = props => {
   const navigation = useNavigation();
+  const userRole = useSelector((state) => state.user.role);
+  const userName=useSelector((state) => state.user.username);
   const handleSignOut = async () => {
     console.log('Signing out...');
 
@@ -26,6 +30,7 @@ const Drawer = props => {
         props.navigation.closeDrawer();
         setTimeout(async () => {
             await signOut();
+            useDispatch(clearUserDetails());
             console.log('Signed out');
         }, 300);
     } catch (error) {
@@ -51,7 +56,7 @@ const Drawer = props => {
               top:1,
               marginBottom: 5,
             }}>
-            Raja Zain
+            {userName}
           </Text>
           <View style={{flexDirection: 'row'}}>
             <Text
@@ -60,7 +65,7 @@ const Drawer = props => {
                 fontFamily: 'Poppins-Regular',
                 marginRight: 5,
               }}>
-              Admin
+              {userRole}
             </Text>
             <Ionicons name="person-circle-outline" size={18} color={'white'} />
           </View>
