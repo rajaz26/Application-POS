@@ -209,19 +209,10 @@ export const schema = {
                 },
                 "purchaseOrders": {
                     "name": "purchaseOrders",
-                    "isArray": true,
-                    "type": {
-                        "model": "PurchaseOrder"
-                    },
+                    "isArray": false,
+                    "type": "String",
                     "isRequired": false,
-                    "attributes": [],
-                    "isArrayNullable": true,
-                    "association": {
-                        "connectionType": "HAS_MANY",
-                        "associatedWith": [
-                            "userPurchaseOrdersId"
-                        ]
-                    }
+                    "attributes": []
                 },
                 "createdAt": {
                     "name": "createdAt",
@@ -708,17 +699,9 @@ export const schema = {
                 "purchaser": {
                     "name": "purchaser",
                     "isArray": false,
-                    "type": {
-                        "model": "User"
-                    },
+                    "type": "ID",
                     "isRequired": true,
-                    "attributes": [],
-                    "association": {
-                        "connectionType": "BELONGS_TO",
-                        "targetNames": [
-                            "userPurchaseOrdersId"
-                        ]
-                    }
+                    "attributes": []
                 },
                 "image": {
                     "name": "image",
@@ -786,13 +769,6 @@ export const schema = {
                     "type": "ID",
                     "isRequired": false,
                     "attributes": []
-                },
-                "userPurchaseOrdersId": {
-                    "name": "userPurchaseOrdersId",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": false,
-                    "attributes": []
                 }
             },
             "syncable": true,
@@ -801,6 +777,17 @@ export const schema = {
                 {
                     "type": "model",
                     "properties": {}
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byPurchaserId",
+                        "queryField": "poByPurchaserId",
+                        "fields": [
+                            "purchaser",
+                            "id"
+                        ]
+                    }
                 },
                 {
                     "type": "auth",
@@ -842,5 +829,5 @@ export const schema = {
     },
     "nonModels": {},
     "codegenVersion": "3.4.4",
-    "version": "82017757c5e48e0448c3b0636dabad22"
+    "version": "707eeabcf2bdbeb32f07620414e84171"
 };

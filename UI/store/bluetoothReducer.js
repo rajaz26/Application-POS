@@ -2,7 +2,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  connectedDevice: null,
+  connectedDevice: {
+    device: null,
+    name: null,
+  },
 };
 
 const bluetoothSlice = createSlice({
@@ -13,7 +16,10 @@ const bluetoothSlice = createSlice({
       state.connectedDevice = action.payload;
     },
     clearConnectedDevice: state => {
-      state.connectedDevice = null;
+      state.connectedDevice = {
+        device: null,
+        name: null,
+      };
     },
   },
 });

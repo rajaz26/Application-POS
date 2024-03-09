@@ -69,7 +69,7 @@ type EagerUser = {
   readonly idcardimage?: (string | null)[] | null;
   readonly store?: Store | null;
   readonly bills?: string | null;
-  readonly purchaseOrders?: (PurchaseOrder | null)[] | null;
+  readonly purchaseOrders?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly storeUsersId?: string | null;
@@ -89,7 +89,7 @@ type LazyUser = {
   readonly idcardimage?: (string | null)[] | null;
   readonly store: AsyncItem<Store | undefined>;
   readonly bills?: string | null;
-  readonly purchaseOrders: AsyncCollection<PurchaseOrder>;
+  readonly purchaseOrders?: string | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly storeUsersId?: string | null;
@@ -237,7 +237,7 @@ type EagerPurchaseOrder = {
     readOnlyFields: 'createdAt' | 'updatedAt';
   };
   readonly id: string;
-  readonly purchaser: User;
+  readonly purchaser: string;
   readonly image?: string[] | null;
   readonly vendor?: string | null;
   readonly amount?: number | null;
@@ -246,7 +246,6 @@ type EagerPurchaseOrder = {
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly storePurchaseOrdersId?: string | null;
-  readonly userPurchaseOrdersId?: string | null;
 }
 
 type LazyPurchaseOrder = {
@@ -255,7 +254,7 @@ type LazyPurchaseOrder = {
     readOnlyFields: 'createdAt' | 'updatedAt';
   };
   readonly id: string;
-  readonly purchaser: AsyncItem<User>;
+  readonly purchaser: string;
   readonly image?: string[] | null;
   readonly vendor?: string | null;
   readonly amount?: number | null;
@@ -264,7 +263,6 @@ type LazyPurchaseOrder = {
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly storePurchaseOrdersId?: string | null;
-  readonly userPurchaseOrdersId?: string | null;
 }
 
 export declare type PurchaseOrder = LazyLoading extends LazyLoadingDisabled ? EagerPurchaseOrder : LazyPurchaseOrder

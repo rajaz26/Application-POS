@@ -20,7 +20,7 @@ import Ionic from 'react-native-vector-icons/Ionicons';
 import {generateClient} from 'aws-amplify/api';
 import Sound from 'react-native-sound';
 import { updateProduct } from '../src/graphql/mutations';
-export default function Scan({route}) {
+export default function Scan2({route}) {
   Sound.setCategory('Playback');
   const [hasPermission, setHasPermission] = React.useState(false);
   const [isScanning, setIsScanning] = React.useState(true);

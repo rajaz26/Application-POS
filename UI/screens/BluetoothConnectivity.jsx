@@ -12,12 +12,14 @@ const BluetoothPrinterScreen = () => {
   const [devices, setDevices] = useState([]);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(null);
+  const [devicesLoaded, setDevicesLoaded] = useState(false);
   const connectedDevice = useSelector(selectConnectedDevice);
   const navigation=useNavigation();
   useEffect(() => {
     requestBluetoothPermission();
   }, []);
 
+  
   const requestBluetoothPermission = async () => {
     try {
       const granted = await PermissionsAndroid.request(
@@ -31,48 +33,59 @@ const BluetoothPrinterScreen = () => {
         }
       );
       if (granted !== PermissionsAndroid.RESULTS.GRANTED) {
-        Alert.alert("Bluetooth Permission Required", "Kindly Enable Bluetooth and Connect to Printer");
+        // Alert.alert("Bluetooth Permission Required", "Kindly Enable Bluetooth and Connect to Printer");
       }
     } catch (err) {
       console.warn(err);
     }
   };
-
   const enableBluetooth = async () => {
-   
     try {
       await BluetoothManager.enableBluetooth().then((r) => {
         const pairedDevices = r.map(device => JSON.parse(device));
         setDevices(pairedDevices);
-       
+        setDevicesLoaded(true); // Set devicesLoaded to true when devices are loaded
         Alert.alert("Bluetooth Enabled", "Paired devices loaded \n Now select the printer to be connected");
       });
     } catch (error) {
-     
       Alert.alert("Error Enabling Bluetooth", error.message);
     }
   };
-
-  const connectToDevice = async (address) => {
-    setLoading(true);
-    try {
-      await BluetoothManager.connect(address)
-        .then(() => {
-          dispatch(setConnectedDevice(address)); // Dispatch action to set connected device
-          console.log(`Connected to device: ${address}`); // Log connectivity details
-          setLoading(false);
-          Alert.alert("Connected", `Device ${address} connected successfully`);
-        }, (err) => {
-          setLoading(false);
-          Alert.alert("Connection Error", `Cannot connect to the device: ${err}`);
-        });
-    } catch (error) {
+  
+const connectToDevice = async (address, name) => { // Modify the function signature to accept both address and name
+  setLoading(true);
+  console.log("Name", name);
+  try {
+    await BluetoothManager.connect(address)
+      .then(() => {
+        dispatch(setConnectedDevice({ address, name })); // Dispatch action with object containing address and name
+        console.log(`Connected to device: ${address}`); // Log connectivity details
+        setLoading(false);
+        Alert.alert("Connected", `Device ${name} connected successfully`); // Use the device name in the alert message
+      }, (err) => {
+        setLoading(false);
+        Alert.alert("Connection Error", `Cannot connect to the device: ${err}`);
+      });
+  } catch (error) {
+    setLoading(false);
+    Alert.alert("Connection Failed", error.message);
+  }
+};
+const reloadDevices = async () => {
+  setLoading(true);
+  setDevicesLoaded(false); // Set devicesLoaded to false before reloading
+  try {
+    await BluetoothManager.enableBluetooth().then((r) => {
+      const pairedDevices = r.map(device => JSON.parse(device));
+      setDevices(pairedDevices);
+      setDevicesLoaded(true); // Set devicesLoaded to true after reloading
       setLoading(false);
-      Alert.alert("Connection Failed", error.message);
-      
-    }
-  };
-
+    });
+  } catch (error) {
+    setLoading(false);
+    Alert.alert("Error Reloading Devices", error.message);
+  }
+};
   const disconnectDevice = async () => {
     // Assuming BluetoothManager has a method to disconnect
     try {
@@ -102,58 +115,70 @@ const BluetoothPrinterScreen = () => {
       Alert.alert("Printing Error", error.message);
     }
   };
-
   return (
-    <View style={{flex:1}}>
+    <View style={{ flex: 1 }}>
       {loading && (
-      <View style={styles.loadingContainer}>
-      <AnimatedCircularProgress
-  size={120}
-  width={15}
-  fill={100}
-  prefill={0} 
-  duration={2000} 
-  delay={0}
-  easing={Easing.inOut(Easing.ease)} 
-  tintColor={COLORS.secondary}
-  onAnimationComplete={() => console.log('onAnimationComplete')}
-  backgroundColor="#3d5875" />
-    </View>
-     )}
-   
-    <View style={styles.container}>
-       
-     <SafeAreaView style={styles.safeArea}>
-            <View style={styles.headerContainer}>
-                <TouchableOpacity style={styles.arrowBack}  onPress={()=> navigation.goBack()}>
-                    <Ionic size={22} color='white' name ='chevron-back-outline'/>
-                </TouchableOpacity>
-                <Text style={styles.cashierHeading}>Bluetooth Connection</Text>
-            </View>
+        <View style={styles.loadingContainer}>
+          <AnimatedCircularProgress
+            size={120}
+            width={15}
+            fill={100}
+            prefill={0}
+            duration={2000}
+            delay={0}
+            easing={Easing.inOut(Easing.ease)}
+            tintColor={COLORS.secondary}
+            onAnimationComplete={() => console.log('onAnimationComplete')}
+            backgroundColor="#3d5875" />
+        </View>
+      )}
+
+      <View style={styles.container}>
+        <SafeAreaView style={styles.safeArea}>
+          <View style={styles.headerContainer}>
+            <TouchableOpacity style={styles.arrowBack} onPress={() => navigation.goBack()}>
+              <Ionic size={22} color='white' name='chevron-back-outline' />
+            </TouchableOpacity>
+            <Text style={styles.cashierHeading}>Bluetooth Connection</Text>
+          </View>
         </SafeAreaView>
-      <FlatList
-        data={devices}
-        style={styles.listDevices}
-        keyExtractor={item => item.address}
-        renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => connectToDevice(item.address)} style={styles.listDevicesButton}>
-            <Text style={styles.listText}>{item.name} - {item.address}</Text>
+
+       
+{devices.length === 0 && (
+ <View style={styles.noOrdersContainer}>
+ <Text style={styles.noOrdersText}>Kindly Enable Bluetooth and Connect to Printer</Text>
+ <Ionic size={52} color={COLORS.primary} name ='arrow-down-outline' style={styles.arrowDown}/>
+</View>     )}
+
+      {devices.length > 0 && (
+        <FlatList
+          data={devices}
+          style={styles.listDevices}
+          keyExtractor={item => item.address}
+          renderItem={({ item }) => (
+            <TouchableOpacity onPress={() => connectToDevice(item.address,item.name)} style={styles.listDevicesButton}>
+              <Text style={styles.listText}>{item.name} - {item.address}</Text>
+            </TouchableOpacity>
+          )}
+        />
+      )}
+        <View style={styles.buttonContainer}>
+          {!devicesLoaded && (
+            <TouchableOpacity style={styles.enableButton} onPress={enableBluetooth} >
+              <Text style={styles.enableText}>Enable Bluetooth & Load Paired Devices</Text>
+            </TouchableOpacity>
+          )}
+           {devicesLoaded && ( 
+          <TouchableOpacity style={styles.enableButton} onPress={reloadDevices}>
+            <Text style={styles.enableText}>Reload the list</Text>
           </TouchableOpacity>
         )}
-      />
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.enableButton} onPress={enableBluetooth} >
-        <Text style={styles.enableText}>Enable Bluetooth & Load Paired Devices</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.printButton} onPress={printTestReceipt} >
-        <Text style={styles.printText}>Print Test Receipt</Text>
-        </TouchableOpacity>
-        {/* {connectedDevice && 
-        <TouchableOpacity style={styles.enableButton} onPress={disconnectDevice}>
-        <Text style={styles.enableText}>Disable</Text>
-        </TouchableOpacity>} */}
+
+          <TouchableOpacity style={styles.printButton} onPress={printTestReceipt} >
+            <Text style={styles.printText}>Print Test Receipt</Text>
+          </TouchableOpacity>
         </View>
-        </View>
+      </View>
     </View>
   );
 };
@@ -188,6 +213,9 @@ printButton:{
     alignItems:'center',
     borderRadius:15,
     marginVertical:5,
+  },
+  arrowDown:{
+    top:20,
   },
   enableText: {
     fontSize: 15,
@@ -224,6 +252,18 @@ headerContainer:{
     alignItems:'center',
     paddingVertical:25,
     borderBottomLeftRadius:30,
+},
+
+noOrdersContainer: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+noOrdersText: {
+  fontSize: 20,
+  fontFamily:'Poppins-Medium',
+  color: COLORS.primary,
+  textAlign:'center'
 },
 cashierHeading:{
     color:'white',

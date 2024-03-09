@@ -55,6 +55,9 @@
     "referencetotransformerrootstackStoreNestedStackStoreNestedStackResource158BCF63OutputstransformerrootstackStoreQuerygetStorepostAuth0FunctionQuerygetStorepostAuth0FunctionAppSyncFunction72FEF36FFunctionId": {
       "Type": "String"
     },
+    "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name": {
+      "Type": "String"
+    },
     "referencetotransformerrootstackStoreNestedStackStoreNestedStackResource158BCF63OutputstransformerrootstackStoreMutationcreateStoreinit0FunctionMutationcreateStoreinit0FunctionAppSyncFunction10A476FFFunctionId": {
       "Type": "String"
     },
@@ -125,11 +128,11 @@
             "AttributeType": "S"
           },
           {
-            "AttributeName": "storePurchaseOrdersId",
+            "AttributeName": "purchaser",
             "AttributeType": "S"
           },
           {
-            "AttributeName": "userPurchaseOrdersId",
+            "AttributeName": "storePurchaseOrdersId",
             "AttributeType": "S"
           }
         ],
@@ -144,11 +147,15 @@
         },
         "GlobalSecondaryIndexes": [
           {
-            "IndexName": "gsi-Store.purchaseOrders",
+            "IndexName": "byPurchaserId",
             "KeySchema": [
               {
-                "AttributeName": "storePurchaseOrdersId",
+                "AttributeName": "purchaser",
                 "KeyType": "HASH"
+              },
+              {
+                "AttributeName": "id",
+                "KeyType": "RANGE"
               }
             ],
             "Projection": {
@@ -172,10 +179,10 @@
             }
           },
           {
-            "IndexName": "gsi-User.purchaseOrders",
+            "IndexName": "gsi-Store.purchaseOrders",
             "KeySchema": [
               {
-                "AttributeName": "userPurchaseOrdersId",
+                "AttributeName": "storePurchaseOrdersId",
                 "KeyType": "HASH"
               }
             ],
@@ -713,6 +720,36 @@
         "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)"
       }
     },
+    "QuerysyncPurchaseOrderspreAuth0FunctionQuerysyncPurchaseOrderspreAuth0FunctionAppSyncFunctionE6861122": {
+      "Type": "AWS::AppSync::FunctionConfiguration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "DataSourceName": {
+          "Ref": "referencetotransformerrootstackGraphQLAPINONEDS2BA9D1C8Name"
+        },
+        "Name": "QuerysyncPurchaseOrderspreAuth0Function",
+        "FunctionVersion": "2018-05-29",
+        "RequestMappingTemplateS3Location": {
+          "Fn::Join": [
+            "",
+            [
+              "s3://",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+              },
+              "/",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+              },
+              "/resolvers/Query.syncPurchaseOrders.preAuth.1.req.vtl"
+            ]
+          ]
+        },
+        "ResponseMappingTemplate": "$util.toJson({})"
+      }
+    },
     "QuerySyncPurchaseOrdersDataResolverFnQuerySyncPurchaseOrdersDataResolverFnAppSyncFunctionB88E9021": {
       "Type": "AWS::AppSync::FunctionConfiguration",
       "Properties": {
@@ -779,6 +816,12 @@
         "Kind": "PIPELINE",
         "PipelineConfig": {
           "Functions": [
+            {
+              "Fn::GetAtt": [
+                "QuerysyncPurchaseOrderspreAuth0FunctionQuerysyncPurchaseOrderspreAuth0FunctionAppSyncFunctionE6861122",
+                "FunctionId"
+              ]
+            },
             {
               "Ref": "referencetotransformerrootstackStoreNestedStackStoreNestedStackResource158BCF63OutputstransformerrootstackStoreQuerygetStoreauth0FunctionQuerygetStoreauth0FunctionAppSyncFunction12764B24FunctionId"
             },
@@ -1328,6 +1371,105 @@
                 "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
               },
               "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n\n$util.qr($ctx.stash.put(\"identityPoolId\", \"ap-south-1:9a7c6a09-58cf-4ecc-9d5a-5b7eb271e57e\"))\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
+            ]
+          ]
+        },
+        "ResponseMappingTemplate": "$util.toJson($ctx.prev.result)"
+      }
+    },
+    "QueryPoByPurchaserIdDataResolverFnQueryPoByPurchaserIdDataResolverFnAppSyncFunction2822AD7E": {
+      "Type": "AWS::AppSync::FunctionConfiguration",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "DataSourceName": {
+          "Fn::GetAtt": [
+            "PurchaseOrderDataSource",
+            "Name"
+          ]
+        },
+        "Name": "QueryPoByPurchaserIdDataResolverFn",
+        "FunctionVersion": "2018-05-29",
+        "RequestMappingTemplateS3Location": {
+          "Fn::Join": [
+            "",
+            [
+              "s3://",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+              },
+              "/",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+              },
+              "/resolvers/Query.poByPurchaserId.req.vtl"
+            ]
+          ]
+        },
+        "ResponseMappingTemplateS3Location": {
+          "Fn::Join": [
+            "",
+            [
+              "s3://",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentBucket7592718ARef"
+              },
+              "/",
+              {
+                "Ref": "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref"
+              },
+              "/resolvers/Query.poByPurchaserId.res.vtl"
+            ]
+          ]
+        },
+        "SyncConfig": {
+          "ConflictDetection": "VERSION",
+          "ConflictHandler": "AUTOMERGE"
+        }
+      },
+      "DependsOn": [
+        "PurchaseOrderDataSource"
+      ]
+    },
+    "QuerypoByPurchaserIdResolver": {
+      "Type": "AWS::AppSync::Resolver",
+      "Properties": {
+        "ApiId": {
+          "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+        },
+        "FieldName": "poByPurchaserId",
+        "TypeName": "Query",
+        "Kind": "PIPELINE",
+        "PipelineConfig": {
+          "Functions": [
+            {
+              "Ref": "referencetotransformerrootstackStoreNestedStackStoreNestedStackResource158BCF63OutputstransformerrootstackStoreQuerygetStoreauth0FunctionQuerygetStoreauth0FunctionAppSyncFunction12764B24FunctionId"
+            },
+            {
+              "Ref": "referencetotransformerrootstackStoreNestedStackStoreNestedStackResource158BCF63OutputstransformerrootstackStoreQuerygetStorepostAuth0FunctionQuerygetStorepostAuth0FunctionAppSyncFunction72FEF36FFunctionId"
+            },
+            {
+              "Fn::GetAtt": [
+                "QueryPoByPurchaserIdDataResolverFnQueryPoByPurchaserIdDataResolverFnAppSyncFunction2822AD7E",
+                "FunctionId"
+              ]
+            }
+          ]
+        },
+        "RequestMappingTemplate": {
+          "Fn::Join": [
+            "",
+            [
+              "$util.qr($ctx.stash.put(\"typeName\", \"Query\"))\n$util.qr($ctx.stash.put(\"fieldName\", \"poByPurchaserId\"))\n$util.qr($ctx.stash.put(\"conditions\", []))\n$util.qr($ctx.stash.put(\"metadata\", {}))\n$util.qr($ctx.stash.metadata.put(\"dataSourceType\", \"AMAZON_DYNAMODB\"))\n$util.qr($ctx.stash.metadata.put(\"apiId\", \"",
+              {
+                "Ref": "referencetotransformerrootstackGraphQLAPI20497F53ApiId"
+              },
+              "\"))\n$util.qr($ctx.stash.put(\"connectionAttributes\", {}))\n$util.qr($ctx.stash.put(\"tableName\", \"",
+              {
+                "Ref": "PurchaseOrderTable"
+              },
+              "\"))\n$util.qr($ctx.stash.put(\"deltaSyncTableTtl\", 30))\n$util.qr($ctx.stash.put(\"identityPoolId\", \"ap-south-1:9a7c6a09-58cf-4ecc-9d5a-5b7eb271e57e\"))\n$util.qr($ctx.stash.put(\"adminRoles\", [\"ap-south-1_PDPKN9SC5_Full-access/CognitoIdentityCredentials\",\"ap-south-1_PDPKN9SC5_Manage-only/CognitoIdentityCredentials\"]))\n$util.toJson({})"
             ]
           ]
         },

@@ -128,11 +128,7 @@ export const onCreateUser = /* GraphQL */ `
         __typename
       }
       bills
-      purchaseOrders {
-        nextToken
-        startedAt
-        __typename
-      }
+      purchaseOrders
       createdAt
       updatedAt
       _version
@@ -165,11 +161,7 @@ export const onUpdateUser = /* GraphQL */ `
         __typename
       }
       bills
-      purchaseOrders {
-        nextToken
-        startedAt
-        __typename
-      }
+      purchaseOrders
       createdAt
       updatedAt
       _version
@@ -202,11 +194,7 @@ export const onDeleteUser = /* GraphQL */ `
         __typename
       }
       bills
-      purchaseOrders {
-        nextToken
-        startedAt
-        __typename
-      }
+      purchaseOrders
       createdAt
       updatedAt
       _version
@@ -589,23 +577,7 @@ export const onCreatePurchaseOrder = /* GraphQL */ `
   ) {
     onCreatePurchaseOrder(filter: $filter) {
       id
-      purchaser {
-        id
-        userId
-        username
-        phonenumber
-        image
-        role
-        idcardimage
-        bills
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        storeUsersId
-        __typename
-      }
+      purchaser
       image
       vendor
       amount
@@ -627,7 +599,6 @@ export const onCreatePurchaseOrder = /* GraphQL */ `
       _deleted
       _lastChangedAt
       storePurchaseOrdersId
-      userPurchaseOrdersId
       __typename
     }
   }
@@ -638,23 +609,7 @@ export const onUpdatePurchaseOrder = /* GraphQL */ `
   ) {
     onUpdatePurchaseOrder(filter: $filter) {
       id
-      purchaser {
-        id
-        userId
-        username
-        phonenumber
-        image
-        role
-        idcardimage
-        bills
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        storeUsersId
-        __typename
-      }
+      purchaser
       image
       vendor
       amount
@@ -676,7 +631,6 @@ export const onUpdatePurchaseOrder = /* GraphQL */ `
       _deleted
       _lastChangedAt
       storePurchaseOrdersId
-      userPurchaseOrdersId
       __typename
     }
   }
@@ -687,23 +641,7 @@ export const onDeletePurchaseOrder = /* GraphQL */ `
   ) {
     onDeletePurchaseOrder(filter: $filter) {
       id
-      purchaser {
-        id
-        userId
-        username
-        phonenumber
-        image
-        role
-        idcardimage
-        bills
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        storeUsersId
-        __typename
-      }
+      purchaser
       image
       vendor
       amount
@@ -725,7 +663,6 @@ export const onDeletePurchaseOrder = /* GraphQL */ `
       _deleted
       _lastChangedAt
       storePurchaseOrdersId
-      userPurchaseOrdersId
       __typename
     }
   }

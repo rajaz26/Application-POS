@@ -259,7 +259,6 @@ useEffect(() => {
 
 const handleConfirmPressed = () => {
   console.log("Accumulated product details:", scannedProducts, "Total Bill Amount:", totalBillAmount);
-  
     if (scannedProducts.length > 0) {
       navigation.navigate('ConfirmBill', {
         scannedProductsList: scannedProducts,
@@ -267,13 +266,11 @@ const handleConfirmPressed = () => {
         currentBillId: currentBillId,
         version: version,
       });
+      setScannedProducts([]);
     } else {
-      alert('Scan a product first.');
+      Alert.alert('Scan a product first.');
     
   };
-  
-  // navigation.navigate('ConfirmBill', { scannedProducts: scannedProducts, totalBillAmount: totalBillAmount });
-
 };
 
   

@@ -36,7 +36,7 @@ type User {
   idcardimage: [String]
   store: Store
   bills: String
-  purchaseOrders(filter: ModelPurchaseOrderFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelPurchaseOrderConnection
+  purchaseOrders: String
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
   _version: Int!
@@ -100,7 +100,7 @@ type Bill {
 
 type PurchaseOrder {
   id: ID!
-  purchaser: User!
+  purchaser: ID!
   image: [String!]
   vendor: String
   amount: Float
@@ -112,7 +112,6 @@ type PurchaseOrder {
   _deleted: Boolean
   _lastChangedAt: AWSTimestamp!
   storePurchaseOrdersId: ID
-  userPurchaseOrdersId: ID
 }
 
 input ModelStringInput {
@@ -303,6 +302,7 @@ type Query {
   userById(userId: ID!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelUserFilterInput, limit: Int, nextToken: String): ModelUserConnection
   productByBarcode(barcode: String!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelProductFilterInput, limit: Int, nextToken: String): ModelProductConnection
   billByCashierId(cashier: String!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelBillFilterInput, limit: Int, nextToken: String): ModelBillConnection
+  poByPurchaserId(purchaser: ID!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelPurchaseOrderFilterInput, limit: Int, nextToken: String): ModelPurchaseOrderConnection
 }
 
 input ModelStoreConditionInput {
@@ -404,6 +404,7 @@ input ModelUserFilterInput {
   role: ModelUserRoleInput
   idcardimage: ModelStringInput
   bills: ModelStringInput
+  purchaseOrders: ModelStringInput
   and: [ModelUserFilterInput]
   or: [ModelUserFilterInput]
   not: ModelUserFilterInput
@@ -419,6 +420,7 @@ input ModelUserConditionInput {
   role: ModelUserRoleInput
   idcardimage: ModelStringInput
   bills: ModelStringInput
+  purchaseOrders: ModelStringInput
   and: [ModelUserConditionInput]
   or: [ModelUserConditionInput]
   not: ModelUserConditionInput
@@ -435,6 +437,7 @@ input CreateUserInput {
   role: UserRole!
   idcardimage: [String]
   bills: String
+  purchaseOrders: String
   _version: Int
   storeUsersId: ID
 }
@@ -448,6 +451,7 @@ input UpdateUserInput {
   role: UserRole
   idcardimage: [String]
   bills: String
+  purchaseOrders: String
   _version: Int
   storeUsersId: ID
 }
@@ -466,6 +470,7 @@ input ModelSubscriptionUserFilterInput {
   role: ModelSubscriptionStringInput
   idcardimage: ModelSubscriptionStringInput
   bills: ModelSubscriptionStringInput
+  purchaseOrders: ModelSubscriptionStringInput
   and: [ModelSubscriptionUserFilterInput]
   or: [ModelSubscriptionUserFilterInput]
   _deleted: ModelBooleanInput
@@ -709,6 +714,7 @@ type ModelPurchaseOrderConnection {
 
 input ModelPurchaseOrderFilterInput {
   id: ModelIDInput
+  purchaser: ModelIDInput
   image: ModelStringInput
   vendor: ModelStringInput
   amount: ModelFloatInput
@@ -718,10 +724,10 @@ input ModelPurchaseOrderFilterInput {
   not: ModelPurchaseOrderFilterInput
   _deleted: ModelBooleanInput
   storePurchaseOrdersId: ModelIDInput
-  userPurchaseOrdersId: ModelIDInput
 }
 
 input ModelPurchaseOrderConditionInput {
+  purchaser: ModelIDInput
   image: ModelStringInput
   vendor: ModelStringInput
   amount: ModelFloatInput
@@ -731,29 +737,28 @@ input ModelPurchaseOrderConditionInput {
   not: ModelPurchaseOrderConditionInput
   _deleted: ModelBooleanInput
   storePurchaseOrdersId: ModelIDInput
-  userPurchaseOrdersId: ModelIDInput
 }
 
 input CreatePurchaseOrderInput {
   id: ID
+  purchaser: ID!
   image: [String!]
   vendor: String
   amount: Float
   date: String
   _version: Int
   storePurchaseOrdersId: ID
-  userPurchaseOrdersId: ID
 }
 
 input UpdatePurchaseOrderInput {
   id: ID!
+  purchaser: ID
   image: [String!]
   vendor: String
   amount: Float
   date: String
   _version: Int
   storePurchaseOrdersId: ID
-  userPurchaseOrdersId: ID
 }
 
 input DeletePurchaseOrderInput {
@@ -763,6 +768,7 @@ input DeletePurchaseOrderInput {
 
 input ModelSubscriptionPurchaseOrderFilterInput {
   id: ModelSubscriptionIDInput
+  purchaser: ModelSubscriptionIDInput
   image: ModelSubscriptionStringInput
   vendor: ModelSubscriptionStringInput
   amount: ModelSubscriptionFloatInput

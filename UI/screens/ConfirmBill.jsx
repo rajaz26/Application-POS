@@ -11,6 +11,7 @@ import { generateClient } from 'aws-amplify/api';
 import { deleteBill, deleteBillItem, updateBill, updateProduct } from '../src/graphql/mutations';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { getProduct } from '../src/graphql/queries.js';
+import { useSelector } from 'react-redux';
 
 const { width, height } = Dimensions.get('window');
 
@@ -21,7 +22,7 @@ const ConfirmBill = ({route}) => {
     const [loading, setLoading] = useState(false);
     const [scannedProducts, setScannedProducts] = useState(scannedProductsList || []);
     const [totalBillAmount, setTotalBillAmount] = useState(totalBillAmountValue||0);
-    
+    const userName = useSelector((state) => state.user.username);
     const client = generateClient();
     const handleAddProduct = () => {
         navigation.navigate('Scan', { scannedProductsList: scannedProducts });
@@ -62,11 +63,12 @@ const ConfirmBill = ({route}) => {
             console.log("Shelf Quantity Updated Successfully");
             setLoading(false);
             setBillStatus('PAID');
+            setScannedProducts([]);
           } catch (error) {
             setLoading(false);
             console.error("Error finalizing the bill:", error);
           }
-        
+        console.log("Printing ",scannedProducts);
         try {
           await BluetoothEscposPrinter.printerInit();
           await BluetoothEscposPrinter.printerLeftSpace(0);
@@ -87,20 +89,26 @@ const ConfirmBill = ({route}) => {
             fonttype: 1
           });
           await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.LEFT);
-          await BluetoothEscposPrinter.printText("Cashier: cashier01\n", {});
+          await BluetoothEscposPrinter.printText(`Cashier: ${userName}\n`, {});
           await BluetoothEscposPrinter.printText("--------------------------------\n", {});
-    
+        
+          // Print column headers
+          await BluetoothEscposPrinter.printText("PRODUCT NAME        QTY      PRICE      SUBTOTAL\n", {});
+        
+          // Print each product with columns
           scannedProducts.forEach(async (item) => {
-            let itemLine = `${item.name} x ${item.quantity} = ${item.amount.toFixed(2)}\n`;
+            let itemName = item.name.padEnd(20); 
+            let itemLine = `${itemName} ${item.quantity.toString().padEnd(7)} ${item.price.toString().padEnd(10)} ${item.subtotal.toFixed(2)}\n`;
             await BluetoothEscposPrinter.printText(itemLine, {});
           });
-    
+        
           await BluetoothEscposPrinter.printText("--------------------------------\n", {});
           await BluetoothEscposPrinter.printText(`Total: ${totalBillAmount.toFixed(2)}\n`, {});
           await BluetoothEscposPrinter.printText("Thank you for your purchase!\n\n\n", {});
         } catch (error) {
           console.error("Failed to print receipt:", error);
         }
+        
       };
       const updateProductShelfQuantity = async () => {
         try {

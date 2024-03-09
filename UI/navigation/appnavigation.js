@@ -15,6 +15,7 @@ import ImageViewScreen from '../screens/ImageViewScreen';
 import AboutScreen from '../screens/AboutScreen';
 import ProductsScreen from '../screens/ProductsScreen';
 import Dashboard from '../screens/Dashboard';
+import { signOut } from 'aws-amplify/auth';
 import Profile from '../screens/Profile';
 import Stats from '../screens/Stats';
 import Product from '../screens/Product';
@@ -37,10 +38,19 @@ import AddAccount from "../screens/AddAccount";
 import BluetoothConnectivity from "../screens/BluetoothConnectivity";
 import BluetoothConnectivity2 from "../screens/BluetoothConnectivity2";
 import ConfirmSignUp2 from "../screens/ConfirmSignUp2";
+import { useSelector } from "react-redux";
+import PurchaseOrder from "../screens/PurchaseOrder";
+import WMHome from "../screens/WMHome";
+import GMHome from "../screens/GMHome";
+import CashierHome from "../screens/CashierHome";
+import POHome from "../screens/POHome";
+import TopTabNavigator2 from "../screens/TopTabNavigator2";
+import TopTabNavigator3 from "../screens/TopTabNavigator3";
 const Drawer = createDrawerNavigator();
 
 const AppNavigation = () => {
   const [user, setUser] = useState(undefined);
+  const userRole = useSelector((state) => state.user.role);
     const checkUser = async () => {
       try {
         const authUser = await getCurrentUser({bypassCache: true});
@@ -96,7 +106,17 @@ useEffect(() => {
       <Drawer.Navigator drawerContent={props => <CustomDrawer {...props} />} screenOptions={{ headerShown: false }} >
         {user ? (
           <>
-            <Drawer.Screen name="Home" component={TopTabNavigator} />
+        {userRole === 'GENERAL_MANAGER' ? (
+              <Drawer.Screen name="Home" component={TopTabNavigator3} />
+            ) : userRole === 'CASHIER' ? (
+              <Drawer.Screen name="Home" component={TopTabNavigator} />
+            ) : userRole === 'WAREHOUSE_MANAGER' ? (
+              <Drawer.Screen name="Home" component={TopTabNavigator2} />
+            ) : (
+              <Drawer.Screen name="Home" component={POHome} />
+            )}
+ 
+            {/* <Drawer.Screen name="Home" component={TopTabNavigator} /> */}
             <Drawer.Screen name="Bluetooth" component={BluetoothConnectivity} />
             <Drawer.Screen name="Bluetooth2" component={BluetoothConnectivity2} />
             <Drawer.Screen name="Settings" component={SettingsScreen} />
@@ -120,7 +140,10 @@ useEffect(() => {
             <Drawer.Screen name="PurchaseHistory" component={PurchaseHistory} />
             <Drawer.Screen name="AddAccount" component={AddAccount} />
             <Drawer.Screen name="ConfirmSignUp2" component={ConfirmSignUp2} />
+            <Drawer.Screen name="UploadPurchase" component={UploadPurchase} />
+            <Drawer.Screen name="PurchaseOrder" component={PurchaseOrder} />
           </>
+
         ) : (
           <>
             <Drawer.Screen name="Welcome" component={WelcomeScreen} />

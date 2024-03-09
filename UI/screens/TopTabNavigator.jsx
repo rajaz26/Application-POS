@@ -10,6 +10,7 @@ import { COLORS } from '../assets/theme';
 import { StyleSheet, View, TouchableWithoutFeedback } from 'react-native';
 import SettingsScreen from './SettingsScreen';
 import { useSelector } from 'react-redux'; 
+import CashierHome from './CashierHome';
 const Tab = createMaterialTopTabNavigator();
 
 
@@ -75,7 +76,7 @@ const TopTabNavigator = () => {
       }}
       
     >
-      <Tab.Screen name="Dashboard" component={HomeScreen2} />
+      <Tab.Screen name="Dashboard" component={CashierHome} />
       <Tab.Screen name="History" component={History} />
       <Tab.Screen name="Scan" component={Scan} />
       <Tab.Screen name="Settings" component={SettingsScreen} />

@@ -6,92 +6,21 @@ import Ionic from 'react-native-vector-icons/Ionicons';
 import {productsObj} from '../assets/Products';
 import { useNavigation } from '@react-navigation/native'; 
 import { useSelector} from 'react-redux'; 
-import { createProduct } from '../src/graphql/mutations';
-import { useDispatch } from 'react-redux';
-import { setUserDetails } from '../store/userSlice';
-import { fetchUserAttributes } from 'aws-amplify/auth';
-import { generateClient } from 'aws-amplify/api';
-
-import { getCurrentUser, signInWithRedirect, signOut } from "aws-amplify/auth";
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
-const HomeScreen2 = () => {
-  const dispatch = useDispatch();
-  const client = generateClient();
+import { selectConnectedDevice } from '../store/bluetoothReducer';
+const HomeScreen2 = () => {  
+const connectedDevice = useSelector(state => selectConnectedDevice(state)?.name);
  const userRole = useSelector((state) => state.user.role);
- const [loading, setLoading] = useState(true); 
+ const [loading, setLoading] = useState(false); 
 //const userRole = 'GENERAL_MANAGER';
   const navigation = useNavigation();
   const openDrawer = () => {
     navigation.openDrawer();
   };
-  
   useEffect(() => {
     console.log("User role from Redux store:", userRole);
+    console.log("Connected",connectedDevice);
   }, [userRole]);
-
-  
-const userByIdQuery = /* GraphQL */ `
-query UserById($userId: ID!) {
-  userById(userId: $userId) {
-    items {
-      id
-      userId
-      username
-      phonenumber
-      image
-      role
-      idcardimage
-      store {
-        id
-        name
-        address
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        __typename
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      storeUsersId
-      __typename
-    }
-  }
-}
-`;
-useEffect(() => {
-  const fetchUserDetails = async () => {
-    try {
-      const currentUser = await fetchUserAttributes();
-      const userId = currentUser.sub; 
-
-      const { data } = await client.graphql({
-        query: userByIdQuery,
-        variables: { userId: userId },
-        authMode: 'apiKey',
-      });
-
-      const userDetails = data.userById.items[0]; 
-      if (userDetails) {
-        dispatch(setUserDetails({
-          userId: userDetails.userId,
-          username: userDetails.username,
-          role: userDetails.role,
-        }));
-        setLoading(false); 
-      }
-    } catch (error) {
-      console.error("Error fetching user details:", error);
-      setLoading(false); 
-    }
-  };
-
-  fetchUserDetails();
-}, [dispatch]);
 
 
   return (
@@ -111,24 +40,18 @@ useEffect(() => {
   </View>}
         <View style={styles.wrapper}>
           
-        {userRole === 'GENERAL_MANAGER' && (
-           <SafeAreaView style={styles.safeArea}>
-                  <View style={styles.sliderWrapper}>
-                      <SalesLineChart/>
-                  </View>
-                  <TouchableOpacity style={styles.drawerIcon} onPress={openDrawer}>
-                     <Ionic name="menu-outline" size={26} color='white' style={styles.drawerIcon} />
-                  </TouchableOpacity>  
-            </SafeAreaView>)}
-            <View style={[
-          styles.body,
-          (userRole === 'CASHIER' || userRole === 'WAREHOUSE_MANAGER' || userRole === 'PURCHASER') ? { borderTopLeftRadius: 0, borderTopRightRadius: 0 } : null,
-        ]}>
+  
+        <View style={[
+  styles.body,
+  { borderTopLeftRadius: 0, borderTopRightRadius: 0 },
+]}>
+
                <View style={[
           styles.bodyWrapper,
-          (userRole === 'CASHIER' || userRole === 'WAREHOUSE_MANAGER' || userRole === 'PURCHASER') ? {justifyContent:'space-evenly' } : null,
+          {justifyContent:'space-evenly' }
         ]}> 
                 <View style={styles.menuContainer}>
+         
                 <TouchableOpacity style={styles.drawerIcon2} onPress={openDrawer}>
                      <Ionic name="menu-outline" size={30} color={COLORS.primary}  style={styles.drawerIcon2} />
                   </TouchableOpacity>  
@@ -136,38 +59,27 @@ useEffect(() => {
                 </View>
                 <View style={styles.iconWrapper}>    
                 <View style={styles.icons}>
-                  <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('Staff')}>  
+              <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('Profile')}>  
                     <Ionic name="person" size={25} color={COLORS.primary} style={styles.homeIcon} />
                     <Text style={styles.iconText}>Profile</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.iconContainer} onPress={() =>
-    userRole === 'PURCHASER'
-      ? navigation.navigate('PurchaseHistory')
-      : navigation.navigate('History')
-  }>
-                    <Ionic name="archive" size={25} color={COLORS.primary} style={styles.homeIcon} />
-                    <Text style={styles.iconText}>History</Text>
+                  
+     <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('PurchaseHistory')}>
+                     <Ionic name="archive" size={25} color={COLORS.primary} style={styles.homeIcon} />
+                    <Text style={styles.iconText}>POs List</Text>
                   </TouchableOpacity>
-                  {userRole !== 'PURCHASER' ? (
-                  <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('Bluetooth')}>
+                  <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('History')}>
                   {/* //<TouchableOpacity style={styles.iconContainer} onPress={createNewProduct}> */}
-                    <Ionic name="settings" size={25} color={COLORS.primary} style={styles.homeIcon} />
-                    <Text style={styles.iconText}>Settings</Text>
+                    {/* <Ionic name="settings" size={25} color={COLORS.primary} style={styles.homeIcon} />
+                    <Text style={styles.iconText}>Settings</Text> */}
+                    <Ionic name="newspaper-outline" size={25} color={COLORS.primary} style={styles.homeIcon} />
+                    <Text style={styles.iconText}>Bills</Text>
                   </TouchableOpacity>
-                  ) : (
-                    <TouchableOpacity
-                    style={styles.iconContainer}
-                    onPress={() => navigation.navigate('Notifications')}
-                  >
-                    <Ionic name="notifications" size={28} color={COLORS.primary} />
-                    <Text style={styles.iconText}>Updates</Text>
-                  </TouchableOpacity>
-                  )}
                 </View>
-                {userRole !== 'PURCHASER' && ( 
+                
                 <View style={[styles.icons,styles.lastIcons]}>
         
-            {userRole !== 'GENERAL_MANAGER' ? (
+       
               <TouchableOpacity
                 style={styles.iconContainer}
                 onPress={() => navigation.navigate('Scan2')}
@@ -175,204 +87,25 @@ useEffect(() => {
                 <Ionic name="scan" size={28} color={COLORS.primary} />
                 <Text style={styles.iconText}>Scan</Text>
               </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={styles.iconContainer}
-                onPress={() => navigation.navigate('Bluetooth')}
-              >
-                <Ionic name="stats-chart" size={28} color={COLORS.primary} />
-                <Text style={styles.iconText}>Stats</Text>
-              </TouchableOpacity>
-            )}
-            
                   <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('ProductsList', {
                     productsObj: productsObj,
                   })
                 }>
-                 {/* <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('Bluetooth')
-                }> */}
                     <Ionic name="list" size={28} color={COLORS.primary} style={styles.homeIcon} />
                     <Text style={styles.iconText}>Products</Text>
                   </TouchableOpacity>
                   
-              {userRole === 'CASHIER' ? (
               <TouchableOpacity
                 style={styles.iconContainer}
-                onPress={() => navigation.navigate('Settings')}
-              >
-                <Ionic name="print" size={28} color={COLORS.primary} />
-                <Text style={styles.iconText}>Printer</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={styles.iconContainer}
-                onPress={() => navigation.navigate('Receipt')}
+                onPress={() => navigation.navigate('Bluetooth')}
               >
                 <Ionic name="notifications" size={28} color={COLORS.primary} />
                 <Text style={styles.iconText}>Notification</Text>
               </TouchableOpacity>
-            )} 
         
-                </View>)}
                 </View>
-                {userRole === 'GENERAL_MANAGER' && (
-                  <>
-                  <View style={styles.previousContainer}>
-                    <Text style={styles.previousText}>Previous Bills</Text>
-                  </View>
-                  <View style={styles.billSection}>
-                  <View style={styles.billContainer}>
-                    <Image style={styles.logoStyles} source={require("../assets/images/logo7.png")}/>
-                    <View style={styles.billText}>
-                      <View style={styles.cashierName}>
-                        <Text  style={styles.cashierText}>
-                          Cashier : Raja Zain
-                        </Text>
-                        <Text  style={styles.billTotal}>
-                          Rs. 9975.2
-                        </Text>
-                      </View>
-                      <View  style={styles.billBottomText}>
-                        <Text  style={styles.billTime}>
-                          07:36 PM
-                        </Text>
-                      <TouchableOpacity  style={styles.billViewButton} onPress={()=> navigation.navigate('Receipt')}>
-                          <Text  style={styles.billViewText}>
-                            View
-                          </Text>
-                      </TouchableOpacity>
-                      </View>
-                    </View>
-                  </View>
                 </View>
-                </>
-                )}
-                
-                
-                
-                
-                {userRole === 'PURCHASER' && (
-                  <>
-                  <View style={styles.previousContainer}>
-                    <Text style={styles.previousText}>Purchase Order</Text>
-                  </View>
-                  <TouchableOpacity onPress={() => navigation.navigate('Upload')}>
-                  <View style={styles.purchaseSection}>
-                  <View style={styles.billContainer}>
-                  
-
-                  
-                    <View style={styles.billText}>
-                      <View style={{flex:0,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
-                          <Text  style={styles.uploadText}>
-                            Upload Purchase Order
-                          </Text>
-                          <View>
-                          <Ionic name="chevron-forward" size={28} color={COLORS.primary} />
-                        </View>
-                      </View>
-                      <View  style={styles.billBottomText}>
-                        {/* <Text  style={styles.billTime}>
-                          07:36 PM
-                        </Text> */}
-                      <TouchableOpacity  style={styles.billViewButton} onPress={()=> navigation.navigate('Receipt')}>
-                          <Text  style={styles.billViewText}>
-                            Fill Form
-                          </Text>
-                      </TouchableOpacity>
-                     
-                      </View>
-                     
-                    </View>
-                  
-                  </View>
-                  
-                </View>
-                </TouchableOpacity>
-                </>
-                )}
-                {userRole === 'PURCHASER' && (
-                  <>
-                  <View style={styles.previousContainer}>
-                    <Text style={styles.previousText}>Purchase History</Text>
-                  </View>
-                  <TouchableOpacity onPress={() => navigation.navigate('PurchaseHistory')}>
-                  <View style={styles.purchaseSection}>
-                  <View style={styles.billContainer}>
-                    
-                    <View style={styles.billText}>
-                      <View style={{flex:0,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
-                          <Text  style={styles.uploadText}>
-                            View Purchase Histoy
-                          </Text>
-                          <View>
-                          <Ionic name="chevron-forward" size={28} color={COLORS.primary} />
-                        </View>
-                      </View>
-                      <View  style={styles.billBottomText}>
-                        {/* <Text  style={styles.billTime}>
-                          07:36 PM
-                        </Text> */}
-                      <TouchableOpacity  style={styles.billViewButton} onPress={()=> navigation.navigate('Receipt')}>
-                          <Text  style={styles.billViewText}>
-                            Recent Purchases
-                          </Text>
-                      </TouchableOpacity>
-                     
-                      </View>
-                    </View>
-                  </View>
-                </View>
-                </TouchableOpacity>
-                </>
-                )}
-
-                {userRole === 'PURCHASER' && (
-                  <>
-                  <View style={styles.previousContainer}>
-                    <Text style={styles.previousText}>Warehouse Quantity</Text>
-                  </View>
-                  <TouchableOpacity onPress={() =>
-                  navigation.navigate('ProductsList', {
-                    productsObj: productsObj,
-                  })
-                }>
-
-                  
-                  <View style={styles.purchaseSection}>
-                  <View style={styles.billContainer}>
-                    
-                    <View style={styles.billText}>
-                      <View style={{flex:0,flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}>
-                          <Text  style={styles.uploadText}>
-                            View Products Quantity
-                          </Text>
-                          <View>
-                          <Ionic name="chevron-forward" size={28} color={COLORS.primary} />
-                        </View>
-                      </View>
-                      <View  style={styles.billBottomText}>
-                        {/* <Text  style={styles.billTime}>
-                          07:36 PM
-                        </Text> */}
-                      <TouchableOpacity  style={styles.billViewButton} onPress={()=> navigation.navigate('Receipt')}>
-                          <Text  style={styles.billViewText}>
-                            Warehouse Inventory
-                          </Text>
-                      </TouchableOpacity>
-                     
-                      </View>
-                    </View>
-                  </View>
-                </View>
-                </TouchableOpacity>
-                </>
-                )}
-                
-
-                {/* WAREHOUSE_MANAGER */}
-                {userRole === 'WAREHOUSE_MANAGER' && (
-                  <>
+              
                   <View style={styles.previousContainer}>
                     <Text style={styles.previousText}>Last Scanned</Text>
                   </View>
@@ -392,19 +125,11 @@ useEffect(() => {
                         <Text  style={styles.billTime}>
                           07:36 PM
                         </Text>
-                      {/* <TouchableOpacity  style={styles.billViewButton} onPress={()=> navigation.navigate('Receipt')}>
-                          <Text  style={styles.billViewText}>
-                            View
-                          </Text>
-                      </TouchableOpacity> */}
                       </View>
                     </View>
                   </View>
                 </View>
-                </>
-                )}
-                {userRole === 'WAREHOUSE_MANAGER' && (
-                  <>
+               
                   <View style={styles.previousContainer}>
                     <Text style={styles.previousText}>Recent Notifications</Text>
                   </View>
@@ -433,11 +158,7 @@ useEffect(() => {
                     </View>
                   </View>
                 </View>
-                </>
-                )}
-                {userRole === 'WAREHOUSE_MANAGER' && (
-                  <>
-                 
+             
                   <View style={styles.billSection}>
                   <View style={styles.billContainer}>
                     <Image style={styles.logoStyles} source={require("../assets/images/logo7.png")}/>
@@ -463,78 +184,9 @@ useEffect(() => {
                     </View>
                   </View>
                 </View>
-                </>
-                )}
+          
                 
-                
-                {/* CASHIER */}
-                {userRole === 'CASHIER' && (
-                  <>
-                <View style={styles.previousContainer}>
-                  <Text style={styles.previousText}>Connected Printer</Text>
-                </View>
-            
-                <View style={styles.billSection}>
-                  <View style={styles.billContainer}>
-                    {/* <Image style={styles.logoStyles} source={require("../assets/images/logo7.png")}/> */}
-                    <Ionic size={27} style={{marginLeft:5}}color={COLORS.primary} name ='print-outline'/>
-                    <View style={styles.billText}>
-                      <View style={styles.cashierName}>
-                        <Text  style={styles.cashierText}>
-                          Device Name:
-                        </Text>
-                        <Text  style={styles.billTotal}>
-                          Epson-2580
-                        </Text>
-                      </View>
-                      <View  style={styles.billBottomText}>
-                        <Text  style={styles.billTime}>
-                          From : 07:36 PM
-                        </Text>
-                      <TouchableOpacity  style={styles.billViewButton} onPress={()=> navigation.navigate('Receipt')}>
-                          <Text  style={styles.billViewText}>
-                            Change
-                          </Text>
-                      </TouchableOpacity>
-                      </View>
-                    </View>
-                  </View>
-                </View>
-                </>
-                )}
-                {userRole === 'CASHIER' && (
-                  <>
-                  <View style={styles.previousContainer}>
-                    <Text style={styles.previousText}>Previous Bills</Text>
-                  </View>
-                  <View style={styles.billSection}>
-                  <View style={styles.billContainer}>
-                    <Image style={styles.logoStyles} source={require("../assets/images/logo7.png")}/>
-                    <View style={styles.billText}>
-                      <View style={styles.cashierName}>
-                        <Text  style={styles.cashierText}>
-                          Cashier : Raja Zain
-                        </Text>
-                        <Text  style={styles.billTotal}>
-                          Rs. 9975.2
-                        </Text>
-                      </View>
-                      <View  style={styles.billBottomText}>
-                        <Text  style={styles.billTime}>
-                          07:36 PM
-                        </Text>
-                      <TouchableOpacity  style={styles.billViewButton} onPress={()=> navigation.navigate('Receipt')}>
-                          <Text  style={styles.billViewText}>
-                            View
-                          </Text>
-                      </TouchableOpacity>
-                      </View>
-                    </View>
-                  </View>
-                </View>
-                </>
-                )}
-                
+               
               </View>
             </View>
         </View>
@@ -559,7 +211,7 @@ const styles = StyleSheet.create({
   },
   menuContainer:{
     marginTop:10,
-  left:5,
+   paddingHorizontal:30,
     marginBottom:10,
     flexDirection:'row',
     alignItems:'center',
@@ -674,6 +326,28 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     flex:0,
 },
+
+bluetoothSection:{
+  paddingHorizontal:11,
+  height:100,
+  marginHorizontal:26,
+  paddingVertical:20,
+  marginBottom:10,
+  backgroundColor:'white',
+  borderWidth:1,
+  borderRadius:10,
+  borderColor:'lightgray',
+  elevation: 4, 
+      shadowColor: 'gray', 
+      shadowOffset: {
+          width: 0,
+          height: 2, 
+      },
+  shadowOpacity: 1, 
+  shadowRadius: 10, 
+  borderRadius: 15,
+  flex:0,
+},
 purchaseSection:{
   paddingHorizontal:11,
   height:100,
@@ -701,9 +375,19 @@ billContainer:{
   flex:0,
   flexDirection:'row',  
 },
+bluetoothContainer:{
+  flex:0,
+  flexDirection:'row', 
+ 
+},
 billText:{
   marginHorizontal:12,
   flex:1,
+},
+bluetoothText:{
+  marginHorizontal:12,
+  flex:1,
+  
 },
 cashierName:{
   flex:0,
@@ -717,6 +401,18 @@ cashierText:{
   fontSize:13,
   fontFamily:'Poppins-Regular',
 
+},
+noDeviceContainer:{
+  flex:0,
+  justifyContent:'flex-end',
+  alignItems:'flex-end',
+  right:10,
+},
+noDeviceText:{
+  fontWeight:'500',
+  color:'black',
+  fontSize:15,
+  fontFamily:'Poppins-Regular',
 },
 uploadText:{
   fontWeight:'500',
@@ -749,6 +445,17 @@ billViewButton:{
   paddingVertical:5,
   borderRadius:15,
 },
+bluetoothViewButton:{
+  backgroundColor:'rgba(180, 180, 180,0.5)',
+  paddingHorizontal:16,
+  paddingVertical:5,
+  borderRadius:15,
+  width:'40%',
+  justifyContent:'center',
+  alignItems:'center',
+  marginTop:5,
+},
+
 billViewText:{
   fontWeight:'600',
   color:'black',

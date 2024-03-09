@@ -31,7 +31,7 @@ type User @model @auth(rules: [{ allow: public }]) {
   idcardimage: [String]
   store: Store @belongsTo
   bills: String
-  purchaseOrders: [PurchaseOrder] @hasMany
+  purchaseOrders: String
 }
 
 type Product @model @auth(rules: [{ allow: public }]) {
@@ -50,7 +50,7 @@ type Product @model @auth(rules: [{ allow: public }]) {
 
 type BillItem @model @auth(rules: [{ allow: public }]) {
   id: ID!
- product: Product! @belongsTo 
+  product: Product! @belongsTo 
   quantity: Int!
   productPrice: Float!
   subtotal: Float!
@@ -70,7 +70,7 @@ type Bill @model @auth(rules: [{ allow: public }]) {
 
 type PurchaseOrder @model @auth(rules: [{ allow: public }]) {
   id: ID!
-  purchaser: User! @belongsTo
+  purchaser: ID! @index(name: "byPurchaserId", queryField: "poByPurchaserId", sortKeyFields: ["id"])
   image: [String!]
   vendor: String
   amount: Float

@@ -112,11 +112,7 @@ export const getUser = /* GraphQL */ `
         __typename
       }
       bills
-      purchaseOrders {
-        nextToken
-        startedAt
-        __typename
-      }
+      purchaseOrders
       createdAt
       updatedAt
       _version
@@ -143,6 +139,7 @@ export const listUsers = /* GraphQL */ `
         role
         idcardimage
         bills
+        purchaseOrders
         createdAt
         updatedAt
         _version
@@ -179,6 +176,7 @@ export const syncUsers = /* GraphQL */ `
         role
         idcardimage
         bills
+        purchaseOrders
         createdAt
         updatedAt
         _version
@@ -509,23 +507,7 @@ export const getPurchaseOrder = /* GraphQL */ `
   query GetPurchaseOrder($id: ID!) {
     getPurchaseOrder(id: $id) {
       id
-      purchaser {
-        id
-        userId
-        username
-        phonenumber
-        image
-        role
-        idcardimage
-        bills
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        storeUsersId
-        __typename
-      }
+      purchaser
       image
       vendor
       amount
@@ -547,7 +529,6 @@ export const getPurchaseOrder = /* GraphQL */ `
       _deleted
       _lastChangedAt
       storePurchaseOrdersId
-      userPurchaseOrdersId
       __typename
     }
   }
@@ -561,6 +542,7 @@ export const listPurchaseOrders = /* GraphQL */ `
     listPurchaseOrders(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
+        purchaser
         image
         vendor
         amount
@@ -571,7 +553,6 @@ export const listPurchaseOrders = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storePurchaseOrdersId
-        userPurchaseOrdersId
         __typename
       }
       nextToken
@@ -595,6 +576,7 @@ export const syncPurchaseOrders = /* GraphQL */ `
     ) {
       items {
         id
+        purchaser
         image
         vendor
         amount
@@ -605,7 +587,6 @@ export const syncPurchaseOrders = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storePurchaseOrdersId
-        userPurchaseOrdersId
         __typename
       }
       nextToken
@@ -640,6 +621,7 @@ export const userById = /* GraphQL */ `
         role
         idcardimage
         bills
+        purchaseOrders
         createdAt
         updatedAt
         _version
@@ -723,6 +705,44 @@ export const billByCashierId = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeBillsId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const poByPurchaserId = /* GraphQL */ `
+  query PoByPurchaserId(
+    $purchaser: ID!
+    $id: ModelIDKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelPurchaseOrderFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    poByPurchaserId(
+      purchaser: $purchaser
+      id: $id
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        purchaser
+        image
+        vendor
+        amount
+        date
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storePurchaseOrdersId
         __typename
       }
       nextToken

@@ -18,20 +18,22 @@ import {COLORS} from '../assets/theme';
 
 const windowHeight = Dimensions.get('window').height;
 
-const Stats = () => {
+const Stats = ({ route }) => {
+  const { bills } = route.params;
+  console.log(bills);
   const [searchText, setSearchText] = useState('');
   const searchInputRef = useRef(null);
 
   const chartComponents = [
-    {name: 'Sales Line Chart,Sales graph', component: <SalesLineChart />},
-    {name: 'Transactions Bar Chart', component: <TransactionsBarChart />},
+    {name: 'Sales Line Chart,Sales graph', component: <SalesLineChart bills={bills} />},
+    {name: 'Transactions Bar Chart', component: <TransactionsBarChart bills={bills}/>},
     {
       name: 'Pie Chart,Top 5, five ,Five,top,products,Products',
-      component: <PieChartC />,
+      component: <PieChartC bills={bills}/>,
     },
     {
       name: 'Line Chart Product,Products Sales Graph,Select,select,product sale',
-      component: <LineChartProduct />,
+      component: <LineChartProduct bills={bills}/>,
     },
   ];
 

@@ -29,10 +29,10 @@ const Drawer = props => {
     try {
         props.navigation.closeDrawer();
         setTimeout(async () => {
-            await signOut();
-            useDispatch(clearUserDetails());
-            console.log('Signed out');
-        }, 300);
+          await signOut();
+          useDispatch(clearUserDetails());
+          console.log('Signed out');
+      }, 300);
     } catch (error) {
         console.log('Error signing out: ', error);
     }

@@ -1,12 +1,72 @@
 import { StyleSheet, Text, View ,TouchableOpacity,ScrollView,Image, Button} from 'react-native'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Ionic from 'react-native-vector-icons/Ionicons';
 import { COLORS } from '../assets/theme/index.js';
 import { useNavigation } from '@react-navigation/native'; 
+import { generateClient } from 'aws-amplify/api';
+import { getPurchaseOrder, listPurchaseOrders } from '../src/graphql/queries.js';
 
 const PurchaseHistory = () => {
   const navigation=useNavigation();
+  const client= generateClient();
+  const [purchaseOrders, setPurchaseOrders] = useState([]);
+  const listPurchaseOrders = /* GraphQL */ `
+  query ListPurchaseOrders(
+    $filter: ModelPurchaseOrderFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listPurchaseOrders(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        purchaser
+        vendor
+        amount
+        date
+        createdAt
+        _version
+        _deleted
+      }
+    }
+  }
+`;
+  const  fetchAllPOs=async()=>{
+    try{
+
+    
+    const {data}= await client.graphql({
+      query:listPurchaseOrders,
+      variables: {
+        filter: {
+          _deleted: {
+            ne: true
+          }
+        }
+      },
+      authMode: 'apiKey',
+    })
+    console.log("DATA",data.listPurchaseOrders.items);
+    setPurchaseOrders(data.listPurchaseOrders.items);
+  } catch (error) {
+    console.error('Error fetching bills:', error);
+  }};
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return date.toLocaleDateString('en-US', options);
+  };
+
+  
+  useEffect(()=>{
+    fetchAllPOs();
+  },[])
+  
+  const handleRefresh = () => {
+    fetchAllPOs();
+  };
+
   return (
     <SafeAreaView style={styles.headContainer}>
     <View style={styles.header}>
@@ -16,148 +76,46 @@ const PurchaseHistory = () => {
         <Text style={styles.settingsText}>Purchase History</Text>
     </View>
     
-    <ScrollView style={styles.scrollviewContainer}>
-     
-      
-      <View style={styles.dateHistoryContainer}>
-        <View style={styles.dateContainer}>
-          <Text style={styles.dateText}>
-            21-August-2023
-          </Text>
+    {purchaseOrders.length === 0 ? (
+        <View style={styles.noOrdersContainer}>
+          <Text style={styles.noOrdersText}>No Purchase Orders to Display</Text>
         </View>
-        <View style={styles.billSection}>
-          <View style={styles.billContainer}>
-            <Image style={styles.logoStyles} source={require("../assets/images/logo7.png")}/>
-            <View style={styles.billText}>
-              <View style={styles.cashierName}>
-                <Text  style={styles.cashierText}>
-                  Vendor: Nestle
-                </Text>
-                <Text  style={styles.billTotal}>
-                  Rs. 2230.0
-                </Text>
-              </View>
-              <View  style={styles.billBottomText}>
-                <Text  style={styles.billTime}>
-                  10:06 PM
-                </Text>
-               <TouchableOpacity  style={styles.billViewButton}>
-                  <Text  style={styles.billViewText}>
-                    View
-                  </Text>
-               </TouchableOpacity>
+      ) : (
+        <ScrollView style={styles.scrollviewContainer}>
+          {purchaseOrders.map((po, index) => (
+            <View key={index} style={styles.dateHistoryContainer}>
+           <View style={styles.dateContainer}>
+  <Text style={styles.dateText}>{formatDate(po.createdAt)}</Text>
+</View>
+
+              <View style={styles.billSection}>
+                <View style={styles.billContainer}>
+                  <Image style={styles.logoStyles} source={require("../assets/images/logo7.png")} />
+                  <View style={styles.billText}>
+                    <View style={styles.cashierName}>
+                      <Text style={styles.cashierText}>Vendor: {po.vendor}</Text>
+                      <Text style={styles.billTotal}>Rs. {po.amount}</Text>
+                    </View>
+                    <View style={styles.billBottomText}>
+                      <Text style={styles.billTime}>{po.date}</Text> 
+                      <TouchableOpacity style={styles.billViewButton} onPress={()=>navigation.navigate('PurchaseOrder',{purchaseOrderId:po.id,purchaseOrderAmount:po.amount,purchaseOrderVendor:po.vendor,purchaseOrderDate:po.date,purchaseOrderImageUri:po.image,purchaseOrderVersion:po._version})} >
+                        
+                        <Text style={styles.billViewText}>View</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </View>
               </View>
             </View>
-          </View>
-        </View>
-        <View style={styles.billSection}>
-          <View style={styles.billContainer}>
-            <Image style={styles.logoStyles} source={require("../assets/images/logo7.png")}/>
-            <View style={styles.billText}>
-              <View style={styles.cashierName}>
-                <Text  style={styles.cashierText}>
-                Vendor: SB Eggs
-                </Text>
-                <Text  style={styles.billTotal}>
-                  Rs. 9975.2
-                </Text>
-              </View>
-              <View  style={styles.billBottomText}>
-                <Text  style={styles.billTime}>
-                  07:36 PM
-                </Text>
-               <TouchableOpacity  style={styles.billViewButton}>
-                  <Text  style={styles.billViewText}>
-                    View
-                  </Text>
-               </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-        <View style={styles.dateContainer}>
-          <Text style={styles.dateText}>
-            19-August-2023
-          </Text>
-        </View>
-        <View style={styles.billSection}>
-          <View style={styles.billContainer}>
-            <Image style={styles.logoStyles} source={require("../assets/images/logo7.png")}/>
-            <View style={styles.billText}>
-              <View style={styles.cashierName}>
-                <Text  style={styles.cashierText}>
-                  Vendor: Nestle
-                </Text>
-                <Text  style={styles.billTotal}>
-                  Rs. 1330.0
-                </Text>
-              </View>
-              <View  style={styles.billBottomText}>
-                <Text  style={styles.billTime}>
-                  10:06 PM
-                </Text>
-               <TouchableOpacity  style={styles.billViewButton}>
-                  <Text  style={styles.billViewText}>
-                    View
-                  </Text>
-               </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-        <View style={styles.billSection}>
-          <View style={styles.billContainer}>
-            <Image style={styles.logoStyles} source={require("../assets/images/logo7.png")}/>
-            <View style={styles.billText}>
-              <View style={styles.cashierName}>
-                <Text  style={styles.cashierText}>
-                Vendor: Nestle
-                </Text>
-                <Text  style={styles.billTotal}>
-                  Rs. 7730.0
-                </Text>
-              </View>
-              <View  style={styles.billBottomText}>
-                <Text  style={styles.billTime}>
-                  10:06 PM
-                </Text>
-               <TouchableOpacity  style={styles.billViewButton}>
-                  <Text  style={styles.billViewText}>
-                    View
-                  </Text>
-               </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-          
-        </View>
-        <View style={styles.billSection}>
-          <View style={styles.billContainer}>
-            <Image style={styles.logoStyles} source={require("../assets/images/logo7.png")}/>
-            <View style={styles.billText}>
-              <View style={styles.cashierName}>
-                <Text  style={styles.cashierText}>
-                Vendor: Nestle
-                </Text>
-                <Text  style={styles.billTotal}>
-                  Rs. 9975.2
-                </Text>
-              </View>
-              <View  style={styles.billBottomText}>
-                <Text  style={styles.billTime}>
-                  07:36 PM
-                </Text>
-               <TouchableOpacity  style={styles.billViewButton}>
-                  <Text  style={styles.billViewText}>
-                    View
-                  </Text>
-               </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-        </View>
-    </ScrollView>
+            
+          ))}
+        
+        </ScrollView>
+        
+      )}
+       <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
+        <Text style={styles.refreshButtonText}>Refresh</Text>
+      </TouchableOpacity>
    </SafeAreaView>
   )
 }
@@ -198,6 +156,19 @@ const styles = StyleSheet.create({
       marginTop:20,
       backgroundColor:'rgba(180, 180, 180,0.25)',
     },
+    
+
+  noOrdersContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor:'rgba(0, 0, 0,0.2)',
+  },
+  noOrdersText: {
+    fontSize: 20,
+    fontFamily:'Poppins-Medium',
+    color: COLORS.primary,
+  },
     downloadContainer:{
         flex:0,
         justifyContent:'center',
@@ -206,6 +177,7 @@ const styles = StyleSheet.create({
         backgroundColor:'white',
         marginVertical:15,
     },
+
     downloadButton:{
       flex:0,
       flexDirection:'row'
@@ -233,8 +205,8 @@ const styles = StyleSheet.create({
         paddingHorizontal:11,
         paddingVertical:20,
         backgroundColor:'white',
-        borderWidth:1,
-        borderColor:'lightgray'
+        borderWidth:0.3,
+        borderColor:COLORS.primary,
     },
     billContainer:{
       flex:0,
@@ -290,6 +262,16 @@ const styles = StyleSheet.create({
     logoStyles:{
       height:35,
       width:35,
+    },
+    refreshButton: {
+      backgroundColor: COLORS.primary,
+      paddingVertical: 10,
+      alignItems: 'center',
+    },
+    refreshButtonText: {
+      fontSize: 18,
+      color: 'white',
+      fontFamily: 'Poppins-Regular',
     },
     optionContainer:{
         paddingHorizontal:12,
