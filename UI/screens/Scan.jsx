@@ -199,6 +199,7 @@ toggleBillModal();
                             billItemsId: billId, 
                             manufacturer:productDetails.manufacturer,
                             category:productDetails.category,
+                            productName:productDetails.name,
                         },
                     },
                     authMode: 'apiKey',

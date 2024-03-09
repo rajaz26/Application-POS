@@ -341,6 +341,7 @@ export const onCreateBillItem = /* GraphQL */ `
         storeProductsId
         __typename
       }
+      productName
       quantity
       productPrice
       subtotal
@@ -392,6 +393,7 @@ export const onUpdateBillItem = /* GraphQL */ `
         storeProductsId
         __typename
       }
+      productName
       quantity
       productPrice
       subtotal
@@ -443,6 +445,7 @@ export const onDeleteBillItem = /* GraphQL */ `
         storeProductsId
         __typename
       }
+      productName
       quantity
       productPrice
       subtotal

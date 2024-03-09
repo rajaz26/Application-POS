@@ -68,6 +68,7 @@ type Product {
 type BillItem {
   id: ID!
   product: Product!
+  productName: String
   quantity: Int!
   productPrice: Float!
   subtotal: Float!
@@ -571,6 +572,7 @@ type ModelBillItemConnection {
 
 input ModelBillItemFilterInput {
   id: ModelIDInput
+  productName: ModelStringInput
   quantity: ModelIntInput
   productPrice: ModelFloatInput
   subtotal: ModelFloatInput
@@ -585,6 +587,7 @@ input ModelBillItemFilterInput {
 }
 
 input ModelBillItemConditionInput {
+  productName: ModelStringInput
   quantity: ModelIntInput
   productPrice: ModelFloatInput
   subtotal: ModelFloatInput
@@ -600,6 +603,7 @@ input ModelBillItemConditionInput {
 
 input CreateBillItemInput {
   id: ID
+  productName: String
   quantity: Int!
   productPrice: Float!
   subtotal: Float!
@@ -612,6 +616,7 @@ input CreateBillItemInput {
 
 input UpdateBillItemInput {
   id: ID!
+  productName: String
   quantity: Int
   productPrice: Float
   subtotal: Float
@@ -629,6 +634,7 @@ input DeleteBillItemInput {
 
 input ModelSubscriptionBillItemFilterInput {
   id: ModelSubscriptionIDInput
+  productName: ModelSubscriptionStringInput
   quantity: ModelSubscriptionIntInput
   productPrice: ModelSubscriptionFloatInput
   subtotal: ModelSubscriptionFloatInput

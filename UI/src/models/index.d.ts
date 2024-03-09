@@ -156,6 +156,7 @@ type EagerBillItem = {
   };
   readonly id: string;
   readonly product: Product;
+  readonly productName?: string | null;
   readonly quantity: number;
   readonly productPrice: number;
   readonly subtotal: number;
@@ -175,6 +176,7 @@ type LazyBillItem = {
   };
   readonly id: string;
   readonly product: AsyncItem<Product>;
+  readonly productName?: string | null;
   readonly quantity: number;
   readonly productPrice: number;
   readonly subtotal: number;

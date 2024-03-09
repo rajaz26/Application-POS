@@ -319,6 +319,7 @@ export const getBillItem = /* GraphQL */ `
         storeProductsId
         __typename
       }
+      productName
       quantity
       productPrice
       subtotal
@@ -357,6 +358,7 @@ export const listBillItems = /* GraphQL */ `
     listBillItems(filter: $filter, limit: $limit, nextToken: $nextToken) {
       items {
         id
+        productName
         quantity
         productPrice
         subtotal
@@ -392,6 +394,7 @@ export const syncBillItems = /* GraphQL */ `
     ) {
       items {
         id
+        productName
         quantity
         productPrice
         subtotal

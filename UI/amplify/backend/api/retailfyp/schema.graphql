@@ -51,6 +51,7 @@ type Product @model @auth(rules: [{ allow: public }]) {
 type BillItem @model @auth(rules: [{ allow: public }]) {
   id: ID!
   product: Product! @belongsTo 
+  productName: String
   quantity: Int!
   productPrice: Float!
   subtotal: Float!

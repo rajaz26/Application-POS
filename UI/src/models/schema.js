@@ -456,6 +456,13 @@ export const schema = {
                         ]
                     }
                 },
+                "productName": {
+                    "name": "productName",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "quantity": {
                     "name": "quantity",
                     "isArray": false,
@@ -829,5 +836,5 @@ export const schema = {
     },
     "nonModels": {},
     "codegenVersion": "3.4.4",
-    "version": "707eeabcf2bdbeb32f07620414e84171"
+    "version": "018809fe08017e716fde6c91e3e227d7"
 };

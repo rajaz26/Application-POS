@@ -12,6 +12,16 @@ import { AnimatedCircularProgress } from 'react-native-circular-progress';
 const SignUpScreen = () => {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(null);
+  const toggleShowPassword = () => { 
+    setShowPassword(!showPassword); 
+    console.log(showPassword);
+  }; 
+  const toggleShowPassword2 = () => { 
+    setShowPassword2(!showPassword2); 
+    console.log(showPassword2);
+  }; 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword2, setShowPassword2] = useState(false);
  const { handleSubmit, control, formState: { errors }, reset } = useForm(); 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -107,23 +117,36 @@ const SignUpScreen = () => {
           {errors.email && <Text style={{ color: 'red' }}>This field is required</Text>}
 
           <Text style={styles.formText}>Password</Text>
+          <View style={styles.showPassword}>
+
+          
           <Controller
             control={control}
             rules={{ required: true }}
-            render={({ field }) => <TextInput style={[styles.formInput, styles.passwordInput]} onChangeText={field.onChange} value={field.value} secureTextEntry {...field} />}
+            render={({ field }) => <TextInput style={[styles.formInput, styles.passwordInput]} onChangeText={field.onChange} value={field.value}  secureTextEntry={!showPassword}  {...field} />}
             name="password"
             defaultValue=""
           />
+          <TouchableOpacity style={styles.showPasswordButton} onPress={toggleShowPassword} >
+              <Ionic size={24} color='black' name={showPassword ? 'eye-off-outline' : 'eye-outline'} />
+            </TouchableOpacity>
+            </View>
           {errors.password && <Text style={{ color: 'red' }}>This field is required</Text>}
 
           <Text style={styles.formText}>Confirm Password</Text>
+          <View style={styles.showPassword}>
+
           <Controller
             control={control}
             rules={{ required: true }}
-            render={({ field }) => <TextInput style={[styles.formInput, styles.passwordInput]} onChangeText={field.onChange} value={field.value} secureTextEntry {...field} />}
+            render={({ field }) => <TextInput style={[styles.formInput, styles.passwordInput]} onChangeText={field.onChange} value={field.value} secureTextEntry={!showPassword2} {...field} />}
             name="confirmPassword"
             defaultValue=""
           />
+                    <TouchableOpacity style={styles.showPasswordButton} onPress={toggleShowPassword2} >
+              <Ionic size={24} color='black' name={showPassword2 ? 'eye-off-outline' : 'eye-outline'} />
+            </TouchableOpacity>
+            </View>
           {errors.confirmPassword && <Text style={{ color: 'red' }}>This field is required</Text>}
           <Text style={styles.formText}>Phone Number</Text>
 <Controller
@@ -210,6 +233,7 @@ const styles = StyleSheet.create({
   },
   passwordInput: {
     marginBottom: 5,
+    width:'100%'
   },
 
   signupButtonContainer: {
@@ -276,4 +300,12 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 20,
     marginLeft: 4,
   },
+  showPassword: {
+    flexDirection:'row',
+   },
+   showPasswordButton: {
+     position:'absolute',
+     right:10,
+     top:8,
+    },
 });

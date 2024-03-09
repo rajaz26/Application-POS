@@ -23,6 +23,7 @@ const LoginScreen = () => {
   const navigation=useNavigation();
   const { handleSubmit, control, formState: { errors }, reset } = useForm(); 
   const [loading, setLoading] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
   const client = generateClient();
 const handleSignOut = async () => {
@@ -34,7 +35,10 @@ const handleSignOut = async () => {
     console.log('error signing out: ', error);
   }
 }
-
+const toggleShowPassword = () => { 
+  setShowPassword(!showPassword); 
+  console.log(showPassword);
+}; 
 const userByIdQuery = /* GraphQL */ `
 query UserById($userId: ID!) {
   userById(userId: $userId) {
@@ -156,13 +160,28 @@ query UserById($userId: ID!) {
           {errors.username && <Text style={{ color: 'red' }}>This field is required</Text>}
 
           <Text style={styles.formText}>Password</Text>
+          <View style={styles.showPassword}>
+
+          
           <Controller
             control={control}
             rules={{ required: true }}
-            render={({ field }) => <TextInput style={[styles.formInput, styles.passwordInput]} onChangeText={field.onChange} value={field.value} secureTextEntry />}
+            render={({ field }) => (
+              <TextInput
+                style={[styles.formInputPassword, styles.passwordInput]}
+                onChangeText={field.onChange}
+                value={field.value}
+                secureTextEntry={!showPassword} // Conditionally set secureTextEntry based on showPassword
+              />
+            )}
             name="password"
             defaultValue=""
+            // secureTextEntry={!showPassword}
           />
+          <TouchableOpacity style={styles.showPasswordButton} onPress={toggleShowPassword} >
+              <Ionic size={24} color='black' name={showPassword ? 'eye-off-outline' : 'eye-outline'} />
+            </TouchableOpacity>
+            </View>
           {errors.password && <Text style={{ color: 'red' }}>This field is required</Text>}
         </View>
         <View style={styles.loginButtonContainer}>
@@ -191,7 +210,7 @@ query UserById($userId: ID!) {
           <View>
   </View>
           {/* <TouchableOpacity onPress={() => navigation.navigate('SignUp')}> */}
-          <TouchableOpacity onPress={handleSignOut}> 
+          <TouchableOpacity onPress={() => navigation.navigate('SignUp') }> 
             <Text
               style={{
                 color: '#ffc200',
@@ -287,6 +306,24 @@ const styles = StyleSheet.create({
     bottom: 3,
     color: 'black',
   },
+  formInputPassword: {
+    height: 45,
+    backgroundColor: 'rgba(180, 180, 180,0.4)',
+    borderRadius: 10,
+    marginBottom: 22,
+    paddingLeft: 10,
+    bottom: 3,
+    color: 'black',
+    width:'100%'
+  },
+  showPassword: {
+   flexDirection:'row',
+  },
+  showPasswordButton: {
+    position:'absolute',
+    right:10,
+    top:8,
+   },
   passwordInput: {
     marginBottom: 15,
   },
