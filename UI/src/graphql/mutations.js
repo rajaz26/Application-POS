@@ -30,6 +30,16 @@ export const createStore = /* GraphQL */ `
         startedAt
         __typename
       }
+      warehouseScan {
+        nextToken
+        startedAt
+        __typename
+      }
+      billItems {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
@@ -68,6 +78,16 @@ export const updateStore = /* GraphQL */ `
         startedAt
         __typename
       }
+      warehouseScan {
+        nextToken
+        startedAt
+        __typename
+      }
+      billItems {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
@@ -102,6 +122,16 @@ export const deleteStore = /* GraphQL */ `
         __typename
       }
       purchaseOrders {
+        nextToken
+        startedAt
+        __typename
+      }
+      warehouseScan {
+        nextToken
+        startedAt
+        __typename
+      }
+      billItems {
         nextToken
         startedAt
         __typename
@@ -390,11 +420,23 @@ export const createBillItem = /* GraphQL */ `
         storeBillsId
         __typename
       }
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeBillItemsId
       productBillItemsId
       billItemsId
       __typename
@@ -445,11 +487,23 @@ export const updateBillItem = /* GraphQL */ `
         storeBillsId
         __typename
       }
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeBillItemsId
       productBillItemsId
       billItemsId
       __typename
@@ -500,11 +554,23 @@ export const deleteBillItem = /* GraphQL */ `
         storeBillsId
         __typename
       }
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeBillItemsId
       productBillItemsId
       billItemsId
       __typename
@@ -714,6 +780,105 @@ export const deletePurchaseOrder = /* GraphQL */ `
       _deleted
       _lastChangedAt
       storePurchaseOrdersId
+      __typename
+    }
+  }
+`;
+export const createWarehouseScan = /* GraphQL */ `
+  mutation CreateWarehouseScan(
+    $input: CreateWarehouseScanInput!
+    $condition: ModelWarehouseScanConditionInput
+  ) {
+    createWarehouseScan(input: $input, condition: $condition) {
+      id
+      scannedBy
+      scannedByName
+      productId
+      productName
+      productQuantity
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeWarehouseScanId
+      __typename
+    }
+  }
+`;
+export const updateWarehouseScan = /* GraphQL */ `
+  mutation UpdateWarehouseScan(
+    $input: UpdateWarehouseScanInput!
+    $condition: ModelWarehouseScanConditionInput
+  ) {
+    updateWarehouseScan(input: $input, condition: $condition) {
+      id
+      scannedBy
+      scannedByName
+      productId
+      productName
+      productQuantity
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeWarehouseScanId
+      __typename
+    }
+  }
+`;
+export const deleteWarehouseScan = /* GraphQL */ `
+  mutation DeleteWarehouseScan(
+    $input: DeleteWarehouseScanInput!
+    $condition: ModelWarehouseScanConditionInput
+  ) {
+    deleteWarehouseScan(input: $input, condition: $condition) {
+      id
+      scannedBy
+      scannedByName
+      productId
+      productName
+      productQuantity
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeWarehouseScanId
       __typename
     }
   }

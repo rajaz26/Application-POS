@@ -19,6 +19,9 @@ type Store @model @auth(rules: [{ allow: public }]) {
   products: [Product] @hasMany
   bills: [Bill] @hasMany
   purchaseOrders: [PurchaseOrder] @hasMany
+  warehouseScan: [WarehouseScan] @hasMany
+  billItems: [BillItem] @hasMany
+
 }
 
 type User @model @auth(rules: [{ allow: public }]) {
@@ -58,6 +61,7 @@ type BillItem @model @auth(rules: [{ allow: public }]) {
   category: String
   manufacturer: String
   bill: Bill @belongsTo
+   store: Store @belongsTo
 }
 
 type Bill @model @auth(rules: [{ allow: public }]) {
@@ -76,5 +80,15 @@ type PurchaseOrder @model @auth(rules: [{ allow: public }]) {
   vendor: String
   amount: Float
   date: String
+  store: Store @belongsTo
+}
+
+type WarehouseScan @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  scannedBy: ID
+  scannedByName: String
+  productId: ID
+  productName: String
+  productQuantity: Int
   store: Store @belongsTo
 }

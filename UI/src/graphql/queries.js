@@ -27,6 +27,16 @@ export const getStore = /* GraphQL */ `
         startedAt
         __typename
       }
+      warehouseScan {
+        nextToken
+        startedAt
+        __typename
+      }
+      billItems {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
@@ -338,11 +348,23 @@ export const getBillItem = /* GraphQL */ `
         storeBillsId
         __typename
       }
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeBillItemsId
       productBillItemsId
       billItemsId
       __typename
@@ -369,6 +391,7 @@ export const listBillItems = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeBillItemsId
         productBillItemsId
         billItemsId
         __typename
@@ -405,6 +428,7 @@ export const syncBillItems = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        storeBillItemsId
         productBillItemsId
         billItemsId
         __typename
@@ -590,6 +614,98 @@ export const syncPurchaseOrders = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storePurchaseOrdersId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const getWarehouseScan = /* GraphQL */ `
+  query GetWarehouseScan($id: ID!) {
+    getWarehouseScan(id: $id) {
+      id
+      scannedBy
+      scannedByName
+      productId
+      productName
+      productQuantity
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeWarehouseScanId
+      __typename
+    }
+  }
+`;
+export const listWarehouseScans = /* GraphQL */ `
+  query ListWarehouseScans(
+    $filter: ModelWarehouseScanFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listWarehouseScans(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        scannedBy
+        scannedByName
+        productId
+        productName
+        productQuantity
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeWarehouseScanId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const syncWarehouseScans = /* GraphQL */ `
+  query SyncWarehouseScans(
+    $filter: ModelWarehouseScanFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncWarehouseScans(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        scannedBy
+        scannedByName
+        productId
+        productName
+        productQuantity
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeWarehouseScanId
         __typename
       }
       nextToken

@@ -125,6 +125,10 @@
             "AttributeType": "S"
           },
           {
+            "AttributeName": "storeBillItemsId",
+            "AttributeType": "S"
+          },
+          {
             "AttributeName": "productBillItemsId",
             "AttributeType": "S"
           },
@@ -143,6 +147,34 @@
           ]
         },
         "GlobalSecondaryIndexes": [
+          {
+            "IndexName": "gsi-Store.billItems",
+            "KeySchema": [
+              {
+                "AttributeName": "storeBillItemsId",
+                "KeyType": "HASH"
+              }
+            ],
+            "Projection": {
+              "ProjectionType": "ALL"
+            },
+            "ProvisionedThroughput": {
+              "Fn::If": [
+                "ShouldUsePayPerRequestBilling",
+                {
+                  "Ref": "AWS::NoValue"
+                },
+                {
+                  "ReadCapacityUnits": {
+                    "Ref": "DynamoDBModelTableReadIOPS"
+                  },
+                  "WriteCapacityUnits": {
+                    "Ref": "DynamoDBModelTableWriteIOPS"
+                  }
+                }
+              ]
+            }
+          },
           {
             "IndexName": "gsi-Product.billItems",
             "KeySchema": [

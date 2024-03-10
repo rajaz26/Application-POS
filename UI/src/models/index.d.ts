@@ -29,6 +29,8 @@ type EagerStore = {
   readonly products?: (Product | null)[] | null;
   readonly bills?: (Bill | null)[] | null;
   readonly purchaseOrders?: (PurchaseOrder | null)[] | null;
+  readonly warehouseScan?: (WarehouseScan | null)[] | null;
+  readonly billItems?: (BillItem | null)[] | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -45,6 +47,8 @@ type LazyStore = {
   readonly products: AsyncCollection<Product>;
   readonly bills: AsyncCollection<Bill>;
   readonly purchaseOrders: AsyncCollection<PurchaseOrder>;
+  readonly warehouseScan: AsyncCollection<WarehouseScan>;
+  readonly billItems: AsyncCollection<BillItem>;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
 }
@@ -163,8 +167,10 @@ type EagerBillItem = {
   readonly category?: string | null;
   readonly manufacturer?: string | null;
   readonly bill?: Bill | null;
+  readonly store?: Store | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
+  readonly storeBillItemsId?: string | null;
   readonly productBillItemsId?: string | null;
   readonly billItemsId?: string | null;
 }
@@ -183,8 +189,10 @@ type LazyBillItem = {
   readonly category?: string | null;
   readonly manufacturer?: string | null;
   readonly bill: AsyncItem<Bill | undefined>;
+  readonly store: AsyncItem<Store | undefined>;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
+  readonly storeBillItemsId?: string | null;
   readonly productBillItemsId?: string | null;
   readonly billItemsId?: string | null;
 }
@@ -271,4 +279,44 @@ export declare type PurchaseOrder = LazyLoading extends LazyLoadingDisabled ? Ea
 
 export declare const PurchaseOrder: (new (init: ModelInit<PurchaseOrder>) => PurchaseOrder) & {
   copyOf(source: PurchaseOrder, mutator: (draft: MutableModel<PurchaseOrder>) => MutableModel<PurchaseOrder> | void): PurchaseOrder;
+}
+
+type EagerWarehouseScan = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<WarehouseScan, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly scannedBy?: string | null;
+  readonly scannedByName?: string | null;
+  readonly productId?: string | null;
+  readonly productName?: string | null;
+  readonly productQuantity?: number | null;
+  readonly store?: Store | null;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+  readonly storeWarehouseScanId?: string | null;
+}
+
+type LazyWarehouseScan = {
+  readonly [__modelMeta__]: {
+    identifier: ManagedIdentifier<WarehouseScan, 'id'>;
+    readOnlyFields: 'createdAt' | 'updatedAt';
+  };
+  readonly id: string;
+  readonly scannedBy?: string | null;
+  readonly scannedByName?: string | null;
+  readonly productId?: string | null;
+  readonly productName?: string | null;
+  readonly productQuantity?: number | null;
+  readonly store: AsyncItem<Store | undefined>;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+  readonly storeWarehouseScanId?: string | null;
+}
+
+export declare type WarehouseScan = LazyLoading extends LazyLoadingDisabled ? EagerWarehouseScan : LazyWarehouseScan
+
+export declare const WarehouseScan: (new (init: ModelInit<WarehouseScan>) => WarehouseScan) & {
+  copyOf(source: WarehouseScan, mutator: (draft: MutableModel<WarehouseScan>) => MutableModel<WarehouseScan> | void): WarehouseScan;
 }

@@ -6,6 +6,7 @@ import { generateClient } from 'aws-amplify/api';
 import { useNavigation } from '@react-navigation/native';
 import { deletePurchaseOrder, updatePurchaseOrder } from '../src/graphql/mutations';
 import Ionic from 'react-native-vector-icons/Ionicons';
+import { launchImageLibrary } from 'react-native-image-picker';
 const PurchaseOrder = ({ route }) => {
     const [purchaseOrder, setPurchaseOrder] = useState(null);
     const [image, setImage] = useState(false);
@@ -19,6 +20,119 @@ const PurchaseOrder = ({ route }) => {
     const [purchaseOrderImage, setPurchaseOrderImage] = useState(null);
     const purchaseOrderVersion=route.params.purchaseOrderVersion;
     const purchaseOrderId = route.params.purchaseOrderId;
+    const [purchaseOrderInput, setPurchaseOrderInput] = useState({
+        id: purchaseOrderId,
+        date:purchaseOrderDate,
+        amount:purchaseOrderAmount,
+        vendor:purchaseOrderVendor,
+        image: purchaseOrderImage,
+        _version:purchaseOrderVersion
+      });
+      useEffect(() => {
+        console.log("User Effect",purchaseOrderInput)
+        setPurchaseOrderInput({
+          id: purchaseOrder?.id,
+          date:purchaseOrder?.date,
+          amount:purchaseOrder?.amount,
+          vendor:purchaseOrder?.vendor,
+          image: purchaseOrder?.image,
+        });
+      }, [purchaseOrder]);
+
+      const handleChoosePhoto = () => {
+        launchImageLibrary({}, (response) => {
+          if (response.assets && response.assets.length > 0) {
+            const imageUri = response.assets[0].uri;
+            setPurchaseOrderInput((prevState) => ({
+              ...prevState,
+              image: imageUri,
+            }));
+          } else {
+            console.log('No image selected or unexpected response structure');
+          }
+        });
+      };
+    
+      const uploadImageToS3 = async (imageUri, fileName) => {
+        try {
+          const response = await fetch(imageUri);
+          const blob = await response.blob();
+    
+          const uploadResult = await uploadData({
+            key: fileName,
+            data: blob,
+            options: {
+              contentType: 'image/jpeg',
+              accessLevel: 'guest',
+            },
+          }).result;
+    
+          return uploadResult.key;
+        } catch (error) {
+          console.error('Upload error:', error);
+          throw error;
+        }
+      };
+    
+      const getImageUrlFromS3 = async (fileKey) => {
+        try {
+          const getUrlResult = await getUrl({
+            key: fileKey,
+            options: {
+              accessLevel: 'guest',
+              useAccelerateEndpoint: true,
+            },
+          });
+    
+          return getUrlResult.url;
+        } catch (error) {
+          console.error('Error getting image URL:', error);
+          throw error;
+        }
+      };
+    
+      const handleUpdatePurchaseOrder = async () => {
+        setLoading(true);
+        console.log("Updating",purchaseOrderInput);
+        try {
+          if (purchaseOrderInput.image !== purchaseOrder.image) {
+            try {
+              const fileName = extractFilename(purchaseOrder.image);
+              await remove({ key: fileName });
+            } catch (error) {
+              console.log('Error deleting previous image:', error);
+            }
+
+            try{
+                const fileName = `purchase-order-image-${Date.now()}.jpeg`;
+                const fileKey = await uploadImageToS3(purchaseOrderInput.image, fileName);
+                const newImageUrl = await getImageUrlFromS3(fileKey);
+                purchaseOrderInput.image = newImageUrl;
+            }catch(error){
+                console.log(error)
+            }
+          }
+          console.log("UPDATING PURCHASE ORDER WITH DATA",purchaseOrderInput)
+          const updatedPurchaseOrder = await client.graphql({
+            query: updatePurchaseOrder,
+            variables: { input: purchaseOrderInput },
+            authMode: 'apiKey',
+          });
+      
+          setLoading(false);
+          console.log('Updated Purchase Order:', updatedPurchaseOrder);
+        } catch (error) {
+          setLoading(false);
+          console.error('Error updating purchase order:', error);
+        }
+      };
+      
+    
+      const onSubmit = async () => {
+        handleUpdatePurchaseOrder();
+      };
+    
+      
     const getPurchaseOrder = /* GraphQL */ `
     query GetPurchaseOrder($id: ID!) {
       getPurchaseOrder(id: $id) {
@@ -51,7 +165,7 @@ const PurchaseOrder = ({ route }) => {
                     console.log("Received", purchaseOrder);
                     setPurchaseOrderImage(data.getPurchaseOrder.image[0]);
                     setLoading(false);
-                    console.log("PO", purchaseOrder);
+                    console.log("PO Image", purchaseOrderImage);
                     console.log("FINISH");
                 } catch (error) {
                     console.error('Error fetching PO:', error);
@@ -60,7 +174,7 @@ const PurchaseOrder = ({ route }) => {
             };
         
             fetchPurchaseOrder();
-        }, [purchaseOrderId]);
+        }, purchaseOrderId);
 
         useEffect(() => {
             setImage(true);
@@ -211,19 +325,26 @@ const PurchaseOrder = ({ route }) => {
                         </View>
                     </View>
                     <View style={styles.formInputContainer}>
-                        <View style={styles.uploadContainer}>
-                            <View style={styles.uploadWrapper}>
-                                <TouchableOpacity style={styles.resetButton}>
-                                    {loading ? ( <Text style={styles.loading}>Loading ...</Text>):(<Image source={image ? { uri: purchaseOrderImage }:require("../assets/images/person.jpg") } style={styles.selectedImage} />)}
-                                </TouchableOpacity>
-                            </View>
-                        </View>
+                    <View style={styles.uploadContainer}>
+                    <View style={styles.uploadWrapper}>
+    {editing ? (
+        <TouchableOpacity style={styles.resetButton} onPress={handleChoosePhoto}>
+            {loading ? (<Text style={styles.loading}>Loading ...</Text>) : (<Image source={image ? { uri: purchaseOrderImage } : require("../assets/images/person.jpg")} style={styles.selectedImage} />)}
+        </TouchableOpacity>
+    ) : (
+        <TouchableOpacity style={styles.resetButton}>
+            {loading ? (<Text style={styles.loading}>Loading ...</Text>) : (<Image source={image ? { uri: purchaseOrderImage } : require("../assets/images/person.jpg")} style={styles.selectedImage} />)}
+        </TouchableOpacity>
+    )}
+</View>
+</View>
+
                     </View>
                      <View style={styles.formInputContainer}>
                         <View style={styles.uploadContainerButton}>
                             <View style={styles.uploadWrapperButton}>
                                 {editing ?
-                                (  <TouchableOpacity style={styles.updateButton} onPress={handleUpdate}>
+                                (  <TouchableOpacity style={styles.updateButton} onPress={handleUpdatePurchaseOrder}>
                                     <Text style={styles.updateText}>Update</Text>
                                 </TouchableOpacity>):(  <TouchableOpacity style={styles.updateButton} onPress={handleEdit}>
                                     <Text style={styles.updateText}>Edit</Text>

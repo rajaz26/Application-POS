@@ -19,6 +19,8 @@ type Store {
   products(filter: ModelProductFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelProductConnection
   bills(filter: ModelBillFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelBillConnection
   purchaseOrders(filter: ModelPurchaseOrderFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelPurchaseOrderConnection
+  warehouseScan(filter: ModelWarehouseScanFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelWarehouseScanConnection
+  billItems(filter: ModelBillItemFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelBillItemConnection
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
   _version: Int!
@@ -75,11 +77,13 @@ type BillItem {
   category: String
   manufacturer: String
   bill: Bill
+  store: Store
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
   _version: Int!
   _deleted: Boolean
   _lastChangedAt: AWSTimestamp!
+  storeBillItemsId: ID
   productBillItemsId: ID
   billItemsId: ID!
 }
@@ -113,6 +117,22 @@ type PurchaseOrder {
   _deleted: Boolean
   _lastChangedAt: AWSTimestamp!
   storePurchaseOrdersId: ID
+}
+
+type WarehouseScan {
+  id: ID!
+  scannedBy: ID
+  scannedByName: String
+  productId: ID
+  productName: String
+  productQuantity: Int
+  store: Store
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+  _version: Int!
+  _deleted: Boolean
+  _lastChangedAt: AWSTimestamp!
+  storeWarehouseScanId: ID
 }
 
 input ModelStringInput {
@@ -300,6 +320,9 @@ type Query {
   getPurchaseOrder(id: ID!): PurchaseOrder
   listPurchaseOrders(filter: ModelPurchaseOrderFilterInput, limit: Int, nextToken: String): ModelPurchaseOrderConnection
   syncPurchaseOrders(filter: ModelPurchaseOrderFilterInput, limit: Int, nextToken: String, lastSync: AWSTimestamp): ModelPurchaseOrderConnection
+  getWarehouseScan(id: ID!): WarehouseScan
+  listWarehouseScans(filter: ModelWarehouseScanFilterInput, limit: Int, nextToken: String): ModelWarehouseScanConnection
+  syncWarehouseScans(filter: ModelWarehouseScanFilterInput, limit: Int, nextToken: String, lastSync: AWSTimestamp): ModelWarehouseScanConnection
   userById(userId: ID!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelUserFilterInput, limit: Int, nextToken: String): ModelUserConnection
   productByBarcode(barcode: String!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelProductFilterInput, limit: Int, nextToken: String): ModelProductConnection
   billByCashierId(cashier: String!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelBillFilterInput, limit: Int, nextToken: String): ModelBillConnection
@@ -353,6 +376,9 @@ type Mutation {
   createPurchaseOrder(input: CreatePurchaseOrderInput!, condition: ModelPurchaseOrderConditionInput): PurchaseOrder
   updatePurchaseOrder(input: UpdatePurchaseOrderInput!, condition: ModelPurchaseOrderConditionInput): PurchaseOrder
   deletePurchaseOrder(input: DeletePurchaseOrderInput!, condition: ModelPurchaseOrderConditionInput): PurchaseOrder
+  createWarehouseScan(input: CreateWarehouseScanInput!, condition: ModelWarehouseScanConditionInput): WarehouseScan
+  updateWarehouseScan(input: UpdateWarehouseScanInput!, condition: ModelWarehouseScanConditionInput): WarehouseScan
+  deleteWarehouseScan(input: DeleteWarehouseScanInput!, condition: ModelWarehouseScanConditionInput): WarehouseScan
 }
 
 input ModelSubscriptionStoreFilterInput {
@@ -383,6 +409,9 @@ type Subscription {
   onCreatePurchaseOrder(filter: ModelSubscriptionPurchaseOrderFilterInput): PurchaseOrder @aws_subscribe(mutations: ["createPurchaseOrder"])
   onUpdatePurchaseOrder(filter: ModelSubscriptionPurchaseOrderFilterInput): PurchaseOrder @aws_subscribe(mutations: ["updatePurchaseOrder"])
   onDeletePurchaseOrder(filter: ModelSubscriptionPurchaseOrderFilterInput): PurchaseOrder @aws_subscribe(mutations: ["deletePurchaseOrder"])
+  onCreateWarehouseScan(filter: ModelSubscriptionWarehouseScanFilterInput): WarehouseScan @aws_subscribe(mutations: ["createWarehouseScan"])
+  onUpdateWarehouseScan(filter: ModelSubscriptionWarehouseScanFilterInput): WarehouseScan @aws_subscribe(mutations: ["updateWarehouseScan"])
+  onDeleteWarehouseScan(filter: ModelSubscriptionWarehouseScanFilterInput): WarehouseScan @aws_subscribe(mutations: ["deleteWarehouseScan"])
 }
 
 type ModelUserConnection {
@@ -582,6 +611,7 @@ input ModelBillItemFilterInput {
   or: [ModelBillItemFilterInput]
   not: ModelBillItemFilterInput
   _deleted: ModelBooleanInput
+  storeBillItemsId: ModelIDInput
   productBillItemsId: ModelIDInput
   billItemsId: ModelIDInput
 }
@@ -597,6 +627,7 @@ input ModelBillItemConditionInput {
   or: [ModelBillItemConditionInput]
   not: ModelBillItemConditionInput
   _deleted: ModelBooleanInput
+  storeBillItemsId: ModelIDInput
   productBillItemsId: ModelIDInput
   billItemsId: ModelIDInput
 }
@@ -610,6 +641,7 @@ input CreateBillItemInput {
   category: String
   manufacturer: String
   _version: Int
+  storeBillItemsId: ID
   productBillItemsId: ID
   billItemsId: ID!
 }
@@ -623,6 +655,7 @@ input UpdateBillItemInput {
   category: String
   manufacturer: String
   _version: Int
+  storeBillItemsId: ID
   productBillItemsId: ID
   billItemsId: ID
 }
@@ -781,6 +814,78 @@ input ModelSubscriptionPurchaseOrderFilterInput {
   date: ModelSubscriptionStringInput
   and: [ModelSubscriptionPurchaseOrderFilterInput]
   or: [ModelSubscriptionPurchaseOrderFilterInput]
+  _deleted: ModelBooleanInput
+}
+
+type ModelWarehouseScanConnection {
+  items: [WarehouseScan]!
+  nextToken: String
+  startedAt: AWSTimestamp
+}
+
+input ModelWarehouseScanFilterInput {
+  id: ModelIDInput
+  scannedBy: ModelIDInput
+  scannedByName: ModelStringInput
+  productId: ModelIDInput
+  productName: ModelStringInput
+  productQuantity: ModelIntInput
+  and: [ModelWarehouseScanFilterInput]
+  or: [ModelWarehouseScanFilterInput]
+  not: ModelWarehouseScanFilterInput
+  _deleted: ModelBooleanInput
+  storeWarehouseScanId: ModelIDInput
+}
+
+input ModelWarehouseScanConditionInput {
+  scannedBy: ModelIDInput
+  scannedByName: ModelStringInput
+  productId: ModelIDInput
+  productName: ModelStringInput
+  productQuantity: ModelIntInput
+  and: [ModelWarehouseScanConditionInput]
+  or: [ModelWarehouseScanConditionInput]
+  not: ModelWarehouseScanConditionInput
+  _deleted: ModelBooleanInput
+  storeWarehouseScanId: ModelIDInput
+}
+
+input CreateWarehouseScanInput {
+  id: ID
+  scannedBy: ID
+  scannedByName: String
+  productId: ID
+  productName: String
+  productQuantity: Int
+  _version: Int
+  storeWarehouseScanId: ID
+}
+
+input UpdateWarehouseScanInput {
+  id: ID!
+  scannedBy: ID
+  scannedByName: String
+  productId: ID
+  productName: String
+  productQuantity: Int
+  _version: Int
+  storeWarehouseScanId: ID
+}
+
+input DeleteWarehouseScanInput {
+  id: ID!
+  _version: Int
+}
+
+input ModelSubscriptionWarehouseScanFilterInput {
+  id: ModelSubscriptionIDInput
+  scannedBy: ModelSubscriptionIDInput
+  scannedByName: ModelSubscriptionStringInput
+  productId: ModelSubscriptionIDInput
+  productName: ModelSubscriptionStringInput
+  productQuantity: ModelSubscriptionIntInput
+  and: [ModelSubscriptionWarehouseScanFilterInput]
+  or: [ModelSubscriptionWarehouseScanFilterInput]
   _deleted: ModelBooleanInput
 }
 

@@ -27,6 +27,16 @@ export const onCreateStore = /* GraphQL */ `
         startedAt
         __typename
       }
+      warehouseScan {
+        nextToken
+        startedAt
+        __typename
+      }
+      billItems {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
@@ -62,6 +72,16 @@ export const onUpdateStore = /* GraphQL */ `
         startedAt
         __typename
       }
+      warehouseScan {
+        nextToken
+        startedAt
+        __typename
+      }
+      billItems {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
@@ -93,6 +113,16 @@ export const onDeleteStore = /* GraphQL */ `
         __typename
       }
       purchaseOrders {
+        nextToken
+        startedAt
+        __typename
+      }
+      warehouseScan {
+        nextToken
+        startedAt
+        __typename
+      }
+      billItems {
         nextToken
         startedAt
         __typename
@@ -360,11 +390,23 @@ export const onCreateBillItem = /* GraphQL */ `
         storeBillsId
         __typename
       }
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeBillItemsId
       productBillItemsId
       billItemsId
       __typename
@@ -412,11 +454,23 @@ export const onUpdateBillItem = /* GraphQL */ `
         storeBillsId
         __typename
       }
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeBillItemsId
       productBillItemsId
       billItemsId
       __typename
@@ -464,11 +518,23 @@ export const onDeleteBillItem = /* GraphQL */ `
         storeBillsId
         __typename
       }
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      storeBillItemsId
       productBillItemsId
       billItemsId
       __typename
@@ -666,6 +732,102 @@ export const onDeletePurchaseOrder = /* GraphQL */ `
       _deleted
       _lastChangedAt
       storePurchaseOrdersId
+      __typename
+    }
+  }
+`;
+export const onCreateWarehouseScan = /* GraphQL */ `
+  subscription OnCreateWarehouseScan(
+    $filter: ModelSubscriptionWarehouseScanFilterInput
+  ) {
+    onCreateWarehouseScan(filter: $filter) {
+      id
+      scannedBy
+      scannedByName
+      productId
+      productName
+      productQuantity
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeWarehouseScanId
+      __typename
+    }
+  }
+`;
+export const onUpdateWarehouseScan = /* GraphQL */ `
+  subscription OnUpdateWarehouseScan(
+    $filter: ModelSubscriptionWarehouseScanFilterInput
+  ) {
+    onUpdateWarehouseScan(filter: $filter) {
+      id
+      scannedBy
+      scannedByName
+      productId
+      productName
+      productQuantity
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeWarehouseScanId
+      __typename
+    }
+  }
+`;
+export const onDeleteWarehouseScan = /* GraphQL */ `
+  subscription OnDeleteWarehouseScan(
+    $filter: ModelSubscriptionWarehouseScanFilterInput
+  ) {
+    onDeleteWarehouseScan(filter: $filter) {
+      id
+      scannedBy
+      scannedByName
+      productId
+      productName
+      productQuantity
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeWarehouseScanId
       __typename
     }
   }

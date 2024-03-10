@@ -112,7 +112,7 @@
                     ]
                 },
                 "Description": "apikey",
-                "Expires": 1741443359
+                "Expires": 1741548296
             }
         },
         "GraphQLAPINONEDS95A13CF0": {
@@ -922,6 +922,112 @@
                 "GraphQLAPITransformerSchema3CB2AE18"
             ]
         },
+        "WarehouseScan": {
+            "Type": "AWS::CloudFormation::Stack",
+            "Properties": {
+                "TemplateURL": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "https://s3.",
+                            {
+                                "Ref": "AWS::Region"
+                            },
+                            ".",
+                            {
+                                "Ref": "AWS::URLSuffix"
+                            },
+                            "/",
+                            {
+                                "Ref": "S3DeploymentBucket"
+                            },
+                            "/",
+                            {
+                                "Ref": "S3DeploymentRootKey"
+                            },
+                            "/stacks/WarehouseScan.json"
+                        ]
+                    ]
+                },
+                "Parameters": {
+                    "DynamoDBModelTableReadIOPS": {
+                        "Ref": "DynamoDBModelTableReadIOPS"
+                    },
+                    "DynamoDBModelTableWriteIOPS": {
+                        "Ref": "DynamoDBModelTableWriteIOPS"
+                    },
+                    "DynamoDBBillingMode": {
+                        "Ref": "DynamoDBBillingMode"
+                    },
+                    "DynamoDBEnablePointInTimeRecovery": {
+                        "Ref": "DynamoDBEnablePointInTimeRecovery"
+                    },
+                    "DynamoDBEnableServerSideEncryption": {
+                        "Ref": "DynamoDBEnableServerSideEncryption"
+                    },
+                    "referencetotransformerrootstackenv10C5A902Ref": {
+                        "Ref": "env"
+                    },
+                    "referencetotransformerrootstackGraphQLAPI20497F53ApiId": {
+                        "Fn::GetAtt": [
+                            "GraphQLAPI",
+                            "ApiId"
+                        ]
+                    },
+                    "referencetotransformerrootstackS3DeploymentBucket7592718ARef": {
+                        "Ref": "S3DeploymentBucket"
+                    },
+                    "referencetotransformerrootstackS3DeploymentRootKeyA71EA735Ref": {
+                        "Ref": "S3DeploymentRootKey"
+                    },
+                    "referencetotransformerrootstackStoreNestedStackStoreNestedStackResource158BCF63OutputstransformerrootstackStoreQuerygetStoreauth0FunctionQuerygetStoreauth0FunctionAppSyncFunction12764B24FunctionId": {
+                        "Fn::GetAtt": [
+                            "Store",
+                            "Outputs.transformerrootstackStoreQuerygetStoreauth0FunctionQuerygetStoreauth0FunctionAppSyncFunction12764B24FunctionId"
+                        ]
+                    },
+                    "referencetotransformerrootstackStoreNestedStackStoreNestedStackResource158BCF63OutputstransformerrootstackStoreQuerygetStorepostAuth0FunctionQuerygetStorepostAuth0FunctionAppSyncFunction72FEF36FFunctionId": {
+                        "Fn::GetAtt": [
+                            "Store",
+                            "Outputs.transformerrootstackStoreQuerygetStorepostAuth0FunctionQuerygetStorepostAuth0FunctionAppSyncFunction72FEF36FFunctionId"
+                        ]
+                    },
+                    "referencetotransformerrootstackStoreNestedStackStoreNestedStackResource158BCF63OutputstransformerrootstackStoreMutationcreateStoreinit0FunctionMutationcreateStoreinit0FunctionAppSyncFunction10A476FFFunctionId": {
+                        "Fn::GetAtt": [
+                            "Store",
+                            "Outputs.transformerrootstackStoreMutationcreateStoreinit0FunctionMutationcreateStoreinit0FunctionAppSyncFunction10A476FFFunctionId"
+                        ]
+                    },
+                    "referencetotransformerrootstackStoreNestedStackStoreNestedStackResource158BCF63OutputstransformerrootstackStoreMutationcreateStoreauth0FunctionMutationcreateStoreauth0FunctionAppSyncFunction543BB4B5FunctionId": {
+                        "Fn::GetAtt": [
+                            "Store",
+                            "Outputs.transformerrootstackStoreMutationcreateStoreauth0FunctionMutationcreateStoreauth0FunctionAppSyncFunction543BB4B5FunctionId"
+                        ]
+                    },
+                    "referencetotransformerrootstackStoreNestedStackStoreNestedStackResource158BCF63OutputstransformerrootstackStoreMutationupdateStoreinit0FunctionMutationupdateStoreinit0FunctionAppSyncFunction4F9F2ED6FunctionId": {
+                        "Fn::GetAtt": [
+                            "Store",
+                            "Outputs.transformerrootstackStoreMutationupdateStoreinit0FunctionMutationupdateStoreinit0FunctionAppSyncFunction4F9F2ED6FunctionId"
+                        ]
+                    },
+                    "referencetotransformerrootstackStoreNestedStackStoreNestedStackResource158BCF63OutputstransformerrootstackStoreSubscriptiononCreateStoreauth0FunctionSubscriptiononCreateStoreauth0FunctionAppSyncFunction08721B5DFunctionId": {
+                        "Fn::GetAtt": [
+                            "Store",
+                            "Outputs.transformerrootstackStoreSubscriptiononCreateStoreauth0FunctionSubscriptiononCreateStoreauth0FunctionAppSyncFunction08721B5DFunctionId"
+                        ]
+                    },
+                    "referencetotransformerrootstackStoreNestedStackStoreNestedStackResource158BCF63OutputstransformerrootstackStoreSubscriptionOnCreateStoreDataResolverFnSubscriptionOnCreateStoreDataResolverFnAppSyncFunctionE0643BB6FunctionId": {
+                        "Fn::GetAtt": [
+                            "Store",
+                            "Outputs.transformerrootstackStoreSubscriptionOnCreateStoreDataResolverFnSubscriptionOnCreateStoreDataResolverFnAppSyncFunctionE0643BB6FunctionId"
+                        ]
+                    }
+                }
+            },
+            "DependsOn": [
+                "GraphQLAPITransformerSchema3CB2AE18"
+            ]
+        },
         "ConnectionStack": {
             "Type": "AWS::CloudFormation::Stack",
             "Properties": {
@@ -1016,6 +1122,18 @@
                             "Outputs.transformerrootstackPurchaseOrderPurchaseOrderTableC70F5014Ref"
                         ]
                     },
+                    "referencetotransformerrootstackWarehouseScanNestedStackWarehouseScanNestedStackResourceBD14BB20OutputstransformerrootstackWarehouseScanWarehouseScanDataSource8CD3C285Name": {
+                        "Fn::GetAtt": [
+                            "WarehouseScan",
+                            "Outputs.transformerrootstackWarehouseScanWarehouseScanDataSource8CD3C285Name"
+                        ]
+                    },
+                    "referencetotransformerrootstackWarehouseScanNestedStackWarehouseScanNestedStackResourceBD14BB20OutputstransformerrootstackWarehouseScanWarehouseScanTable5740C661Ref": {
+                        "Fn::GetAtt": [
+                            "WarehouseScan",
+                            "Outputs.transformerrootstackWarehouseScanWarehouseScanTable5740C661Ref"
+                        ]
+                    },
                     "referencetotransformerrootstackBillItemNestedStackBillItemNestedStackResourceF600BEFDOutputstransformerrootstackBillItemBillItemDataSource9D19B070Name": {
                         "Fn::GetAtt": [
                             "BillItem",
@@ -1049,7 +1167,8 @@
                 "Product",
                 "PurchaseOrder",
                 "Store",
-                "User"
+                "User",
+                "WarehouseScan"
             ]
         },
         "CustomResourcesjson": {
@@ -1101,6 +1220,7 @@
                 "BillItem",
                 "Bill",
                 "PurchaseOrder",
+                "WarehouseScan",
                 "ConnectionStack"
             ]
         }

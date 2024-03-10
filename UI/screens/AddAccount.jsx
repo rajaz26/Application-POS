@@ -107,16 +107,6 @@ const AddAccount = () => {
     setLoadingMessage(true);
     Keyboard.dismiss();
     try {
-      // setUserEmail(await fetchUserAttributes().email);
-      //   console.log(userEmail)
-      //   if(!userEmail){
-      //     setUserEmail(await getCurrentUser().email);
-
-      //   }
-      //   console.log('email',userEmail)
-       
-      //   // setUserEmail(mail.email);
-      //   console.log("email retrieved",userEmail);
       const signUpResponse = await signUp({
         username:name,
         password,
