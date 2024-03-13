@@ -5,48 +5,41 @@ import { getPurchaseOrder } from '../src/graphql/queries';
 import { generateClient } from 'aws-amplify/api';
 import { useNavigation } from '@react-navigation/native';
 import { deletePurchaseOrder, updatePurchaseOrder } from '../src/graphql/mutations';
+import Animated, { FadeIn, Easing, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import Ionic from 'react-native-vector-icons/Ionicons';
 import { launchImageLibrary } from 'react-native-image-picker';
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
 const PurchaseOrder = ({ route }) => {
     const [purchaseOrder, setPurchaseOrder] = useState(null);
     const [image, setImage] = useState(false);
     const [editing, setEditing] = useState(false);
     const client = generateClient();
     const navigation = useNavigation();
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [purchaseOrderDate, setPurchaseOrderDate] = useState(route.params.purchaseOrderDate);
     const [purchaseOrderAmount, setPurchaseOrderAmount] = useState(route.params.purchaseOrderAmount);
     const [purchaseOrderVendor, setPurchaseOrderVendor] = useState(route.params.purchaseOrderVendor);
     const [purchaseOrderImage, setPurchaseOrderImage] = useState(null);
+    const [originalPurchaseOrderImage, setOriginalPurchaseOrderImage] = useState(null);
     const purchaseOrderVersion=route.params.purchaseOrderVersion;
     const purchaseOrderId = route.params.purchaseOrderId;
-    const [purchaseOrderInput, setPurchaseOrderInput] = useState({
-        id: purchaseOrderId,
-        date:purchaseOrderDate,
-        amount:purchaseOrderAmount,
-        vendor:purchaseOrderVendor,
-        image: purchaseOrderImage,
-        _version:purchaseOrderVersion
-      });
-      useEffect(() => {
-        console.log("User Effect",purchaseOrderInput)
-        setPurchaseOrderInput({
-          id: purchaseOrder?.id,
-          date:purchaseOrder?.date,
-          amount:purchaseOrder?.amount,
-          vendor:purchaseOrder?.vendor,
-          image: purchaseOrder?.image,
-        });
-      }, [purchaseOrder]);
+    const [loadingMessage, setLoadingMessage] = useState(true);
+    const [successMessage, setSuccessMessage] = useState(false);
+    const [isEmptyField, setIsEmptyField] = useState(false);
+    const [success, setSuccess] = useState(false);
+    const [error, setError] = useState(false);
+    const [errorMessage, setErrorMessage] = useState('');
 
+    const handleSuccessButtonPress= () => {
+        setLoading(false)
+        setSuccessMessage(false);
+        navigation.navigate('PurchaseHistory');
+      }
       const handleChoosePhoto = () => {
         launchImageLibrary({}, (response) => {
           if (response.assets && response.assets.length > 0) {
             const imageUri = response.assets[0].uri;
-            setPurchaseOrderInput((prevState) => ({
-              ...prevState,
-              image: imageUri,
-            }));
+            setPurchaseOrderImage(imageUri);
           } else {
             console.log('No image selected or unexpected response structure');
           }
@@ -93,40 +86,75 @@ const PurchaseOrder = ({ route }) => {
     
       const handleUpdatePurchaseOrder = async () => {
         setLoading(true);
-        console.log("Updating",purchaseOrderInput);
+        if (!purchaseOrderDate || !purchaseOrderAmount || !purchaseOrderVendor || !purchaseOrderImage) {
+            setIsEmptyField(true);
+            setLoadingMessage(false);
+            return;
+        }
+        console.log("Updating");
         try {
-          if (purchaseOrderInput.image !== purchaseOrder.image) {
+          if (originalPurchaseOrderImage !== purchaseOrderImage) {
             try {
-              const fileName = extractFilename(purchaseOrder.image);
+              const fileName = extractFilename(originalPurchaseOrderImage);
               await remove({ key: fileName });
             } catch (error) {
               console.log('Error deleting previous image:', error);
+              setLoadingMessage(false);
+              setError(true);
+              setErrorMessage(error);
             }
 
             try{
                 const fileName = `purchase-order-image-${Date.now()}.jpeg`;
-                const fileKey = await uploadImageToS3(purchaseOrderInput.image, fileName);
+                const fileKey = await uploadImageToS3(purchaseOrderImage, fileName);
                 const newImageUrl = await getImageUrlFromS3(fileKey);
-                purchaseOrderInput.image = newImageUrl;
+                purchaseOrderImage = newImageUrl;
+                originalPurchaseOrderImage=purchaseOrderImage;
             }catch(error){
                 console.log(error)
+                setLoadingMessage(false);
+            setError(true);
+            setErrorMessage(error);
             }
           }
-          console.log("UPDATING PURCHASE ORDER WITH DATA",purchaseOrderInput)
+          console.log("UPDATING PURCHASE ORDER WITH DATA")
+          const purchaseOrderInput = {
+            id: purchaseOrderId,
+            image: [purchaseOrderImage],
+            vendor: purchaseOrderVendor,
+            amount: purchaseOrderAmount,
+            date: purchaseOrderDate,
+            _version: purchaseOrderVersion,
+        };
+        console.log("PO Input After Image" ,purchaseOrderInput);
           const updatedPurchaseOrder = await client.graphql({
             query: updatePurchaseOrder,
             variables: { input: purchaseOrderInput },
             authMode: 'apiKey',
           });
       
-          setLoading(false);
+          setLoadingMessage(false);
+            setSuccess(true);
+          setEditing(false);
+         
           console.log('Updated Purchase Order:', updatedPurchaseOrder);
+          
         } catch (error) {
-          setLoading(false);
+        setLoadingMessage(false);
+        setError(true);
+        setErrorMessage(error);
           console.error('Error updating purchase order:', error);
         }
       };
       
+      const handleCancel = () => {
+        setPurchaseOrderDate(route.params.purchaseOrderDate);
+        setPurchaseOrderAmount(route.params.purchaseOrderAmount);
+        setPurchaseOrderVendor(route.params.purchaseOrderVendor);
+        setPurchaseOrderImage(originalPurchaseOrderImage); 
+        setEditing(false);
+    };
+
     
       const onSubmit = async () => {
         handleUpdatePurchaseOrder();
@@ -164,8 +192,8 @@ const PurchaseOrder = ({ route }) => {
                     });
                     console.log("Received", purchaseOrder);
                     setPurchaseOrderImage(data.getPurchaseOrder.image[0]);
+                    setOriginalPurchaseOrderImage(data.getPurchaseOrder.image[0]);
                     setLoading(false);
-                    console.log("PO Image", purchaseOrderImage);
                     console.log("FINISH");
                 } catch (error) {
                     console.error('Error fetching PO:', error);
@@ -174,10 +202,22 @@ const PurchaseOrder = ({ route }) => {
             };
         
             fetchPurchaseOrder();
-        }, purchaseOrderId);
+        },  [purchaseOrderId, route.params]);
 
         useEffect(() => {
             setImage(true);
+            console.log("Second", purchaseOrderId);
+        },[purchaseOrderId]);
+        
+        useEffect(() => {
+            setLoadingMessage(true);
+            setSuccessMessage(false);
+            setIsEmptyField(false);
+            setSuccess(false);
+            setError(false);
+            setPurchaseOrderDate(route.params.purchaseOrderDate);
+            setPurchaseOrderAmount(route.params.purchaseOrderAmount);
+            setPurchaseOrderVendor(route.params.purchaseOrderVendor);
             console.log("Second", purchaseOrderId);
         },[purchaseOrderId]);
 
@@ -188,34 +228,6 @@ const PurchaseOrder = ({ route }) => {
     //     setEditing(false);
     // }
     
-
- const handleUpdate = async () => {
-    
-    Keyboard.dismiss();
-    const purchaseOrderInput = {
-        id: purchaseOrderId,
-        image: [purchaseOrderImage],
-        vendor: purchaseOrderVendor,
-        amount: purchaseOrderAmount,
-        date: purchaseOrderDate,
-        _version: purchaseOrderVersion,
-    };
-    console.log("PO Input",purchaseOrderInput);
-    try {
-      const response = await client.graphql({
-        query: updatePurchaseOrder,
-        variables: { input: purchaseOrderInput },
-        authMode: 'apiKey',
-      });
-      console.log('PO updated:', response.data.updatePurchaseOrder);
-      Alert.alert('PO updated successfully!');
-      setEditing(false);
-    } catch (error) {
-      console.error('Error updating po:', error);
-      Alert.alert('Failed to update po.');
-    }
-  };
-
   const showConfirmationDialog = () => {
     Alert.alert(
       "Confirm Deletion",
@@ -244,21 +256,91 @@ const PurchaseOrder = ({ route }) => {
         variables: { input: purchaseOrderInput },
         authMode: 'apiKey',
       });
+        try {
+          const fileName = extractFilename(originalPurchaseOrderImage);
+          await remove({ key: fileName });
+        } catch (error) {
+          console.log('Error deleting image of PO:', error);
+          setLoadingMessage(false);
+          setError(true);
+          setErrorMessage(error);
+        }
       console.log('PO Deleted:', response.data.deletePurchaseOrder);
+      setLoadingMessage(false);
+      setSuccess(true);
+        setEditing(false);
       Alert.alert('PO Deleted successfully!');
       setEditing(false);
     } catch (error) {
       console.error('Error deleting PO:', error);
       Alert.alert('Failed to deletig po.');
+      setLoadingMessage(false);
+      setError(true);
+      setErrorMessage(error);
     }
   };
     const handleConfirm = () => {
         // Run your update query here
-        setEditing(false); // Set editing back to false after confirmation
+        // setEditing(false); // Set editing back to false after confirmation
+        const purchaseOrderInput = {
+            id: purchaseOrderId,
+            image: [purchaseOrderImage],
+            vendor: purchaseOrderVendor,
+            amount: purchaseOrderAmount,
+            date: purchaseOrderDate,
+            _version: purchaseOrderVersion,
+        };
+        console.log("PO Input",purchaseOrderInput);
     }
         
     return (
         <View style={{flex:1}}>
+             {loading && (
+      <View style={styles.loadingContainer}>
+      <AnimatedCircularProgress
+  size={120}
+  width={15}
+  duration={2200} 
+  delay={0}
+  fill={100}
+  tintColor={COLORS.secondary}
+  onAnimationComplete={() => console.log('onAnimationComplete')}
+  backgroundColor="#3d5875" />
+{loadingMessage ? (
+  <Text style={styles.loadingText}>Updating Purchase Order</Text>
+) : success ? (
+  <View style={styles.successMessageContainer}>
+    <Text style={styles.loadingText}>PO Added Successfully</Text>
+    <TouchableOpacity
+      style={styles.successButton}
+      onPress={handleSuccessButtonPress}>
+      <Text style={styles.buttonText}>Go Back</Text>
+    </TouchableOpacity>
+  </View>
+) : error ? (
+  <View style={styles.successMessageContainer}>
+    <Text style={styles.loadingText}>Adding PO FAILED</Text>
+    <Text style={styles.loadingTextSubtitle}>{errorMessage}</Text>
+    <TouchableOpacity
+      style={styles.successButton}
+      onPress={handleSuccessButtonPress}>
+      <Text style={styles.buttonText}>Go Back</Text>
+    </TouchableOpacity>
+  </View>
+)  : isEmptyField ? (
+    <View style={styles.successMessageContainer}>
+      <Text style={styles.loadingText}>Empty Fields</Text>
+      <Text style={styles.loadingTextSubtitle}>All fields must be filled</Text>
+      <TouchableOpacity
+        style={styles.successButton}
+        onPress={handleSuccessButtonPress}>
+        <Text style={styles.buttonText}>Go Back</Text>
+      </TouchableOpacity>
+    </View>
+  ): null}
+
+      </View>
+     )}
             <View style={styles.headerContainer}>
                 <View style={styles.headerWrapper}>
                 <TouchableOpacity style={styles.arrowBackIcon}  onPress={()=> navigation.navigate('PurchaseHistory')}>
@@ -315,7 +397,7 @@ const PurchaseOrder = ({ route }) => {
                                 {editing ? (
                                     <TextInput
                                     style={styles.formInput}
-                                    value={String(purchaseOrderAmount)} // Convert to string using String()
+                                    value={String(purchaseOrderAmount)}
                                     onChangeText={setPurchaseOrderAmount}
                                 />                                
                                 ) : (
@@ -344,14 +426,21 @@ const PurchaseOrder = ({ route }) => {
                         <View style={styles.uploadContainerButton}>
                             <View style={styles.uploadWrapperButton}>
                                 {editing ?
-                                (  <TouchableOpacity style={styles.updateButton} onPress={handleUpdatePurchaseOrder}>
+                                 (  <TouchableOpacity style={styles.updateButton} onPress={handleUpdatePurchaseOrder}>
+                             
                                     <Text style={styles.updateText}>Update</Text>
                                 </TouchableOpacity>):(  <TouchableOpacity style={styles.updateButton} onPress={handleEdit}>
                                     <Text style={styles.updateText}>Edit</Text>
                                 </TouchableOpacity>)}
+                                {editing ?
+                                 (  <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
+                                    <Text style={styles.cancelText}>Cancel</Text>
+                                </TouchableOpacity>):(  
                                 <TouchableOpacity style={styles.deleteButton} onPress={showConfirmationDialog}>
-                                    <Text style={styles.deleteText}>Delete</Text>
-                                </TouchableOpacity>
+                                <Text style={styles.deleteText}>Delete</Text>
+                            </TouchableOpacity>
+                                )}
+                                
                             </View>
                         </View>
                     </View>
@@ -547,6 +636,19 @@ uploadText:{
     color:COLORS.primary,
     textAlign:'center',
 
+},
+cancelButton:{
+    backgroundColor:COLORS.primary,
+    paddingVertical:8,
+    width:150,
+    borderRadius:30,
+    borderWidth:1.5,
+},
+cancelText:{
+    fontFamily:'Poppins-Regular',
+    fontSize:18,
+    color:'white',
+    textAlign:'center'
 },
 selectedImage:{
     height:170,

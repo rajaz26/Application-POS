@@ -120,22 +120,6 @@ const AddAccount = () => {
       const cognitoUserId = signUpResponse.userId;
       console.log("cognito id",signUpResponse);
       console.log("Into User model");
-
-      // Create user in the database using GraphQL mutation
-      // const userInput = {
-      //   input: {
-      //     userId:cognitoUserId,
-      //     username:name,
-      //     phonenumber:phonenumber,
-      //     role:role,
-      //   }
-      // };
-      // console.log("User model about to be created",userInput.input);
-      // const createUserResponse = await client.graphql({
-      //   query: createUser,
-      //   variables: { input: userInput.input},
-      //   authMode: 'apiKey',
-      //  } );
       navigation.navigate('ConfirmSignUp2', {
         userData: {
           cognitoUserId,

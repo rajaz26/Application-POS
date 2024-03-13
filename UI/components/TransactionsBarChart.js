@@ -8,9 +8,9 @@ const windowHeight = Dimensions.get('window').height;
 
 // const transactionData = [10, 20, 15, 30, 25]; 
 
-const TransactionsBarChart = ({route}) => {
-  const {bills}=route.params;
+const TransactionsBarChart = ({bills}) => {
   const transactionData = Array(5).fill(0);
+
   const currentTime = new Date();
   bills.forEach(bill => {
     const billTime = new Date(bill.createdAt);
@@ -61,12 +61,12 @@ const TransactionsBarChart = ({route}) => {
                     // (opacity = 1) => `#581845`,
                     // (opacity = 1) => `#2E86C1`,
                     // (opacity = 1) => `#1E8449`,
-                    (opacity = 1) => "white",
-                    (opacity = 1) => "white",
-                    (opacity = 1) => "white",
-                    (opacity = 1) => "white",
-                    (opacity = 1) => "white",
-                    (opacity = 1) => "white",
+                    (opacity = 1) => `#808080`,
+                    (opacity = 1) => `#808080`,
+                    (opacity = 1) => `#808080`,
+                    (opacity = 1) => `#808080`,
+                    (opacity = 1) => `#808080`,
+                    (opacity = 1) => `#808080`,
                   ],
                 },
               ],

@@ -10,14 +10,25 @@ const StaffListScreen = () => {
     const data = [
         {key:'1', value:'CASHIER'},
         {key:'2', value:'PURCHASER'},
-        {key:'3', value:'WAREHOUSE_MANAGER'}
+        {key:'3', value:'WAREHOUSE_MANAGER'},
+        {key:'4', value:''}
       ];
-    const [rank, setRank] = useState('Select Role');
     const [selected, setSelected] = React.useState('');
+    const [value, setValue] = React.useState('');
     const [users, setUsers] = useState([]);
 
     const client = generateClient();
-
+    useEffect(() => {
+        if (value === '1') {
+            setSelected('CASHIER');
+        } else if (value === '2') {
+            setSelected('PURCHASER');
+        } else if (value === '3') {
+            setSelected('WAREHOUSE_MANAGER');
+        } else if (value === '4') {
+            setSelected('');
+        }
+    }, [value]);
     const fetchAllUsers = async () => {
         try {
             const { data } = await client.graphql({
@@ -31,7 +42,7 @@ const StaffListScreen = () => {
             },
                 authMode: 'apiKey',
             });
-            console.log("Fetched users:", data.listUsers.items);
+            // console.log("Fetched users:", data.listUsers.items);
             setUsers(data.listUsers.items);
         } catch (error) {
             console.error('Error fetching users:', error);
@@ -40,6 +51,7 @@ const StaffListScreen = () => {
 
     useEffect(() => {
         fetchAllUsers();
+        console.log("Set ",selected );
     }, []);
 
  const navigation=useNavigation();
@@ -64,9 +76,11 @@ return (
                     data={[
                         {key:'1', value:'CASHIER'},
                         {key:'2', value:'PURCHASER'},
-                        {key:'3', value:'WAREHOUSE_MANAGER'}
+                        {key:'3', value:'WAREHOUSE_MANAGER'},
+                        {key:'4', value:''}
                     ]}
                     search={false}
+                    onSelect={() => setValue(selected)} 
                     placeholder="Select Role"
                     boxStyles={{borderWidth:2}} 
                     arrowicon={<Ionic style={{position:'absolute',right:10,top:14}} size={26} color='rgba(180, 180, 180,4)' name='chevron-down-outline'/>}
@@ -74,27 +88,33 @@ return (
                 />
             </View>
             <ScrollView>
-                {users.map(user => (
-                    <View key={user.id} style={styles.billContainer}>
-                        <Image style={styles.logoStyles} source={user.image ? {uri: user.image} : require("../assets/images/person.jpg")}/>
-                        <View style={styles.billText}>
-                            <View style={styles.intro}>
-                                <View style={styles.cashierName}>
-                                    <Text style={styles.cashierText}>{user.username}</Text>
-                                    <Text style={styles.billTime}>Joined: {new Date(user.createdAt).toLocaleDateString()}</Text>
-                                </View>
-                            </View>
-                            <View>
-                                <View style={styles.billBottomText}>
-                                    <TouchableOpacity style={styles.billViewButton} onPress={() => navigation.navigate('Profile', {userId: user.userId})}>
-                                        <Ionic size={26} color={COLORS.primary} name='chevron-forward-outline'/>
-                                    </TouchableOpacity>
-                                </View>
-                            </View>
-                        </View>
-                    </View>
-                ))}
-            </ScrollView>
+  {users.map(user => (
+    // Check if no role is selected or if the selected role matches the user's role
+    !selected || selected === user.role ? (
+      <View key={user.id} style={styles.billContainer}>
+        <Image style={styles.logoStyles} source={user.image ? {uri: user.image} : require("../assets/images/person.jpg")}/>
+        <View style={styles.billText}>
+          <View style={styles.intro}>
+            <View style={styles.cashierName}>
+              <Text style={styles.cashierText}>{user.username}</Text>
+              <Text style={styles.billTime}>Joined: {new Date(user.createdAt).toLocaleDateString()}</Text>
+            </View>
+          </View>
+          <View>
+            <View style={styles.billBottomText}>
+              <TouchableOpacity style={styles.billViewButton} onPress={() => navigation.navigate('Profile', {userId: user.userId})}>
+                <Ionic size={26} color={COLORS.primary} name='chevron-forward-outline'/>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </View>
+    ) : null
+  ))}
+</ScrollView>
+
+
+
             <TouchableOpacity style={styles.confirmButton} onPress={handleAddAccount}>
                 <Text style={styles.confirmText}>Add Account</Text>
             </TouchableOpacity>

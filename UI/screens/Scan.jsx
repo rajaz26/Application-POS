@@ -17,11 +17,11 @@ import { COLORS } from '../assets/theme';
 import { useNavigation } from '@react-navigation/native'; 
 import Ionic from 'react-native-vector-icons/Ionicons';
 import {generateClient} from 'aws-amplify/api';
-import Sound from 'react-native-sound';
 import { createBill, createBillItem, updateBill, updateBillItem } from '../src/graphql/mutations';
 import { fetchUserAttributes, getCurrentUser } from 'aws-amplify/auth';
+import Sound from 'react-native-sound';
+
 export default function Scan({route}) {
-  Sound.setCategory('Playback');
   const [hasPermission, setHasPermission] = React.useState(false);
   const [isScanning, setIsScanning] = React.useState(true);
   const [scannedBarcodes, setScannedBarcodes] = React.useState([]);
@@ -39,6 +39,23 @@ export default function Scan({route}) {
   const device = devices.back;
   const client = generateClient();
    // Assume these are part of your component's state or global variables
+
+   const Playsound = ()=>{
+    var beep = new Sound('beep.mp3', Sound.MAIN_BUNDLE, (error) => {
+      if (error) {
+        console.log('failed to load the sound', error);
+        return;
+      }
+      console.log('duration in seconds: ' + beep.getDuration() + 'number of channels: ' + beep.getNumberOfChannels());
+      beep.play((success) => {
+        if (success) {
+          console.log('successfully finished playing');
+        } else {
+          console.log('playback failed due to audio decoding errors');
+        }
+      });
+    });
+  }
 
   const navigation = useNavigation();
   const [frameProcessor, barcodes] = useScanBarcodes(
@@ -136,10 +153,12 @@ toggleBillModal();
     );
   };
   const handleBarcodeScanned = async (barcode) => {
+ 
     if (!isScanning && manualBarcode === '') return;
     setIsScanning(false);
   
     try {
+      
         const barcodeValue = barcode.displayValue || manualBarcode;
         console.log("Scanned barcode:", barcodeValue);
   
@@ -172,6 +191,7 @@ toggleBillModal();
               console.log("Bill item after updating:", productToUpdate);
   
               setScannedProducts(updatedScannedProducts);
+              Playsound();
           } catch (error) {
               console.error("Error updating bill item:", error);
           }
@@ -218,6 +238,7 @@ toggleBillModal();
                     name: productDetails.name,
                     barcode:productDetails.barcode,
                 };
+                Playsound();
                 setScannedProducts([...scannedProducts, newProductDetails]);
             }
         }

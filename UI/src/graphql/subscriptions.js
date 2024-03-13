@@ -37,6 +37,16 @@ export const onCreateStore = /* GraphQL */ `
         startedAt
         __typename
       }
+      category {
+        nextToken
+        startedAt
+        __typename
+      }
+      notifications {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
@@ -78,6 +88,16 @@ export const onUpdateStore = /* GraphQL */ `
         __typename
       }
       billItems {
+        nextToken
+        startedAt
+        __typename
+      }
+      category {
+        nextToken
+        startedAt
+        __typename
+      }
+      notifications {
         nextToken
         startedAt
         __typename
@@ -127,11 +147,219 @@ export const onDeleteStore = /* GraphQL */ `
         startedAt
         __typename
       }
+      category {
+        nextToken
+        startedAt
+        __typename
+      }
+      notifications {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      __typename
+    }
+  }
+`;
+export const onCreateCategory = /* GraphQL */ `
+  subscription OnCreateCategory($filter: ModelSubscriptionCategoryFilterInput) {
+    onCreateCategory(filter: $filter) {
+      id
+      name
+      description
+      product {
+        nextToken
+        startedAt
+        __typename
+      }
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeCategoryId
+      __typename
+    }
+  }
+`;
+export const onUpdateCategory = /* GraphQL */ `
+  subscription OnUpdateCategory($filter: ModelSubscriptionCategoryFilterInput) {
+    onUpdateCategory(filter: $filter) {
+      id
+      name
+      description
+      product {
+        nextToken
+        startedAt
+        __typename
+      }
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeCategoryId
+      __typename
+    }
+  }
+`;
+export const onDeleteCategory = /* GraphQL */ `
+  subscription OnDeleteCategory($filter: ModelSubscriptionCategoryFilterInput) {
+    onDeleteCategory(filter: $filter) {
+      id
+      name
+      description
+      product {
+        nextToken
+        startedAt
+        __typename
+      }
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeCategoryId
+      __typename
+    }
+  }
+`;
+export const onCreateNotifications = /* GraphQL */ `
+  subscription OnCreateNotifications(
+    $filter: ModelSubscriptionNotificationsFilterInput
+  ) {
+    onCreateNotifications(filter: $filter) {
+      id
+      warehousequanity
+      shelfquantity
+      productID
+      productname
+      isRead
+      isWarehouseNotification
+      isShelfNotification
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeNotificationsId
+      __typename
+    }
+  }
+`;
+export const onUpdateNotifications = /* GraphQL */ `
+  subscription OnUpdateNotifications(
+    $filter: ModelSubscriptionNotificationsFilterInput
+  ) {
+    onUpdateNotifications(filter: $filter) {
+      id
+      warehousequanity
+      shelfquantity
+      productID
+      productname
+      isRead
+      isWarehouseNotification
+      isShelfNotification
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeNotificationsId
+      __typename
+    }
+  }
+`;
+export const onDeleteNotifications = /* GraphQL */ `
+  subscription OnDeleteNotifications(
+    $filter: ModelSubscriptionNotificationsFilterInput
+  ) {
+    onDeleteNotifications(filter: $filter) {
+      id
+      warehousequanity
+      shelfquantity
+      productID
+      productname
+      isRead
+      isWarehouseNotification
+      isShelfNotification
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeNotificationsId
       __typename
     }
   }
@@ -245,6 +473,18 @@ export const onCreateProduct = /* GraphQL */ `
       price
       manufacturer
       category
+      category1 {
+        id
+        name
+        description
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeCategoryId
+        __typename
+      }
       warehouseQuantity
       shelfQuantity
       store {
@@ -269,6 +509,7 @@ export const onCreateProduct = /* GraphQL */ `
       _deleted
       _lastChangedAt
       storeProductsId
+      categoryProductId
       __typename
     }
   }
@@ -283,6 +524,18 @@ export const onUpdateProduct = /* GraphQL */ `
       price
       manufacturer
       category
+      category1 {
+        id
+        name
+        description
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeCategoryId
+        __typename
+      }
       warehouseQuantity
       shelfQuantity
       store {
@@ -307,6 +560,7 @@ export const onUpdateProduct = /* GraphQL */ `
       _deleted
       _lastChangedAt
       storeProductsId
+      categoryProductId
       __typename
     }
   }
@@ -321,6 +575,18 @@ export const onDeleteProduct = /* GraphQL */ `
       price
       manufacturer
       category
+      category1 {
+        id
+        name
+        description
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeCategoryId
+        __typename
+      }
       warehouseQuantity
       shelfQuantity
       store {
@@ -345,6 +611,7 @@ export const onDeleteProduct = /* GraphQL */ `
       _deleted
       _lastChangedAt
       storeProductsId
+      categoryProductId
       __typename
     }
   }
@@ -369,6 +636,7 @@ export const onCreateBillItem = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeProductsId
+        categoryProductId
         __typename
       }
       productName
@@ -433,6 +701,7 @@ export const onUpdateBillItem = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeProductsId
+        categoryProductId
         __typename
       }
       productName
@@ -497,6 +766,7 @@ export const onDeleteBillItem = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeProductsId
+        categoryProductId
         __typename
       }
       productName

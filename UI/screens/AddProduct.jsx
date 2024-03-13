@@ -11,14 +11,17 @@ import { createProduct } from '../src/graphql/mutations';
 import { generateClient } from 'aws-amplify/api';
 import { useForm, Controller } from 'react-hook-form';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
+import { listCategories } from '../src/graphql/queries.js';
 const { width, height } = Dimensions.get('window');
-const AddProduct = () => {
+const AddProduct = ({route}) => {
 const client = generateClient();
  const navigation=useNavigation();
  const { handleSubmit, control, formState: { errors }, reset } = useForm(); 
  const [selected, setSelected] = React.useState("");
  const [loading, setLoading] = useState(false);
  const [successMessage, setSuccessMessage] = useState(false);
+ const { categoryId, categoryName } = route.params || { categoryId: '', categoryName: '' };
+ const [category, setCategory] = (route.params && route.params.categoryName) || 'Choose Category';
  const [productInput, setProductInput] = useState({
     name: '',
     barcode: '',
@@ -29,11 +32,33 @@ const client = generateClient();
     shelfQuantity:''
   });
 
-
+  // const fetchCategories = async () => {
+  //   try {
+  //     const { data } = await client.graphql({
+  //       query: listCategories,
+  //       variables: {
+  //         filter: {
+  //             _deleted: {
+  //                 ne: true
+  //                       }
+  //                 }
+  //               },
+  //         authMode:'apiKey'
+  //     });
+  //     const { items } = data.listProducts;
+  //     console.log("Categories",items);
+  //   } catch (error) {
+  //     console.error('Error fetching Categoriesas:', error);
+  //   }
+  // };
   
   const [selectedImage, setSelectedImage] = useState(null);
   useEffect(() => {
   }, [selectedImage]); 
+
+  // useEffect(() => {
+  //   fetchCategories();
+  // }, []); 
 
   const handleChoosePhoto = () => {
     launchImageLibrary({}, (response) => {
@@ -94,8 +119,6 @@ const getImageUrlFromS3 = async (fileKey) => {
       throw error;
   }
 };
-  
-
 
   const handleLoading = () => {
     setLoading(true)
@@ -108,6 +131,7 @@ const getImageUrlFromS3 = async (fileKey) => {
   }
   const onSubmit = async (data) => {
     console.log('Product Input:', data);
+    console.log('Category',categoryName);
     setLoading(true);
     Keyboard.dismiss();
     console.log(setLoading)
@@ -125,7 +149,7 @@ const getImageUrlFromS3 = async (fileKey) => {
     // const imageUrl='abc'
       const productWithImage = {
         ...data,
-        category: selected,
+        category: categoryName,
         image: imageUrl,
       };
       console.log("categorryyyyy checkkkk"+productWithImage.category);
@@ -143,6 +167,7 @@ const getImageUrlFromS3 = async (fileKey) => {
         manufacturer:'',
         category:'',
       });
+      setCategoryName('Choose Category');
       reset(); 
       setSelectedImage(null);
     } catch (error) {
@@ -212,7 +237,7 @@ const getImageUrlFromS3 = async (fileKey) => {
                 <View style={styles.formInputContainer}>
                     <View style={styles.formInputWrapper}>
                         <View style={styles.imageContainer}>
-                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='pricetags-outline'/>
+                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='document-outline'/>
                         </View>
                         <View style={styles.inputContainer}>
                          <Controller
@@ -262,7 +287,7 @@ const getImageUrlFromS3 = async (fileKey) => {
                 <View style={styles.formInputContainer}>
                     <View style={styles.formInputWrapper}>
                         <View style={styles.imageContainer}>
-                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='bag-outline'/>
+                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='hammer-outline'/>
                         </View>
                         <View style={styles.inputContainer}>
                             <Controller
@@ -287,18 +312,10 @@ const getImageUrlFromS3 = async (fileKey) => {
                         <View style={styles.imageContainer}>
                              <Ionic size={33} color='rgba(180, 180, 180,4)' name ='list-circle-outline'/>
                         </View>
-                        <View style={styles.inputContainer}>
-                        <SelectList 
-                            setSelected={(val) => setSelected(val)} 
-                            data={data} search={false} 
-                            renderRightIcon={{size:30,}}
-                            save="value"
-                            placeholder="Category"
-                            boxStyles={{ borderWidth:0,left:-16}} 
-                            arrowicon={ <Ionic style={{top:3,left:7}} size={28} color='rgba(180, 180, 180,4)' name ='chevron-down-outline'/>}
-                            inputStyles={{fontSize:18.5,top:1,fontFamily:'Poppins-Regular',color:'rgba(180, 180, 180,4)'}}
-                            dropdownTextStyles={{ fontFamily:'Poppins-Regular',fontSize:15,color:'rgba(180, 180, 180,4)' }}
-                            />
+                        <View style={styles.categoryContainer}>
+                        <TouchableOpacity style={styles.categoryTextContainer} onPress={()=>navigation.navigate('Categories')}>
+                        <Text style={styles.categoryText}>{categoryName ? `${categoryName}` : 'Choose Category'}</Text>
+                        </TouchableOpacity>
                         </View>
                     </View>
                 </View>
@@ -315,7 +332,7 @@ const getImageUrlFromS3 = async (fileKey) => {
                     render={({ field }) => (
                         <TextInput
                         style={styles.formInput}
-                        placeholder='Price in PKR'
+                        placeholder='Price'
                         placeholderTextColor='rgba(170, 170, 170,4)'
                         onChangeText={field.onChange}
                         value={field.value}
@@ -331,7 +348,7 @@ const getImageUrlFromS3 = async (fileKey) => {
                 <View style={styles.formInputContainer}>
                     <View style={styles.formInputWrapper}>
                         <View style={styles.imageContainer}>
-                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='cash-outline'/>
+                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='albums-outline'/>
                         </View>
                         <View style={styles.inputContainer}>
                     <Controller
@@ -356,7 +373,7 @@ const getImageUrlFromS3 = async (fileKey) => {
                 <View style={styles.formInputContainer}>
                     <View style={styles.formInputWrapper}>
                         <View style={styles.imageContainer}>
-                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='cash-outline'/>
+                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='albums-outline'/>
                         </View>
                         <View style={styles.inputContainer}>
                     <Controller
@@ -482,7 +499,7 @@ const styles = StyleSheet.create({
         fontFamily:'Poppins-Regular',
         justifyContent:'center',
         alignItems:'center',
-        color:'black'
+        color:'black',
     },
     formInputSize:{
         flex:1,
@@ -491,7 +508,8 @@ const styles = StyleSheet.create({
         fontFamily:'Poppins-Regular',
         justifyContent:'center',
         alignItems:'center',
-        color:'black'
+        color:'black',
+        
     },
     imageContainer:{
         flex:0,
@@ -528,6 +546,12 @@ const styles = StyleSheet.create({
         borderWidth:1,
         borderColor:COLORS.primary,
     },
+    categoryButton:{
+      backgroundColor:'white',
+      paddingVertical:8,
+      borderWidth:1,
+      borderColor:COLORS.primary,
+  },
     saveText:{
         fontFamily:'Poppins-Regular',
         fontSize:18,
@@ -540,6 +564,24 @@ const styles = StyleSheet.create({
         color:COLORS.primary,
         textAlign:'center'
     },
+    categoryText:{
+      fontFamily:'Poppins-Regular',
+      fontSize:18.5,
+      color:'rgba(170, 170, 170,4)',
+      textAlign:'center'
+  },
+    categoryContainer:{
+        paddingVertical:10,
+        paddingHorizontal:20,
+        flex:1,
+        paddingLeft:20,
+        alignItems:'flex-start'
+    },
+    categoryTextContainer:{
+      color:'rgba(170, 170, 170,4)',
+      width:'100%',
+      alignItems:'flex-start',
+  },
     loadingContainer: {
         ...StyleSheet.absoluteFillObject,
         position:'absolute',

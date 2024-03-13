@@ -37,6 +37,16 @@ export const getStore = /* GraphQL */ `
         startedAt
         __typename
       }
+      category {
+        nextToken
+        startedAt
+        __typename
+      }
+      notifications {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
@@ -92,6 +102,192 @@ export const syncStores = /* GraphQL */ `
         _version
         _deleted
         _lastChangedAt
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const getCategory = /* GraphQL */ `
+  query GetCategory($id: ID!) {
+    getCategory(id: $id) {
+      id
+      name
+      description
+      product {
+        nextToken
+        startedAt
+        __typename
+      }
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeCategoryId
+      __typename
+    }
+  }
+`;
+export const listCategories = /* GraphQL */ `
+  query ListCategories(
+    $filter: ModelCategoryFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listCategories(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        name
+        description
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeCategoryId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const syncCategories = /* GraphQL */ `
+  query SyncCategories(
+    $filter: ModelCategoryFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncCategories(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        name
+        description
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeCategoryId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const getNotifications = /* GraphQL */ `
+  query GetNotifications($id: ID!) {
+    getNotifications(id: $id) {
+      id
+      warehousequanity
+      shelfquantity
+      productID
+      productname
+      isRead
+      isWarehouseNotification
+      isShelfNotification
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeNotificationsId
+      __typename
+    }
+  }
+`;
+export const listNotifications = /* GraphQL */ `
+  query ListNotifications(
+    $filter: ModelNotificationsFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listNotifications(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        warehousequanity
+        shelfquantity
+        productID
+        productname
+        isRead
+        isWarehouseNotification
+        isShelfNotification
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeNotificationsId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const syncNotifications = /* GraphQL */ `
+  query SyncNotifications(
+    $filter: ModelNotificationsFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncNotifications(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        warehousequanity
+        shelfquantity
+        productID
+        productname
+        isRead
+        isWarehouseNotification
+        isShelfNotification
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeNotificationsId
         __typename
       }
       nextToken
@@ -211,6 +407,18 @@ export const getProduct = /* GraphQL */ `
       price
       manufacturer
       category
+      category1 {
+        id
+        name
+        description
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeCategoryId
+        __typename
+      }
       warehouseQuantity
       shelfQuantity
       store {
@@ -235,6 +443,7 @@ export const getProduct = /* GraphQL */ `
       _deleted
       _lastChangedAt
       storeProductsId
+      categoryProductId
       __typename
     }
   }
@@ -262,6 +471,7 @@ export const listProducts = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeProductsId
+        categoryProductId
         __typename
       }
       nextToken
@@ -299,6 +509,7 @@ export const syncProducts = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeProductsId
+        categoryProductId
         __typename
       }
       nextToken
@@ -327,6 +538,7 @@ export const getBillItem = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeProductsId
+        categoryProductId
         __typename
       }
       productName
@@ -788,6 +1000,7 @@ export const productByBarcode = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeProductsId
+        categoryProductId
         __typename
       }
       nextToken

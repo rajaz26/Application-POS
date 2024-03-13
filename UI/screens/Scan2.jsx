@@ -21,7 +21,6 @@ import {generateClient} from 'aws-amplify/api';
 import Sound from 'react-native-sound';
 import { updateProduct } from '../src/graphql/mutations';
 export default function Scan2({route}) {
-  Sound.setCategory('Playback');
   const [hasPermission, setHasPermission] = React.useState(false);
   const [isScanning, setIsScanning] = React.useState(true);
   const [loading, setLoading] = useState(false);
@@ -71,6 +70,22 @@ export default function Scan2({route}) {
   }
   
 `;
+const Playsound = ()=>{
+  var beep = new Sound('beep.mp3', Sound.MAIN_BUNDLE, (error) => {
+    if (error) {
+      console.log('failed to load the sound', error);
+      return;
+    }
+    console.log('duration in seconds: ' + beep.getDuration() + 'number of channels: ' + beep.getNumberOfChannels());
+    beep.play((success) => {
+      if (success) {
+        console.log('successfully finished playing');
+      } else {
+        console.log('playback failed due to audio decoding errors');
+      }
+    });
+  });
+}
 
   React.useEffect(() => {
     (async () => {
@@ -136,6 +151,7 @@ toggleBillModal();
   };
 
 const handleBarcodeScanned = async (barcode) => {
+  Playsound();
     if (!isScanning && manualBarcode === '') return;
     setIsScanning(false);
   

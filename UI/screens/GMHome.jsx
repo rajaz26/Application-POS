@@ -16,7 +16,24 @@ import { getCurrentUser, signInWithRedirect, signOut } from "aws-amplify/auth";
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { listBills,listBillItems,userById  } from '../src/graphql/queries';
 import { selectConnectedDevice } from '../store/bluetoothReducer';
+import Sound from 'react-native-sound';
 const GMHome = () => {
+  const Playsound = ()=>{
+    var beep = new Sound('beep.mp3', Sound.MAIN_BUNDLE, (error) => {
+      if (error) {
+        console.log('failed to load the sound', error);
+        return;
+      }
+      console.log('duration in seconds: ' + beep.getDuration() + 'number of channels: ' + beep.getNumberOfChannels());
+      beep.play((success) => {
+        if (success) {
+          console.log('successfully finished playing');
+        } else {
+          console.log('playback failed due to audio decoding errors');
+        }
+      });
+    });
+  }
   const dispatch = useDispatch();
   const client = generateClient();
   const connectedDevice = useSelector(state => selectConnectedDevice(state)?.name);
@@ -122,13 +139,9 @@ useEffect(() => {
   
       const { items } = data.listBills;
       const billsWithDetails = await Promise.all(items.map(async (bill) => {
-        // Fetch items for each bill
         const billItems = await fetchBillItems(bill.id);
   
-        // Initialize cashier details with default values
         let cashierDetails = { cashierUsername: 'Unknown', cashierRole: 'Unknown' };
-  
-        // Fetch cashier details for each bill, if cashier ID is present
         if (bill.cashier) {
           const cashierData = await fetchUserByUserId(bill.cashier);
           if (cashierData) {
@@ -138,8 +151,6 @@ useEffect(() => {
             };
           }
         }
-  
-        // Combine bill details with cashier information and items
         return { ...bill, items: billItems, ...cashierDetails };
       }));
   
@@ -149,7 +160,6 @@ useEffect(() => {
     }
   };
   const fetchBillItems = async (billId) => {
-    // console.log("fetching items for bill:", billId);
     try {
       const { data } = await client.graphql({
         query: listBillItems,
@@ -163,7 +173,6 @@ useEffect(() => {
         authMode: 'apiKey'
       });
   
-      // console.log("data:", data); // Log the entire data response for inspection
   
       if (data && data.listBillItems && data.listBillItems.items) {
         return data.listBillItems.items;
@@ -218,34 +227,35 @@ useEffect(() => {
     }
   }, [bills]);
   
-  // useEffect(() => {
-  //   bills.forEach((bill, index) => {
-  //     console.log("Bill ", index + 1);
-  //     console.log("ID: ", bill.id);
-  //     console.log("Cashier Username: ", bill.cashierUsername); // Updated to include cashier's username
-  //     console.log("Cashier Role: ", bill.cashierRole); // Updated to include cashier's role
-  //     console.log("Total Amount: ", bill.totalAmount);
-  //     console.log("Status: ", bill.status);
-  //     console.log("Created At: ", bill.createdAt);
-  //     console.log("Updated At: ", bill.updatedAt);
-  //     console.log("_Version: ", bill._version);
-  //     console.log("_Deleted: ", bill._deleted);
-  //     console.log("_Last Changed At: ", bill._lastChangedAt);
-  //     console.log("Store Bills ID: ", bill.storeBillsId);
-  //     console.log("Items:");
+  useEffect(() => {
+    bills.forEach((bill, index) => {
+      console.log("Bill ", index + 1);
+      console.log("ID: ", bill.id);
+      console.log("Cashier Username: ", bill.cashierUsername); // Updated to include cashier's username
+      console.log("Cashier Role: ", bill.cashierRole); // Updated to include cashier's role
+      console.log("Total Amount: ", bill.totalAmount);
+      console.log("Status: ", bill.status);
+      console.log("Created At: ", bill.createdAt);
+      console.log("Updated At: ", bill.updatedAt);
+      console.log("_Version: ", bill._version);
+      console.log("_Deleted: ", bill._deleted);
+      console.log("_Last Changed At: ", bill._lastChangedAt);
+      console.log("Store Bills ID: ", bill.storeBillsId);
+      console.log("Items:");
   
-  //     if (bill.items && Array.isArray(bill.items)) {
-  //       bill.items.forEach(item => {
-  //         console.log("    Quantity: ", item.quantity);
-  //         console.log("    Product Price: ", item.productPrice);
-  //         // Add other item details as needed
-  //       });
-  //     } else {
-  //       console.log("No items found for this bill.");
-  //     }
-  //     console.log("\n"); // Added for better separation between bills
-  //   });
-  // }, [bills]);
+      if (bill.items && Array.isArray(bill.items)) {
+        bill.items.forEach(item => {
+          console.log("    Quantity: ", item.quantity);
+          console.log("    Product Price: ", item.productPrice);
+          console.log("    product name: ", item.productName);
+          console.log("    product id: ", item.productBillItemsId);
+        });
+      } else {
+        console.log("No items found for this bill.");
+      }
+      console.log("\n"); // Added for better separation between bills
+    });
+  }, [bills]);
   
   
   return (
@@ -284,7 +294,8 @@ useEffect(() => {
                 </View>
                 <View style={styles.iconWrapper}>    
                 <View style={styles.icons}>
-                  <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('Staff')}>  
+                  {/* <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('Staff')}>   */}
+                  <TouchableOpacity style={styles.iconContainer} onPress={Playsound}>  
                  <Ionic name="person" size={25} color={COLORS.primary} style={styles.homeIcon} />
                  <Text style={styles.iconText}>Staff List</Text>
                </TouchableOpacity>
@@ -307,14 +318,22 @@ useEffect(() => {
                 <View style={[styles.icons,styles.lastIcons]}>
         
             
-              <TouchableOpacity
-                style={styles.iconContainer}
-                
-              >
-                <Ionic name="stats-chart" size={28} color={COLORS.primary} />
-                <Text style={styles.iconText}>Stats</Text>
-              </TouchableOpacity>
-           
+                {bills ?  (
+    <TouchableOpacity
+      style={styles.iconContainer}
+      onPress={() => navigation.navigate('Stats', { bills: bills })}
+    >
+      <Ionic name="stats-chart" size={28} color={COLORS.primary} />
+      <Text style={styles.iconText}>Stats</Text>
+    </TouchableOpacity>
+  ):(
+      <TouchableOpacity
+        style={styles.iconContainer}
+      >
+        <Ionic name="stats-chart" size={28} color={COLORS.primary} />
+        <Text style={styles.iconText}>Stats</Text>
+      </TouchableOpacity>
+  )}
             
                   <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('ProductsList', {
                     productsObj: productsObj,

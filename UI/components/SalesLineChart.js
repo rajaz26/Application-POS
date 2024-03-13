@@ -21,32 +21,23 @@ const SalesLineChart = ({ bills }) => {
   const [monthLabels, setMonthLabels] = useState(['Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug']);
 
   useEffect(() => {
-    // Calculate sales data and month labels here based on bills
     const salesDataC = calculateSalesData(bills);
+    console.log("sales #####"+salesDataC)
     const monthLabelsC = calculateMonthLabels();
     setSalesData(salesDataC);
     setMonthLabels(monthLabelsC);
     console.log("Calculated Sales Data:", salesData);
     console.log("Calculated Month Labels:", monthLabels);
-    // Set the calculated sales data and month labels
-    // setSalesData(salesData);
-    // setMonthLabels(monthLabels);
   }, [bills]);
   const calculateSalesData = (bills) => {
     const currentDate = new Date();
     const currentMonth = currentDate.getMonth();
     const currentYear = currentDate.getFullYear();
-  
-    // Initialize an array to store the sales data for each month
     const salesData = new Array(6).fill(0);
-  
-    // Iterate through the bills to calculate the sales data
     bills.forEach((bill) => {
       const billDate = new Date(bill.createdAt);
       const billMonth = billDate.getMonth();
       const billYear = billDate.getFullYear();
-  
-      // Check if the bill is from the previous 6 months
       if (currentYear === billYear || currentYear - billYear === 1) {
         const monthsDiff = (currentMonth - billMonth + 12) % 12; // Calculate the difference in months
         if (monthsDiff < 6) {
@@ -122,7 +113,7 @@ const SalesLineChart = ({ bills }) => {
               },
               decimalPlaces: 0,
               color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-              labelColor: (opacity = 1) =>`rgba(255, 255, 255, ${opacity})`,
+              labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
               propsForDots: {
                 r: '2',
                 strokeWidth: '2',
@@ -135,7 +126,7 @@ const SalesLineChart = ({ bills }) => {
           {popupVisible && (
             <View style={styles.popupContainer}>
               <Text style={styles.popupText}>
-                Month: {selectedMonth} | Sales: ${selectedPoint}
+                Month: {selectedMonth} | Sales: Rs.{selectedPoint}
               </Text>
             </View>
           )}

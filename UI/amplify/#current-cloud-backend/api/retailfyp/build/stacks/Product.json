@@ -134,6 +134,10 @@
           {
             "AttributeName": "storeProductsId",
             "AttributeType": "S"
+          },
+          {
+            "AttributeName": "categoryProductId",
+            "AttributeType": "S"
           }
         ],
         "BillingMode": {
@@ -183,6 +187,34 @@
             "KeySchema": [
               {
                 "AttributeName": "storeProductsId",
+                "KeyType": "HASH"
+              }
+            ],
+            "Projection": {
+              "ProjectionType": "ALL"
+            },
+            "ProvisionedThroughput": {
+              "Fn::If": [
+                "ShouldUsePayPerRequestBilling",
+                {
+                  "Ref": "AWS::NoValue"
+                },
+                {
+                  "ReadCapacityUnits": {
+                    "Ref": "DynamoDBModelTableReadIOPS"
+                  },
+                  "WriteCapacityUnits": {
+                    "Ref": "DynamoDBModelTableWriteIOPS"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "IndexName": "gsi-Category.product",
+            "KeySchema": [
+              {
+                "AttributeName": "categoryProductId",
                 "KeyType": "HASH"
               }
             ],

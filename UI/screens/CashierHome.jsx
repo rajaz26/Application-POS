@@ -281,6 +281,8 @@ useEffect(() => {
                     productsObj: productsObj,
                   })
                 }>
+                {/* <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('AddProduct')
+                }> */}
                 
                     <Ionic name="list" size={28} color={COLORS.primary} style={styles.homeIcon} />
                     <Text style={styles.iconText}>Products</Text>

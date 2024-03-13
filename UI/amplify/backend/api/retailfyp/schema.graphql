@@ -21,8 +21,30 @@ type Store @model @auth(rules: [{ allow: public }]) {
   purchaseOrders: [PurchaseOrder] @hasMany
   warehouseScan: [WarehouseScan] @hasMany
   billItems: [BillItem] @hasMany
-
+  category:[Category]  @hasMany
+  notifications:[Notifications]  @hasMany
 }
+
+type Category @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  name: String!
+  description: String
+  product: [Product] @hasMany
+  store: Store @belongsTo
+}
+
+type Notifications @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  warehousequanity: Int
+  shelfquantity: Int
+  productID: ID
+  productname: String
+  isRead: Boolean
+  isWarehouseNotification: Boolean
+  isShelfNotification: Boolean
+  store: Store @belongsTo
+}
+
 
 type User @model @auth(rules: [{ allow: public }]) {
   id: ID!
@@ -45,6 +67,7 @@ type Product @model @auth(rules: [{ allow: public }]) {
   price: Float!
   manufacturer: String
   category: String
+  category1: Category @belongsTo
   warehouseQuantity: Int!
   shelfQuantity: Int!
   store: Store @belongsTo
@@ -61,7 +84,7 @@ type BillItem @model @auth(rules: [{ allow: public }]) {
   category: String
   manufacturer: String
   bill: Bill @belongsTo
-   store: Store @belongsTo
+  store: Store @belongsTo
 }
 
 type Bill @model @auth(rules: [{ allow: public }]) {

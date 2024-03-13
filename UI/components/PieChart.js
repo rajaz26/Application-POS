@@ -1,67 +1,72 @@
-import React from 'react';
-import {View, StyleSheet, Dimensions, Text} from 'react-native';
-import {PieChart} from 'react-native-chart-kit';
-import {COLORS} from '../assets/theme';
+import React, { useEffect, useState } from 'react';
+import { View, StyleSheet, Dimensions, Text } from 'react-native';
+import { PieChart } from 'react-native-chart-kit';
+import { COLORS } from '../assets/theme';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-const data = [
-  {
-    name: 'Shamboo',
-    population: 2150,
-    color: '#2085ec',
-    legendFontColor: '#FFFFF4',
-  },
-  {
-    name: 'Lotion',
-    population: 2800,
-    color: '#0a417a',
-    legendFontColor: '#FFFFF4',
-  },
-  {
-    name: 'Oil',
-    population: 5270,
-    color: '#cea9bc',
-    legendFontColor: '#FFFFF4',
-  },
-  {
-    name: 'Hair Brush',
-    population: 1500,
-    color: '#fb7b8b',
-    legendFontColor: '#FFFFF4',
-  },
-  {
-    name: 'Tooth Paste',
-    population: 4500,
-    color: '#9467bd',
-    legendFontColor: '#FFFFF4',
-  },
-];
+const ChartScreen = ({ bills }) => {
+  const [chartData, setChartData] = useState([]);
 
-const ChartScreen = () => {
   const cardHeight = windowHeight * 0.25; // 25% of window height
   const cardWidth = windowWidth * 0.9; // 90% of window width
 
+  // Function to process bills and calculate top five products
+  const calculateTopFiveProducts = (bills) => {
+    const productCounts = {};
+
+    bills.forEach((bill) => {
+      bill.items.forEach((item) => {
+        const { productBillItemsId, productName, quantity } = item;
+        if (productCounts[productBillItemsId]) {
+          productCounts[productBillItemsId].quantity += quantity;
+        } else {
+          productCounts[productBillItemsId] = {
+            name: productName,
+            quantity,
+            color: '#' + Math.floor(Math.random() * 16777215).toString(16),
+            legendFontColor: '#FFFFF4',
+          };
+        }
+      });
+    });
+
+    const sortedProducts = Object.values(productCounts).sort((a, b) => b.quantity - a.quantity).slice(0, 5);
+
+    return sortedProducts.map((product) => ({
+      name: product.name,
+      population: product.quantity,
+      color: product.color,
+      legendFontColor: product.legendFontColor,
+    }));
+  };
+
+  useEffect(() => {
+    if (bills && bills.length > 0) {
+      const topFiveProducts = calculateTopFiveProducts(bills);
+      setChartData(topFiveProducts);
+      console.log(chartData);
+    }
+  }, [bills]);
+
   return (
     <View style={styles.container}>
-      <View style={[styles.chartCard, {height: cardHeight, width: cardWidth}]}>
+      <View style={[styles.chartCard, { height: cardHeight, width: cardWidth }]}>
         <View style={styles.chartTitleContainer}>
           <Text style={styles.chartTitle}>Top Five Selling Products</Text>
         </View>
         <PieChart
-          data={data}
-          hasLegend={true}
+          data={chartData}
           width={cardWidth}
           height={cardHeight}
           chartConfig={{
-            // color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-            // labelColor: (opacity = 0.7) => `rgba(255, 255, 255, ${opacity})`, // Change label text color to dull white
             color: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
             labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-            strokeWidth: 2, // optional, default 3
+            strokeWidth: 2,
             barPercentage: 0.5,
-            useShadowColorFromDataset: false, // optional
+            
+            
           }}
           accessor="population"
           backgroundColor="transparent"
@@ -77,7 +82,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
-    justifyContent: 'flex-start', // Align chart to the top of the screen
+    justifyContent: 'flex-start',
   },
   chartCard: {
     elevation: 4,
@@ -89,7 +94,7 @@ const styles = StyleSheet.create({
   },
   chartTitleContainer: {
     alignItems: 'center',
-    marginBottom: -windowHeight * 0.02, // Adjusted margin
+    marginBottom: -windowHeight * 0.02,
   },
   chartTitle: {
     color: 'white',
@@ -97,10 +102,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   bottomContent: {
-    flex: 1, // Take remaining space
+    flex: 1,
     width: '100%',
     paddingHorizontal: 20,
-    paddingTop: 20, // Add space between chart and other components
+    paddingTop: 20,
   },
 });
 

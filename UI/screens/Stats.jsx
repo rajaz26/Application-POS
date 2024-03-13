@@ -19,8 +19,8 @@ import {COLORS} from '../assets/theme';
 const windowHeight = Dimensions.get('window').height;
 
 const Stats = ({ route }) => {
-  const { bills } = route.params;
-  console.log(bills);
+  const {bills}=route.params;
+  console.log("stats screen 7&&&&&&"+bills  )
   const [searchText, setSearchText] = useState('');
   const searchInputRef = useRef(null);
 

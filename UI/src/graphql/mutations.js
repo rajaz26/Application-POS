@@ -40,6 +40,16 @@ export const createStore = /* GraphQL */ `
         startedAt
         __typename
       }
+      category {
+        nextToken
+        startedAt
+        __typename
+      }
+      notifications {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
@@ -84,6 +94,16 @@ export const updateStore = /* GraphQL */ `
         __typename
       }
       billItems {
+        nextToken
+        startedAt
+        __typename
+      }
+      category {
+        nextToken
+        startedAt
+        __typename
+      }
+      notifications {
         nextToken
         startedAt
         __typename
@@ -136,11 +156,231 @@ export const deleteStore = /* GraphQL */ `
         startedAt
         __typename
       }
+      category {
+        nextToken
+        startedAt
+        __typename
+      }
+      notifications {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
+      __typename
+    }
+  }
+`;
+export const createCategory = /* GraphQL */ `
+  mutation CreateCategory(
+    $input: CreateCategoryInput!
+    $condition: ModelCategoryConditionInput
+  ) {
+    createCategory(input: $input, condition: $condition) {
+      id
+      name
+      description
+      product {
+        nextToken
+        startedAt
+        __typename
+      }
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeCategoryId
+      __typename
+    }
+  }
+`;
+export const updateCategory = /* GraphQL */ `
+  mutation UpdateCategory(
+    $input: UpdateCategoryInput!
+    $condition: ModelCategoryConditionInput
+  ) {
+    updateCategory(input: $input, condition: $condition) {
+      id
+      name
+      description
+      product {
+        nextToken
+        startedAt
+        __typename
+      }
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeCategoryId
+      __typename
+    }
+  }
+`;
+export const deleteCategory = /* GraphQL */ `
+  mutation DeleteCategory(
+    $input: DeleteCategoryInput!
+    $condition: ModelCategoryConditionInput
+  ) {
+    deleteCategory(input: $input, condition: $condition) {
+      id
+      name
+      description
+      product {
+        nextToken
+        startedAt
+        __typename
+      }
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeCategoryId
+      __typename
+    }
+  }
+`;
+export const createNotifications = /* GraphQL */ `
+  mutation CreateNotifications(
+    $input: CreateNotificationsInput!
+    $condition: ModelNotificationsConditionInput
+  ) {
+    createNotifications(input: $input, condition: $condition) {
+      id
+      warehousequanity
+      shelfquantity
+      productID
+      productname
+      isRead
+      isWarehouseNotification
+      isShelfNotification
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeNotificationsId
+      __typename
+    }
+  }
+`;
+export const updateNotifications = /* GraphQL */ `
+  mutation UpdateNotifications(
+    $input: UpdateNotificationsInput!
+    $condition: ModelNotificationsConditionInput
+  ) {
+    updateNotifications(input: $input, condition: $condition) {
+      id
+      warehousequanity
+      shelfquantity
+      productID
+      productname
+      isRead
+      isWarehouseNotification
+      isShelfNotification
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeNotificationsId
+      __typename
+    }
+  }
+`;
+export const deleteNotifications = /* GraphQL */ `
+  mutation DeleteNotifications(
+    $input: DeleteNotificationsInput!
+    $condition: ModelNotificationsConditionInput
+  ) {
+    deleteNotifications(input: $input, condition: $condition) {
+      id
+      warehousequanity
+      shelfquantity
+      productID
+      productname
+      isRead
+      isWarehouseNotification
+      isShelfNotification
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeNotificationsId
       __typename
     }
   }
@@ -266,6 +506,18 @@ export const createProduct = /* GraphQL */ `
       price
       manufacturer
       category
+      category1 {
+        id
+        name
+        description
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeCategoryId
+        __typename
+      }
       warehouseQuantity
       shelfQuantity
       store {
@@ -290,6 +542,7 @@ export const createProduct = /* GraphQL */ `
       _deleted
       _lastChangedAt
       storeProductsId
+      categoryProductId
       __typename
     }
   }
@@ -307,6 +560,18 @@ export const updateProduct = /* GraphQL */ `
       price
       manufacturer
       category
+      category1 {
+        id
+        name
+        description
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeCategoryId
+        __typename
+      }
       warehouseQuantity
       shelfQuantity
       store {
@@ -331,6 +596,7 @@ export const updateProduct = /* GraphQL */ `
       _deleted
       _lastChangedAt
       storeProductsId
+      categoryProductId
       __typename
     }
   }
@@ -348,6 +614,18 @@ export const deleteProduct = /* GraphQL */ `
       price
       manufacturer
       category
+      category1 {
+        id
+        name
+        description
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeCategoryId
+        __typename
+      }
       warehouseQuantity
       shelfQuantity
       store {
@@ -372,6 +650,7 @@ export const deleteProduct = /* GraphQL */ `
       _deleted
       _lastChangedAt
       storeProductsId
+      categoryProductId
       __typename
     }
   }
@@ -399,6 +678,7 @@ export const createBillItem = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeProductsId
+        categoryProductId
         __typename
       }
       productName
@@ -466,6 +746,7 @@ export const updateBillItem = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeProductsId
+        categoryProductId
         __typename
       }
       productName
@@ -533,6 +814,7 @@ export const deleteBillItem = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeProductsId
+        categoryProductId
         __typename
       }
       productName

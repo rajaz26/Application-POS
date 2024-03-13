@@ -46,6 +46,7 @@ import CashierHome from "../screens/CashierHome";
 import POHome from "../screens/POHome";
 import TopTabNavigator2 from "../screens/TopTabNavigator2";
 import TopTabNavigator3 from "../screens/TopTabNavigator3";
+import Categories from "../screens/Categories";
 const Drawer = createDrawerNavigator();
 
 const AppNavigation = () => {
@@ -142,6 +143,7 @@ useEffect(() => {
             <Drawer.Screen name="ConfirmSignUp2" component={ConfirmSignUp2} />
             <Drawer.Screen name="UploadPurchase" component={UploadPurchase} />
             <Drawer.Screen name="PurchaseOrder" component={PurchaseOrder} />
+            <Drawer.Screen name="Categories" component={Categories} />
           </>
 
         ) : (
