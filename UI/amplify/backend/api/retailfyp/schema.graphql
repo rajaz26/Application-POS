@@ -61,7 +61,7 @@ type User @model @auth(rules: [{ allow: public }]) {
 
 type Product @model @auth(rules: [{ allow: public }]) {
   id: ID!
-  name: String!
+  name: String! @index(name: "byName", queryField: "productByName", sortKeyFields: ["id"])
   barcode: String! @index(name: "byBarcode", queryField: "productByBarcode", sortKeyFields: ["id"])
   image: String
   price: Float!

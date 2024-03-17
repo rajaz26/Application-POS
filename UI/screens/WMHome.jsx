@@ -8,7 +8,51 @@ import { useNavigation } from '@react-navigation/native';
 import { useSelector} from 'react-redux'; 
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { selectConnectedDevice } from '../store/bluetoothReducer';
+import { listWarehouseScans } from '../src/graphql/queries';
+import { generateClient } from 'aws-amplify/api';
 const WMHome = () => {  
+  const [warehouseScanObj,setWarehouseScanObj]=useState(null);
+  const client = generateClient();
+
+  const fetchLatestWarehouseScan = async () => {
+    try {
+      const { data } = await client.graphql({
+        query: listWarehouseScans,
+        variables: {
+          // No limit specified
+        },
+        authMode: 'apiKey'
+      });
+  
+      const { items } = data.listWarehouseScans;
+      if (items.length > 0) {
+        // Sort items by updatedAt in descending order
+        const sortedItems = items.sort((a, b) => {
+          return new Date(b.updatedAt) - new Date(a.updatedAt);
+        });
+  
+        const latestScan = sortedItems[0]; // Get the latest scan
+        setWarehouseScanObj(latestScan); // Store the latest scan in an object
+      } else {
+        console.log('No warehouse scans found.');
+      }
+    } catch (error) {
+      console.error('Error fetching warehouse scans:', error);
+    }
+  };
+  
+  
+useEffect(() => {
+  fetchLatestWarehouseScan();
+  if(warehouseScanObj!=null){
+  // console.log("this is read",warehouseScanObj.productName);
+  }
+}, []);
+const formatUpdatedAt = (updatedAt) => {
+  const date = new Date(updatedAt);
+  const formattedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  return formattedTime;
+};
 const connectedDevice = useSelector(state => selectConnectedDevice(state)?.name);
  const userRole = useSelector((state) => state.user.role);
  const [loading, setLoading] = useState(false); 
@@ -109,27 +153,39 @@ const connectedDevice = useSelector(state => selectConnectedDevice(state)?.name)
                   <View style={styles.previousContainer}>
                     <Text style={styles.previousText}>Last Scanned</Text>
                   </View>
+                  {warehouseScanObj ? (
                   <View style={styles.billSection}>
                   <View style={styles.billContainer}>
                     <Image style={styles.logoStyles} source={require("../assets/images/logo7.png")}/>
                     <View style={styles.billText}>
                       <View style={styles.cashierName}>
                         <Text  style={styles.cashierText}>
-                          Dalda Oil - 1 Litre
+                          {warehouseScanObj.productName}
                         </Text>
                         <Text  style={styles.billTotal}>
-                          100 Pieces
+                          {warehouseScanObj.productQuantity+" Piece/s"}
                         </Text>
                       </View>
                       <View  style={styles.billBottomText}>
                         <Text  style={styles.billTime}>
-                          07:36 PM
+                          {formatUpdatedAt(warehouseScanObj.updatedAt)}
                         </Text>
                       </View>
                     </View>
                   </View>
                 </View>
-               
+                ) : (
+                  <View style={styles.billSection}>
+                  <View style={styles.billContainer}>
+                  <View style={styles.noDeviceContainer}>
+      <Text style={styles.noDeviceText}>Fetching the last Scan item</Text>
+      <Text style={styles.noDeviceText}>. . . . . . . . . . . . . .</Text>
+    </View>
+    </View>
+                </View>
+              
+
+                )}
                   <View style={styles.previousContainer}>
                     <Text style={styles.previousText}>Recent Notifications</Text>
                   </View>
@@ -436,5 +492,17 @@ logoStyles:{
   height:30,
   width:30,
   marginRight:10,
+},
+noDeviceContainer:{
+  flex:0,
+  justifyContent:'flex-end',
+  alignItems:'flex-end',
+  right:10,
+},
+noDeviceText:{
+  fontWeight:'500',
+  color:'black',
+  fontSize:15,
+  fontFamily:'Poppins-Regular',
 },
 })

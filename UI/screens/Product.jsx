@@ -7,12 +7,11 @@ import { Dimensions,Image } from 'react-native';
 import { SelectList } from 'react-native-dropdown-select-list';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { uploadData, getUrl,remove } from 'aws-amplify/storage';
-import { deleteProduct,updateProduct } from '../src/graphql/mutations';
+import { deleteProduct,updateProduct,createNotifications } from '../src/graphql/mutations';
 import { generateClient } from 'aws-amplify/api';
 import { useForm, Controller } from 'react-hook-form';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 const { width, height } = Dimensions.get('window');
-
 
 const Product = ({ route }) => {
 
@@ -205,9 +204,6 @@ const UploadNewImage=async()=>{
 }
 const handleUpdateData = async () => {
   setLoading(true);
-  
-  console.log("this should be delete $$%$%$"+startingProductImageUrl);
-  console.log("this should be delete $$%$%$2"+productInput.image);
   if (startingProductImageUrl !== productInput.image) {
     try {
       const fileName=extractFilename(startingProductImageUrl);
@@ -238,6 +234,55 @@ const handleUpdateData = async () => {
       variables: { input: productInput },
       authMode: 'apiKey',
     });
+    const up=updatedProduct.data.updateProduct;
+    if (up && up.shelfQuantity <= 10) {
+      const notificationInput = {
+        input: {
+          warehousequanity: up.warehouseQuantity,
+          shelfquantity: up.shelfQuantity, 
+          productID: up.id,
+          productname: up.name, 
+          isRead: false,
+          isWarehouseNotification: false, 
+          isShelfNotification: true, 
+        },
+        authMode: 'apiKey',
+      };
+      try {
+        const newNotification = await client.graphql({
+          query: createNotifications,
+          variables: notificationInput,
+        });
+      
+        console.log('New Notification:', newNotification);
+      } catch (error) {
+        console.error('Error creating notification:', error);
+      }
+    }
+    if (up && up.warehouseQuantity <= 10) {
+      const notificationInput = {
+        input: {
+          warehousequanity: up.warehouseQuantity,
+          shelfquantity: up.shelfQuantity, 
+          productID: up.id,
+          productname: up.name, 
+          isRead: false,
+          isWarehouseNotification: true, 
+          isShelfNotification:false, 
+        },
+        authMode: 'apiKey',
+      };
+      try {
+        const newNotification = await client.graphql({
+          query: createNotifications,
+          variables: notificationInput,
+        });
+      
+        console.log('New Notification:', newNotification);
+      } catch (error) {
+        console.error('Error creating notification:', error);
+      }
+    }
     setLoading(false);
     console.log('Updated Product:', updatedProduct);
   } catch (error) {

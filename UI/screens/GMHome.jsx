@@ -17,23 +17,8 @@ import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { listBills,listBillItems,userById  } from '../src/graphql/queries';
 import { selectConnectedDevice } from '../store/bluetoothReducer';
 import Sound from 'react-native-sound';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 const GMHome = () => {
-  const Playsound = ()=>{
-    var beep = new Sound('beep.mp3', Sound.MAIN_BUNDLE, (error) => {
-      if (error) {
-        console.log('failed to load the sound', error);
-        return;
-      }
-      console.log('duration in seconds: ' + beep.getDuration() + 'number of channels: ' + beep.getNumberOfChannels());
-      beep.play((success) => {
-        if (success) {
-          console.log('successfully finished playing');
-        } else {
-          console.log('playback failed due to audio decoding errors');
-        }
-      });
-    });
-  }
   const dispatch = useDispatch();
   const client = generateClient();
   const connectedDevice = useSelector(state => selectConnectedDevice(state)?.name);
@@ -131,7 +116,7 @@ useEffect(() => {
           filter: {
             _deleted: {
               ne: true
-            }
+            },  status: { eq: 'PAID' }  ,
           }
         },
         authMode: 'apiKey'
@@ -226,54 +211,83 @@ useEffect(() => {
       setLatestBill(latestBill);
     }
   }, [bills]);
-  
-  useEffect(() => {
-    bills.forEach((bill, index) => {
-      console.log("Bill ", index + 1);
-      console.log("ID: ", bill.id);
-      console.log("Cashier Username: ", bill.cashierUsername); // Updated to include cashier's username
-      console.log("Cashier Role: ", bill.cashierRole); // Updated to include cashier's role
-      console.log("Total Amount: ", bill.totalAmount);
-      console.log("Status: ", bill.status);
-      console.log("Created At: ", bill.createdAt);
-      console.log("Updated At: ", bill.updatedAt);
-      console.log("_Version: ", bill._version);
-      console.log("_Deleted: ", bill._deleted);
-      console.log("_Last Changed At: ", bill._lastChangedAt);
-      console.log("Store Bills ID: ", bill.storeBillsId);
-      console.log("Items:");
-  
-      if (bill.items && Array.isArray(bill.items)) {
-        bill.items.forEach(item => {
-          console.log("    Quantity: ", item.quantity);
-          console.log("    Product Price: ", item.productPrice);
-          console.log("    product name: ", item.productName);
-          console.log("    product id: ", item.productBillItemsId);
-        });
-      } else {
-        console.log("No items found for this bill.");
-      }
-      console.log("\n"); // Added for better separation between bills
-    });
-  }, [bills]);
-  
+
   
   return (
-    <View style={{flex:1,backgroundColor:COLORS.primary}}>
-      {loading && 
-      <View style={styles.loadingContainer}>
-       <AnimatedCircularProgress
-  size={120}
-  width={15}
-  fill={100}
-  prefill={0} 
-  delay={10}
-  duration={2200} 
-  tintColor={COLORS.secondary}
-  onAnimationComplete={() => console.log('onAnimationComplete')}
-  backgroundColor="white" />
-  </View>}
-        <View style={styles.wrapper}>
+    <View  style={{flex:1,backgroundColor:'white'}}>
+      {loading ? ( <View style={{flex:1,backgroundColor:'white',borderWidth:1,justifyContent:'center',paddingHorizontal:25}}>
+       <SkeletonPlaceholder borderRadius={4}>
+       <SkeletonPlaceholder.Item width={100} height={20} />
+        <View style={{paddingVertical:20}}>
+        <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+        <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+        <SkeletonPlaceholder.Item marginLeft={20}>
+          <SkeletonPlaceholder.Item width={200} height={20} />
+          <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+        </SkeletonPlaceholder.Item>
+      </SkeletonPlaceholder.Item>
+        </View>      
+    </SkeletonPlaceholder>
+    <SkeletonPlaceholder borderRadius={4}>
+    
+        <View style={{paddingVertical:20}}>
+        <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+        <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+        <SkeletonPlaceholder.Item marginLeft={20}>
+          <SkeletonPlaceholder.Item width={200} height={20} />
+          <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+        </SkeletonPlaceholder.Item>
+      </SkeletonPlaceholder.Item>
+        </View>
+     
+      
+    </SkeletonPlaceholder>
+    <SkeletonPlaceholder borderRadius={4}>
+    <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+        <View style={{paddingVertical:20}}>
+        <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+        <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+        <SkeletonPlaceholder.Item marginLeft={20}>
+          <SkeletonPlaceholder.Item width={200} height={20} />
+          <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+        </SkeletonPlaceholder.Item>
+      </SkeletonPlaceholder.Item>
+        </View>
+     
+      
+    </SkeletonPlaceholder>
+    <SkeletonPlaceholder borderRadius={4}>
+    <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+        <View style={{paddingVertical:20}}>
+        <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+        <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+        <SkeletonPlaceholder.Item marginLeft={20}>
+          <SkeletonPlaceholder.Item width={200} height={20} />
+          <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+        </SkeletonPlaceholder.Item>
+      </SkeletonPlaceholder.Item>
+        </View>
+     
+      
+    </SkeletonPlaceholder>
+    <SkeletonPlaceholder borderRadius={4}>
+    <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+        <View style={{paddingVertical:20}}>
+        <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+        <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+        <SkeletonPlaceholder.Item marginLeft={20}>
+          <SkeletonPlaceholder.Item width={200} height={20} />
+          <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+        </SkeletonPlaceholder.Item>
+      </SkeletonPlaceholder.Item>
+        </View>
+     
+      
+    </SkeletonPlaceholder>
+
+    </View>):(      <View style={{flex:1,backgroundColor:COLORS.primary}}>
+      
+      <View style={styles.wrapper}>
            <SafeAreaView style={styles.safeArea}>
                   <View style={styles.sliderWrapper}>
                       <SalesLineChart bills={bills}/>
@@ -294,8 +308,8 @@ useEffect(() => {
                 </View>
                 <View style={styles.iconWrapper}>    
                 <View style={styles.icons}>
-                  {/* <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('Staff')}>   */}
-                  <TouchableOpacity style={styles.iconContainer} onPress={Playsound}>  
+                  <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('Staff')}>  
+                  {/* <TouchableOpacity style={styles.iconContainer} onPress={Playsound}>   */}
                  <Ionic name="person" size={25} color={COLORS.primary} style={styles.homeIcon} />
                  <Text style={styles.iconText}>Staff List</Text>
                </TouchableOpacity>
@@ -356,7 +370,7 @@ useEffect(() => {
             ) : (
               <TouchableOpacity
                 style={styles.iconContainer}
-                onPress={() => navigation.navigate('Bluetooth')}
+                onPress={() => navigation.navigate('Notifications')}
               >
                 <Ionic name="notifications" size={28} color={COLORS.primary} />
                 <Text style={styles.iconText}>Notification</Text>
@@ -407,6 +421,9 @@ useEffect(() => {
 </View>
 
         </View>
+        </View>) 
+       }
+
      
     </View>
   )

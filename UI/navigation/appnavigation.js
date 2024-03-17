@@ -47,6 +47,9 @@ import POHome from "../screens/POHome";
 import TopTabNavigator2 from "../screens/TopTabNavigator2";
 import TopTabNavigator3 from "../screens/TopTabNavigator3";
 import Categories from "../screens/Categories";
+import SkeletonPlaceholder from "react-native-skeleton-placeholder";
+import Loading from "../screens/Loading";
+import ShowBill from "../screens/ShowBill";
 const Drawer = createDrawerNavigator();
 
 const AppNavigation = () => {
@@ -86,19 +89,77 @@ useEffect(() => {
 
   if (user === undefined) {
     return (
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <AnimatedCircularProgress
-  size={120}
-  width={15}
-  fill={100}
-  prefill={0} 
-  delay={20}
-  duration={2200} 
-  easing={Easing.inOut(Easing.ease)} 
-  tintColor={COLORS.secondary}
-  onAnimationComplete={() => console.log('onAnimationComplete')}
-  backgroundColor="white" />
-      </View>
+      <View style={{flex:1,backgroundColor:'white',borderWidth:1,justifyContent:'center',paddingHorizontal:25}}>
+       <SkeletonPlaceholder borderRadius={4}>
+       <SkeletonPlaceholder.Item width={100} height={20} />
+        <View style={{paddingVertical:20}}>
+        <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+        <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+        <SkeletonPlaceholder.Item marginLeft={20}>
+          <SkeletonPlaceholder.Item width={200} height={20} />
+          <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+        </SkeletonPlaceholder.Item>
+      </SkeletonPlaceholder.Item>
+        </View>      
+    </SkeletonPlaceholder>
+    <SkeletonPlaceholder borderRadius={4}>
+    
+        <View style={{paddingVertical:20}}>
+        <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+        <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+        <SkeletonPlaceholder.Item marginLeft={20}>
+          <SkeletonPlaceholder.Item width={200} height={20} />
+          <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+        </SkeletonPlaceholder.Item>
+      </SkeletonPlaceholder.Item>
+        </View>
+     
+      
+    </SkeletonPlaceholder>
+    <SkeletonPlaceholder borderRadius={4}>
+    <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+        <View style={{paddingVertical:20}}>
+        <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+        <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+        <SkeletonPlaceholder.Item marginLeft={20}>
+          <SkeletonPlaceholder.Item width={200} height={20} />
+          <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+        </SkeletonPlaceholder.Item>
+      </SkeletonPlaceholder.Item>
+        </View>
+     
+      
+    </SkeletonPlaceholder>
+    <SkeletonPlaceholder borderRadius={4}>
+    <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+        <View style={{paddingVertical:20}}>
+        <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+        <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+        <SkeletonPlaceholder.Item marginLeft={20}>
+          <SkeletonPlaceholder.Item width={200} height={20} />
+          <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+        </SkeletonPlaceholder.Item>
+      </SkeletonPlaceholder.Item>
+        </View>
+     
+      
+    </SkeletonPlaceholder>
+    <SkeletonPlaceholder borderRadius={4}>
+    <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+        <View style={{paddingVertical:20}}>
+        <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+        <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+        <SkeletonPlaceholder.Item marginLeft={20}>
+          <SkeletonPlaceholder.Item width={200} height={20} />
+          <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+        </SkeletonPlaceholder.Item>
+      </SkeletonPlaceholder.Item>
+        </View>
+     
+      
+    </SkeletonPlaceholder>
+
+    </View>
     );
   }
 
@@ -108,16 +169,23 @@ useEffect(() => {
         {user ? (
           <>
         {userRole === 'GENERAL_MANAGER' ? (
-              <Drawer.Screen name="Home" component={TopTabNavigator3} />
+              <Drawer.Screen name="Home1" component={TopTabNavigator3} />
             ) : userRole === 'CASHIER' ? (
-              <Drawer.Screen name="Home" component={TopTabNavigator} />
+              <Drawer.Screen name="Home2" component={TopTabNavigator} />
             ) : userRole === 'WAREHOUSE_MANAGER' ? (
-              <Drawer.Screen name="Home" component={TopTabNavigator2} />
-            ) : (
-              <Drawer.Screen name="Home" component={POHome} />
+              <Drawer.Screen name="Home3" component={TopTabNavigator2} />
+            ) :  userRole === 'PURCHASER' ?(
+              <Drawer.Screen name="Home4" component={POHome} />
+            ):(
+              <Drawer.Screen name="Loading" component={Loading} />
             )}
  
             {/* <Drawer.Screen name="Home" component={TopTabNavigator} /> */}
+           
+            {/* <Drawer.Screen name="Home4" component={POHome} />
+            <Drawer.Screen name="Home1" component={TopTabNavigator3} />
+            <Drawer.Screen name="Home2" component={TopTabNavigator} />
+            <Drawer.Screen name="Home3" component={TopTabNavigator2} /> */}
             <Drawer.Screen name="Bluetooth" component={BluetoothConnectivity} />
             <Drawer.Screen name="Bluetooth2" component={BluetoothConnectivity2} />
             <Drawer.Screen name="Settings" component={SettingsScreen} />
@@ -144,6 +212,7 @@ useEffect(() => {
             <Drawer.Screen name="UploadPurchase" component={UploadPurchase} />
             <Drawer.Screen name="PurchaseOrder" component={PurchaseOrder} />
             <Drawer.Screen name="Categories" component={Categories} />
+            <Drawer.Screen name="ShowBill" component={ShowBill} />
           </>
 
         ) : (

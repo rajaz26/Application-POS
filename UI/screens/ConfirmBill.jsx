@@ -8,7 +8,7 @@ import { useNavigation } from '@react-navigation/native';
 // import RNFetchBlob from 'rn-fetch-blob';
 import { BluetoothEscposPrinter } from 'react-native-bluetooth-escpos-printer';
 import { generateClient } from 'aws-amplify/api';
-import { deleteBill, deleteBillItem, updateBill, updateProduct } from '../src/graphql/mutations';
+import { deleteBill, deleteBillItem, updateBill, updateProduct,createNotifications } from '../src/graphql/mutations';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { getProduct } from '../src/graphql/queries.js';
 import { useSelector } from 'react-redux';
@@ -121,16 +121,42 @@ const ConfirmBill = ({route}) => {
             console.log("Product Fetched",currentProductDetails);
             const currentShelfQuantity = currentProductDetails.data.getProduct.shelfQuantity;
             const newShelfQuantity = currentShelfQuantity - product.quantity;
-            await client.graphql({
+           const updatedProduct= await client.graphql({
               query: updateProduct,
               variables: {
                 input: {
+                  _version:product._version,
                   id: product.productId,
                   shelfQuantity: newShelfQuantity,
                 },
               },
               authMode: 'apiKey',
             });
+            const up=updatedProduct.data.updateProduct;
+            if (up && up.shelfQuantity <= 10) {
+              const notificationInput = {
+                input: {
+                  warehousequanity: up.warehouseQuantity,
+                  shelfquantity: up.shelfQuantity, 
+                  productID: up.id,
+                  productname: up.name, 
+                  isRead: false,
+                  isWarehouseNotification: false, 
+                  isShelfNotification: true, 
+                },
+                authMode: 'apiKey',
+              };
+              try {
+                const newNotification = await client.graphql({
+                  query: createNotifications,
+                  variables: notificationInput,
+                });
+              
+                console.log('New Notification:', newNotification);
+              } catch (error) {
+                console.error('Error creating notification:', error);
+              }
+            }
       
             console.log(`Updated product ${product.name} with new shelf quantity: ${newShelfQuantity}`);
           }

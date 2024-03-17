@@ -31,6 +31,8 @@ import org.linusu.RNGetRandomValuesPackage;
 import com.mkuczera.RNReactNativeHapticFeedbackPackage;
 // react-native-image-picker
 import com.imagepicker.ImagePickerPackage;
+// react-native-linear-gradient
+import com.BV.LinearGradient.LinearGradientPackage;
 // react-native-pager-view
 import com.reactnativepagerview.PagerViewPackage;
 // react-native-reanimated
@@ -114,6 +116,7 @@ public class PackageList {
       new RNGetRandomValuesPackage(),
       new RNReactNativeHapticFeedbackPackage(),
       new ImagePickerPackage(),
+      new LinearGradientPackage(),
       new PagerViewPackage(),
       new ReanimatedPackage(),
       new SafeAreaContextPackage(),

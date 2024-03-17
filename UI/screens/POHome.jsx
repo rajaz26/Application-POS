@@ -16,12 +16,13 @@ import { getCurrentUser, signInWithRedirect, signOut } from "aws-amplify/auth";
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { listBills,listBillItems,userById  } from '../src/graphql/queries';
 import { selectConnectedDevice } from '../store/bluetoothReducer';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 const POHome = () => {
   const dispatch = useDispatch();
   const client = generateClient();
   const connectedDevice = useSelector(state => selectConnectedDevice(state)?.name);
  const userRole = useSelector((state) => state.user.role);
- const [loading, setLoading] = useState(true); 
+ 
 //const userRole = 'GENERAL_MANAGER';
   const navigation = useNavigation();
   const openDrawer = () => {
@@ -95,22 +96,82 @@ useEffect(() => {
 
   fetchUserDetails();
 }, [dispatch]);
+const [loading, setLoading] = useState(true); 
   return (
-    <View style={{flex:1,backgroundColor:COLORS.primary}}>
-      {loading && 
-      <View style={styles.loadingContainer}>
-       <AnimatedCircularProgress
-  size={120}
-  width={15}
-  fill={100}
-  prefill={0} 
-  delay={10}
-  duration={2200} 
-  tintColor={COLORS.secondary}
-  onAnimationComplete={() => console.log('onAnimationComplete')}
-  backgroundColor="white" />
-  </View>}
-  <View style={styles.wrapper}>
+<View  style={{flex:1,backgroundColor:'white'}}>
+      {loading ? ( <View style={{flex:1,backgroundColor:'white',borderWidth:1,justifyContent:'center',paddingHorizontal:25}}>
+       <SkeletonPlaceholder borderRadius={4}>
+       <SkeletonPlaceholder.Item width={100} height={20} />
+        <View style={{paddingVertical:20}}>
+        <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+        <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+        <SkeletonPlaceholder.Item marginLeft={20}>
+          <SkeletonPlaceholder.Item width={200} height={20} />
+          <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+        </SkeletonPlaceholder.Item>
+      </SkeletonPlaceholder.Item>
+        </View>      
+    </SkeletonPlaceholder>
+    <SkeletonPlaceholder borderRadius={4}>
+    
+        <View style={{paddingVertical:20}}>
+        <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+        <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+        <SkeletonPlaceholder.Item marginLeft={20}>
+          <SkeletonPlaceholder.Item width={200} height={20} />
+          <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+        </SkeletonPlaceholder.Item>
+      </SkeletonPlaceholder.Item>
+        </View>
+     
+      
+    </SkeletonPlaceholder>
+    <SkeletonPlaceholder borderRadius={4}>
+    <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+        <View style={{paddingVertical:20}}>
+        <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+        <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+        <SkeletonPlaceholder.Item marginLeft={20}>
+          <SkeletonPlaceholder.Item width={200} height={20} />
+          <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+        </SkeletonPlaceholder.Item>
+      </SkeletonPlaceholder.Item>
+        </View>
+     
+      
+    </SkeletonPlaceholder>
+    <SkeletonPlaceholder borderRadius={4}>
+    <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+        <View style={{paddingVertical:20}}>
+        <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+        <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+        <SkeletonPlaceholder.Item marginLeft={20}>
+          <SkeletonPlaceholder.Item width={200} height={20} />
+          <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+        </SkeletonPlaceholder.Item>
+      </SkeletonPlaceholder.Item>
+        </View>
+     
+      
+    </SkeletonPlaceholder>
+    <SkeletonPlaceholder borderRadius={4}>
+    <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+        <View style={{paddingVertical:20}}>
+        <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+        <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+        <SkeletonPlaceholder.Item marginLeft={20}>
+          <SkeletonPlaceholder.Item width={200} height={20} />
+          <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+        </SkeletonPlaceholder.Item>
+      </SkeletonPlaceholder.Item>
+        </View>
+     
+      
+    </SkeletonPlaceholder>
+
+    </View>):(      <View style={{flex:1,backgroundColor:COLORS.primary}}>
+      
+       <View style={styles.wrapper}>
         <View style={[
   styles.body,
   { borderTopLeftRadius: 0, borderTopRightRadius: 0 },
@@ -260,6 +321,9 @@ useEffect(() => {
               </View>
             </View>
         </View>
+        </View>) 
+       }
+
      
     </View>
   )

@@ -6,6 +6,8 @@ import { COLORS } from '../assets/theme/index.js';
 import { useNavigation } from '@react-navigation/native'; 
 import { generateClient } from 'aws-amplify/api';
 import { getPurchaseOrder, listPurchaseOrders } from '../src/graphql/queries.js';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+
 
 const PurchaseHistory = () => {
   const navigation=useNavigation();
@@ -68,19 +70,85 @@ const PurchaseHistory = () => {
   };
 
   return (
-    <SafeAreaView style={styles.headContainer}>
+    <View  style={{flex:1,backgroundColor:'white'}}>
+    {purchaseOrders.length === 0 ? ( <View style={{flex:1,backgroundColor:'white',borderWidth:1,justifyContent:'center',paddingHorizontal:25}}>
+     <SkeletonPlaceholder borderRadius={4}>
+     <SkeletonPlaceholder.Item width={100} height={20} />
+      <View style={{paddingVertical:20}}>
+      <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+      <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+      <SkeletonPlaceholder.Item marginLeft={20}>
+        <SkeletonPlaceholder.Item width={200} height={20} />
+        <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+      </SkeletonPlaceholder.Item>
+    </SkeletonPlaceholder.Item>
+      </View>      
+  </SkeletonPlaceholder>
+  <SkeletonPlaceholder borderRadius={4}>
+  
+      <View style={{paddingVertical:20}}>
+      <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+      <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+      <SkeletonPlaceholder.Item marginLeft={20}>
+        <SkeletonPlaceholder.Item width={200} height={20} />
+        <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+      </SkeletonPlaceholder.Item>
+    </SkeletonPlaceholder.Item>
+      </View>
+   
+    
+  </SkeletonPlaceholder>
+  <SkeletonPlaceholder borderRadius={4}>
+  <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+      <View style={{paddingVertical:20}}>
+      <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+      <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+      <SkeletonPlaceholder.Item marginLeft={20}>
+        <SkeletonPlaceholder.Item width={200} height={20} />
+        <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+      </SkeletonPlaceholder.Item>
+    </SkeletonPlaceholder.Item>
+      </View>
+   
+    
+  </SkeletonPlaceholder>
+  <SkeletonPlaceholder borderRadius={4}>
+  <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+      <View style={{paddingVertical:20}}>
+      <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+      <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+      <SkeletonPlaceholder.Item marginLeft={20}>
+        <SkeletonPlaceholder.Item width={200} height={20} />
+        <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+      </SkeletonPlaceholder.Item>
+    </SkeletonPlaceholder.Item>
+      </View>
+   
+    
+  </SkeletonPlaceholder>
+  <SkeletonPlaceholder borderRadius={4}>
+  <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+      <View style={{paddingVertical:20}}>
+      <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+      <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+      <SkeletonPlaceholder.Item marginLeft={20}>
+        <SkeletonPlaceholder.Item width={200} height={20} />
+        <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+      </SkeletonPlaceholder.Item>
+    </SkeletonPlaceholder.Item>
+      </View>
+   
+    
+  </SkeletonPlaceholder>
+
+  </View>):(       <
+    SafeAreaView style={styles.headContainer}>
     <View style={styles.header}>
         <TouchableOpacity style={styles.arrowBackIcon}  onPress={()=> navigation.goBack()}>
             <Ionic size={22} color={COLORS.primary} name ='chevron-back-outline'/>
         </TouchableOpacity>
         <Text style={styles.settingsText}>Purchase History</Text>
     </View>
-    
-    {purchaseOrders.length === 0 ? (
-        <View style={styles.noOrdersContainer}>
-          <Text style={styles.noOrdersText}>No Purchase Orders to Display</Text>
-        </View>
-      ) : (
         <ScrollView style={styles.scrollviewContainer}>
           {purchaseOrders.map((po, index) => (
             <View key={index} style={styles.dateHistoryContainer}>
@@ -111,12 +179,14 @@ const PurchaseHistory = () => {
           ))}
         
         </ScrollView>
-        
-      )}
        <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
         <Text style={styles.refreshButtonText}>Refresh</Text>
       </TouchableOpacity>
-   </SafeAreaView>
+   </SafeAreaView>) 
+     }
+
+   
+  </View>
   )
 }
 

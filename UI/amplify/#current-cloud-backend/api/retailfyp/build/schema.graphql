@@ -366,6 +366,7 @@ type Query {
   listWarehouseScans(filter: ModelWarehouseScanFilterInput, limit: Int, nextToken: String): ModelWarehouseScanConnection
   syncWarehouseScans(filter: ModelWarehouseScanFilterInput, limit: Int, nextToken: String, lastSync: AWSTimestamp): ModelWarehouseScanConnection
   userById(userId: ID!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelUserFilterInput, limit: Int, nextToken: String): ModelUserConnection
+  productByName(name: String!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelProductFilterInput, limit: Int, nextToken: String): ModelProductConnection
   productByBarcode(barcode: String!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelProductFilterInput, limit: Int, nextToken: String): ModelProductConnection
   billByCashierId(cashier: String!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelBillFilterInput, limit: Int, nextToken: String): ModelBillConnection
   poByPurchaserId(purchaser: ID!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelPurchaseOrderFilterInput, limit: Int, nextToken: String): ModelPurchaseOrderConnection

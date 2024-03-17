@@ -23,6 +23,7 @@ MERGED from [:react-native-bluetooth-escpos-printer] D:\Application-POS\UI\node_
 MERGED from [:react-native-get-random-values] D:\Application-POS\UI\node_modules\react-native-get-random-values\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-haptic-feedback] D:\Application-POS\UI\node_modules\react-native-haptic-feedback\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-9:12
 MERGED from [:react-native-image-picker] D:\Application-POS\UI\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-19:12
+MERGED from [:react-native-linear-gradient] D:\Application-POS\UI\node_modules\react-native-linear-gradient\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-pager-view] D:\Application-POS\UI\node_modules\react-native-pager-view\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-safe-area-context] D:\Application-POS\UI\node_modules\react-native-safe-area-context\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-screens] D:\Application-POS\UI\node_modules\react-native-screens\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
@@ -365,6 +366,8 @@ MERGED from [:react-native-haptic-feedback] D:\Application-POS\UI\node_modules\r
 MERGED from [:react-native-haptic-feedback] D:\Application-POS\UI\node_modules\react-native-haptic-feedback\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-image-picker] D:\Application-POS\UI\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-image-picker] D:\Application-POS\UI\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-linear-gradient] D:\Application-POS\UI\node_modules\react-native-linear-gradient\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-linear-gradient] D:\Application-POS\UI\node_modules\react-native-linear-gradient\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-pager-view] D:\Application-POS\UI\node_modules\react-native-pager-view\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-pager-view] D:\Application-POS\UI\node_modules\react-native-pager-view\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-safe-area-context] D:\Application-POS\UI\node_modules\react-native-safe-area-context\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44

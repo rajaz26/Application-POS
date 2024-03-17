@@ -20,6 +20,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { clearUserDetails } from '../store/userSlice';
 
 const Drawer = props => {
+  const dispatch = useDispatch();
   const navigation = useNavigation();
   const userRole = useSelector((state) => state.user.role);
   const userName=useSelector((state) => state.user.username);
@@ -30,7 +31,7 @@ const Drawer = props => {
         props.navigation.closeDrawer();
         setTimeout(async () => {
           await signOut();
-          useDispatch(clearUserDetails());
+          dispatch(clearUserDetails());
           console.log('Signed out');
       }, 300);
     } catch (error) {

@@ -9,13 +9,13 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { confirmSignUp, resendSignUpCode } from 'aws-amplify/auth';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { generateClient } from 'aws-amplify/api';
-import { createUser } from '../src/graphql/mutations.js';
+import { createStore, createUser } from '../src/graphql/mutations.js';
 const ConfirmSignUp = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const route = useRoute();
   const client = generateClient();
-  const { username,phonenumber,userId } = route.params;
+  const { username,phonenumber,userId,storename } = route.params;
   const [confirmationCode, setConfirmationCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [codeCheck, setCodeCheck] = useState(false);
@@ -33,11 +33,21 @@ const ConfirmSignUp = () => {
     try {
       const confirmationResponse=await confirmSignUp({ username, confirmationCode: code });
       console.log('User confirmed successfully');
+      const storeData={
+        name:storename,
+      }
+      const createStoreResponse = await client.graphql({
+        query: createStore,
+        variables: { input: storeData },
+        authMode: 'apiKey',
+      });
+      console.log("Creating store in DB",  createStoreResponse.data.createStore.id);
       const userInput = {
         userId: userId,
         username: username,
         phonenumber: phonenumber,
         role: 'GENERAL_MANAGER',
+        storeUsersId: createStoreResponse.data.createStore.id
       };
   
       console.log("Creating user in DB", userInput);

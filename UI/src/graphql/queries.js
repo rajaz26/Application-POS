@@ -967,6 +967,48 @@ export const userById = /* GraphQL */ `
     }
   }
 `;
+export const productByName = /* GraphQL */ `
+  query ProductByName(
+    $name: String!
+    $id: ModelIDKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelProductFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    productByName(
+      name: $name
+      id: $id
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        name
+        barcode
+        image
+        price
+        manufacturer
+        category
+        warehouseQuantity
+        shelfQuantity
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeProductsId
+        categoryProductId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
 export const productByBarcode = /* GraphQL */ `
   query ProductByBarcode(
     $barcode: String!

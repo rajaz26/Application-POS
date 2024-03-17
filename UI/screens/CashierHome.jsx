@@ -113,7 +113,7 @@ useEffect(() => {
           filter: {
             _deleted: {
               ne: true
-            }
+            },  status: { eq: 'PAID' }  ,
           }
         },
         authMode: 'apiKey'
@@ -250,7 +250,7 @@ useEffect(() => {
                 <View style={styles.icons}>
                 
                
-     <TouchableOpacity style={styles.iconContainer} onPress={() =>navigation.navigate('History')}>
+     <TouchableOpacity style={styles.iconContainer} onPress={() =>navigation.navigate('History',{bills:bills})}>
                      <Ionic name="newspaper-outline" size={25} color={COLORS.primary} style={styles.homeIcon} />
                     <Text style={styles.iconText}>Bills</Text>
                   </TouchableOpacity>

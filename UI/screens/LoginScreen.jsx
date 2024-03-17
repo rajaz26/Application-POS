@@ -103,18 +103,23 @@ query UserById($userId: ID!) {
         console.log(userData);
         const userDetails = userData.data.userById.items[0];
     if ( await userDetails) {
-      
+       
       // Dispatch setUserDetails action with all necessary details
       dispatch(setUserDetails({
         userId: userDetails.userId,
         username: userDetails.username,
         role: userDetails.role,
+        // storeId: userDetails.store.id,
+        // storeName: userDetails.store.name,
       }));
     }
-      navigation.navigate('Home', { screen: 'Dashboard' });
+    setLoading(false);
+  
+     
     } catch (error) {
       console.error('Login error has occurred', error);
       Alert.alert('Login Error', error.message);
+      setLoading(false);
     }
     setLoading(false);
   };
@@ -128,7 +133,7 @@ query UserById($userId: ID!) {
   width={15}
   fill={100}
   prefill={0} 
-  duration={2000} 
+  duration={3000} 
   delay={0}
   easing={Easing.inOut(Easing.ease)} 
   tintColor={COLORS.secondary}

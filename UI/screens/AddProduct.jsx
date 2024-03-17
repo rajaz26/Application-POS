@@ -314,7 +314,8 @@ const getImageUrlFromS3 = async (fileKey) => {
                         </View>
                         <View style={styles.categoryContainer}>
                         <TouchableOpacity style={styles.categoryTextContainer} onPress={()=>navigation.navigate('Categories')}>
-                        <Text style={styles.categoryText}>{categoryName ? `${categoryName}` : 'Choose Category'}</Text>
+                        <Text style={[styles.categoryText, { color: categoryName ? 'black' : 'rgba(170, 170, 170,4)' }]}> {categoryName ? categoryName : 'Choose Category'} </Text>
+
                         </TouchableOpacity>
                         </View>
                     </View>
@@ -366,7 +367,7 @@ const getImageUrlFromS3 = async (fileKey) => {
                     name="warehouseQuantity"
                     defaultValue=""
                     />
-                    {errors.price && <Text style={styles.errorText}>Price is required</Text>}
+                    {errors.price && <Text style={styles.errorText}>Warehouse Quantity is required</Text>}
                         </View>
                     </View>
                 </View>
@@ -391,7 +392,7 @@ const getImageUrlFromS3 = async (fileKey) => {
                     name="shelfQuantity"
                     defaultValue=""
                     />
-                    {errors.price && <Text style={styles.errorText}>Price is required</Text>}
+                    {errors.price && <Text style={styles.errorText}>Shelf Quantity is required</Text>}
                         </View>
                     </View>
                 </View>

@@ -85,6 +85,7 @@ return (
                     boxStyles={{borderWidth:2}} 
                     arrowicon={<Ionic style={{position:'absolute',right:10,top:14}} size={26} color='rgba(180, 180, 180,4)' name='chevron-down-outline'/>}
                     inputStyles={{fontSize:18.5,top:1,fontFamily:'Poppins-Regular',color:'rgba(140, 140, 140,4)'}}
+                    dropdownTextStyles={{color:'rgba(140, 140, 140,4)'}}
                 />
             </View>
             <ScrollView>

@@ -12,6 +12,11 @@
 #set( $queryRequestVariables = {} )
 ## [End] Set map initialization for @key **
 ## [Start] Set query expression for @key **
+$util.qr($QueryMap.put('name+id' , 'byName'))
+$util.qr($PkMap.put('name' , 'byName'))
+$util.qr($SkMap.put("byName", ["id"]))
+## [End] Set query expression for @key **
+## [Start] Set query expression for @key **
 $util.qr($QueryMap.put('barcode+id' , 'byBarcode'))
 $util.qr($PkMap.put('barcode' , 'byBarcode'))
 $util.qr($SkMap.put("byBarcode", ["id"]))

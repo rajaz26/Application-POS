@@ -718,6 +718,17 @@ export const schema = {
                 {
                     "type": "key",
                     "properties": {
+                        "name": "byName",
+                        "queryField": "productByName",
+                        "fields": [
+                            "name",
+                            "id"
+                        ]
+                    }
+                },
+                {
+                    "type": "key",
+                    "properties": {
                         "name": "byBarcode",
                         "queryField": "productByBarcode",
                         "fields": [

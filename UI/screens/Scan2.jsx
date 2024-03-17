@@ -18,9 +18,13 @@ import { COLORS } from '../assets/theme';
 import { useNavigation } from '@react-navigation/native'; 
 import Ionic from 'react-native-vector-icons/Ionicons';
 import {generateClient} from 'aws-amplify/api';
+import { fetchUserAttributes } from 'aws-amplify/auth';
+import { setUserDetails } from '../store/userSlice'; 
+import { useDispatch } from 'react-redux';
 import Sound from 'react-native-sound';
-import { updateProduct } from '../src/graphql/mutations';
+import { updateProduct,createWarehouseScan ,createNotifications } from '../src/graphql/mutations';
 export default function Scan2({route}) {
+  Sound.setCategory('Playback');
   const [hasPermission, setHasPermission] = React.useState(false);
   const [isScanning, setIsScanning] = React.useState(true);
   const [loading, setLoading] = useState(false);
@@ -39,6 +43,26 @@ export default function Scan2({route}) {
   const device = devices.back;
   const client = generateClient();
   const navigation = useNavigation();
+  const [userIdW, setUserIdW] = useState(null);
+const [usernameW, setUsernameW] = useState('');
+
+
+const Playsound = ()=>{
+  var beep = new Sound('beep.mp3', Sound.MAIN_BUNDLE, (error) => {
+    if (error) {
+      console.log('failed to load the sound', error);
+      return;
+    }
+    console.log('duration in seconds: ' + beep.getDuration() + 'number of channels: ' + beep.getNumberOfChannels());
+    beep.play((success) => {
+      if (success) {
+        console.log('successfully finished playing');
+      } else {
+        console.log('playback failed due to audio decoding errors');
+      }
+    });
+  });
+}
   const [frameProcessor, barcodes] = useScanBarcodes(
     [
       BarcodeFormat.EAN_13,
@@ -70,22 +94,6 @@ export default function Scan2({route}) {
   }
   
 `;
-const Playsound = ()=>{
-  var beep = new Sound('beep.mp3', Sound.MAIN_BUNDLE, (error) => {
-    if (error) {
-      console.log('failed to load the sound', error);
-      return;
-    }
-    console.log('duration in seconds: ' + beep.getDuration() + 'number of channels: ' + beep.getNumberOfChannels());
-    beep.play((success) => {
-      if (success) {
-        console.log('successfully finished playing');
-      } else {
-        console.log('playback failed due to audio decoding errors');
-      }
-    });
-  });
-}
 
   React.useEffect(() => {
     (async () => {
@@ -151,7 +159,6 @@ toggleBillModal();
   };
 
 const handleBarcodeScanned = async (barcode) => {
-  Playsound();
     if (!isScanning && manualBarcode === '') return;
     setIsScanning(false);
   
@@ -168,6 +175,7 @@ const handleBarcodeScanned = async (barcode) => {
         if (productDetailsResponse.data.productByBarcode.items.length > 0) {
             const productDetails = productDetailsResponse.data.productByBarcode.items[0];
             console.log("Reciieved product",productDetails);
+            Playsound();
             setCurrentProduct(productDetails);
             console.log("Current Product",currentProduct);
             setQuantityModalVisible(true);
@@ -181,7 +189,7 @@ const handleBarcodeScanned = async (barcode) => {
 
   const handleAddQuantity = () => {
     if (!quantity) {
-        alert("Please enter a quantity.");
+        Alert.alert("Please enter a quantity.");
         return;
     }
 
@@ -211,6 +219,73 @@ useEffect(() => {
   const total = scannedProducts.reduce((acc, curr) => acc + (curr.subtotal || 0), 0);
   setTotalBillAmount(total);
 }, [scannedProducts]);
+const userByIdQuery = /* GraphQL */ `
+query UserById($userId: ID!) {
+  userById(userId: $userId) {
+    items {
+      id
+      userId
+      username
+      phonenumber
+      image
+      role
+      idcardimage
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeUsersId
+      __typename
+    }
+  }
+}
+`;
+const dispatch = useDispatch();
+
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const currentUser = await fetchUserAttributes();
+        const userId = currentUser.sub;
+
+        const { data } = await client.graphql({
+          query: userByIdQuery,
+          variables: { userId: userId },
+          authMode: 'apiKey',
+        });
+
+        const userDetails = data.userById.items[0];
+        if (userDetails) {
+          dispatch(
+            setUserDetails({
+              userId: userDetails.userId,
+              username: userDetails.username,
+              role: userDetails.role,
+            })
+          );
+          setUserIdW(userDetails.userId);
+          setUsernameW(userDetails.username);
+        }
+      } catch (error) {
+        console.error('Error fetching user details:', error);
+      }
+    };
+
+    fetchUserDetails();
+  }, [dispatch]);
+
 
 
 const handleConfirmPressed = async () => {
@@ -221,6 +296,7 @@ const handleConfirmPressed = async () => {
         console.log("product",product);
       const newQuantity = product.warehouseQuantity - product.quantity;
       await updateProductQuantityInBackend(product.id, newQuantity,product._version);
+      await createWarehouseScanF(userIdW, usernameW, product.id, product.name, product.quantity);
       
     }
   
@@ -263,12 +339,60 @@ const updateProductQuantityInBackend = async (productId, newQuantity,version) =>
         },
         authMode: 'apiKey',
       });
+      
+    const up=response.data.updateProduct;
+      if (up && up.warehouseQuantity <= 10) {
+        const notificationInput = {
+          input: {
+            warehousequanity: up.warehouseQuantity,
+            shelfquantity: up.shelfQuantity, 
+            productID: up.id,
+            productname: up.name, 
+            isRead: false,
+            isWarehouseNotification: true, 
+            isShelfNotification:false, 
+          },
+          authMode: 'apiKey',
+        };
+        try {
+          const newNotification = await client.graphql({
+            query: createNotifications,
+            variables: notificationInput,
+          });
+        
+          console.log('New Notification:', newNotification);
+        } catch (error) {
+          console.error('Error creating notification:', error);
+        }
+      }
       setSuccessMessage(true);
       console.log("Product quantity updated:", response.data.updateProduct);
       setScannedProducts([]);
     } catch (error) {
     setErrorMessage("Updation failed");
       console.error("Error updating product quantity:", error);
+    }
+  };
+  
+
+  const createWarehouseScanF = async (scannedBy,scannedByName,productId, productName, productQuantity) => {
+    try {
+      const response = await client.graphql({
+        query: createWarehouseScan, 
+        variables: {
+          input: {
+            scannedBy,
+            scannedByName,
+            productId,
+            productName,
+            productQuantity,
+          },
+        },
+        authMode: 'apiKey',
+      });
+      console.log('Warehouse scan created:', response.data.createWarehouseScan);
+    } catch (error) {
+      console.error('Error creating warehouse scan:', error);
     }
   };
   
@@ -408,7 +532,7 @@ const handleGoBack = () => {
   transparent={true}
   onRequestClose={() => setQuantityModalVisible(false)}
 >
-
+{/* 
 <Modal
   visible={quantityModalVisible}
   animationType="fade"
@@ -433,7 +557,7 @@ const handleGoBack = () => {
       </TouchableOpacity>
     </View>
   </View>
-</Modal>
+</Modal> */}
 
   <View style={styles.modalContainer}>
     <Text style={styles.modalTitle}>Enter Product Quantity:</Text>
@@ -678,5 +802,5 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     top:1,
     color:'white'
-  },
+  },
 });

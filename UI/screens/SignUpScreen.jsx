@@ -27,7 +27,7 @@ const SignUpScreen = () => {
     setLoading(true);
     Keyboard.dismiss();
     console.log('data received:', data);
-    if (!data.username || !data.password || !data.confirmPassword || !data.email || !data.phonenumber) {
+    if (!data.username || !data.password || !data.confirmPassword || !data.email || !data.phonenumber || !data.storename) {
       console.error('Please fill in all the required fields');
       setLoading(false);
       return;
@@ -69,7 +69,7 @@ const SignUpScreen = () => {
       reset();
       
       if (data && data.username) {
-        navigation.navigate('ConfirmSignUp', { username: data.username, phonenumber: data.phonenumber, userId:userId });
+        navigation.navigate('ConfirmSignUp', { username: data.username, phonenumber: data.phonenumber, userId:userId,storename:data.storename });
       } else {
         console.error('Username not found in data:', data);
       }
@@ -90,9 +90,9 @@ const SignUpScreen = () => {
             <Ionic size={24} style={{ right: 5 }} color={COLORS.primary} name="chevron-back-outline" />
           </TouchableOpacity>
         </View>
-        <View style={styles.imageContainer}>
+        {/* <View style={styles.imageContainer}>
           <Image style={styles.imageStyle} source={require('../assets/images/signup.png')} />
-        </View>
+        </View> */}
       </SafeAreaView>
       <Animated.View style={styles.formContainer} entering={FadeInDown.duration(1000).springify()}>
         <View style={styles.form}>
@@ -118,8 +118,6 @@ const SignUpScreen = () => {
 
           <Text style={styles.formText}>Password</Text>
           <View style={styles.showPassword}>
-
-          
           <Controller
             control={control}
             rules={{ required: true }}
@@ -157,6 +155,16 @@ const SignUpScreen = () => {
   defaultValue=""
 />
 {errors.phonenumber && <Text style={{ color: 'red' }}>This field is required</Text>}
+<Text style={styles.formText}>Store Name</Text>
+          <Controller
+            control={control}
+            rules={{ required: true }}
+            render={({ field }) => <TextInput style={styles.formInput} {...field} onChangeText={field.onChange} value={field.value}/>}
+            name="storename"
+            defaultValue=""
+          />
+          {errors.email && <Text style={{ color: 'red' }}>This field is required</Text>}
+
         </View>
        
         <View style={styles.signupButtonContainer}>
@@ -205,7 +213,7 @@ const styles = StyleSheet.create({
     height: 110, width: 110
   },
   formContainer: {
-    flex: 4,
+    flex: 0,
     backgroundColor: 'white',
     padding: 8,
     borderTopRightRadius: 50,
@@ -232,7 +240,6 @@ const styles = StyleSheet.create({
     color: 'black'
   },
   passwordInput: {
-    marginBottom: 5,
     width:'100%'
   },
 
