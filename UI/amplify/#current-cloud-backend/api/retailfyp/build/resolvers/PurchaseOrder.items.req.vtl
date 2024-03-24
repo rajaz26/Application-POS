@@ -12,7 +12,7 @@
   #set( $query = {
   "expression": "#partitionKey = :partitionKey",
   "expressionNames": {
-      "#partitionKey": "storePurchaseOrdersId"
+      "#partitionKey": "purchaseOrderItemsId"
   },
   "expressionValues": {
       ":partitionKey": $util.dynamodb.toDynamoDB($partitionKeyValue)
@@ -64,6 +64,6 @@ $util.toJson($context.args.nextToken)
     #else
 null
     #end,
-      "index": "gsi-Store.purchaseOrders"
+      "index": "gsi-PurchaseOrder.items"
   }
 #end

@@ -1,4 +1,4 @@
-import { StyleSheet, Text, Alert, View, ScrollView, SafeAreaView, TouchableOpacity, TextInput,ActivityIndicator,Keyboard} from 'react-native';
+import { StyleSheet,Image, Text, Alert, View, ScrollView, SafeAreaView, TouchableOpacity, TextInput,ActivityIndicator,Keyboard} from 'react-native';
 import React, {useEffect, useState } from 'react';
 import Ionic from 'react-native-vector-icons/Ionicons';
 import { COLORS } from '../assets/theme/index.js';
@@ -21,7 +21,25 @@ const client = generateClient();
  const [loading, setLoading] = useState(false);
  const [successMessage, setSuccessMessage] = useState(false);
  const { categoryId, categoryName } = route.params || { categoryId: '', categoryName: '' };
- const [category, setCategory] = (route.params && route.params.categoryName) || 'Choose Category';
+const [category, setCategory] = useState(route.params?.categoryName || 'Choose Category');
+
+const ProductByBarcode = /* GraphQL */ `
+query ProductByBarcode($barcode: String!) {
+  productByBarcode(barcode: $barcode) {
+    items {
+      id
+      name
+      barcode
+      price
+      manufacturer
+      category
+      warehouseQuantity
+      shelfQuantity
+    }
+  }
+}
+
+`;
  const [productInput, setProductInput] = useState({
     name: '',
     barcode: '',
@@ -29,7 +47,9 @@ const client = generateClient();
     manufacturer:'',
     category:'',
     warehouseQuantity: '',
-    shelfQuantity:''
+    shelfQuantity:'',
+    warehouseInventoryLimit:'',
+    shelfInventoryLimit:''
   });
 
   // const fetchCategories = async () => {
@@ -62,7 +82,7 @@ const client = generateClient();
 
   const handleChoosePhoto = () => {
     launchImageLibrary({}, (response) => {
-      console.log(response);
+      // console.log(response);
       if (response.assets && response.assets.length > 0) {
         const imageUri = response.assets[0].uri;
         setSelectedImage(imageUri); 
@@ -76,10 +96,6 @@ const client = generateClient();
     try {
         const response = await fetch(imageUri);
         const blob = await response.blob();
-        console.log("image ::: "+imageUri);
-        console.log("bloob: "+blob);
-
-
         const uploadResult = await uploadData({
             key: fileName,
             data: blob,
@@ -101,12 +117,11 @@ const getImageUrlFromS3 = async (fileKey) => {
   try {
       console.log("file key is here: " + fileKey);
       
-      // Fetch the signed URL for the uploaded file
       const getUrlResult = await getUrl({
           key: fileKey,
           options: {
               accessLevel: 'guest',
-            //   expiresIn: 9000909,
+              expiresIn: 9000909,
               useAccelerateEndpoint: true, 
           },
       });
@@ -120,6 +135,11 @@ const getImageUrlFromS3 = async (fileKey) => {
   }
 };
 
+const resetForm = () => {
+ reset();
+ setSelectedImage(null);
+ setCategory('Choose Category');
+}
   const handleLoading = () => {
     setLoading(true)
     setSuccessMessage(true);
@@ -129,8 +149,31 @@ const getImageUrlFromS3 = async (fileKey) => {
     setSuccessMessage(false);
     reset(); 
   }
+
+  const checkBarcodeExists = async (barcode) => {
+    try {
+      const graphqlResult = await client.graphql({
+        query: ProductByBarcode,
+        variables: { barcode: barcode },
+        authMode: 'apiKey',
+      });
+  
+      const products = graphqlResult.data.productByBarcode.items;
+      return products.length > 0;
+    } catch (error) {
+      console.error('Error querying product by barcode:', error);
+      throw new Error('Failed to check barcode uniqueness');
+    }
+  };
+  
   const onSubmit = async (data) => {
     console.log('Product Input:', data);
+    const barcodeExists = await checkBarcodeExists(data.barcode);
+
+  if (barcodeExists) {
+    Alert.alert('Barcode already exists', 'The entered barcode is already in use by another product. Please use a different barcode.');
+    return;
+  }
     console.log('Category',categoryName);
     setLoading(true);
     Keyboard.dismiss();
@@ -141,11 +184,11 @@ const getImageUrlFromS3 = async (fileKey) => {
       console.log('Here 1');
       const fileKey = await uploadImageToS3(selectedImage, fileName);
       console.log('Here 2');
-      console.log('File uploaded with key:', fileKey);
+      // console.log('File uploaded with key:', fileKey);
   
       const imageUrl = await getImageUrlFromS3(fileKey);
-      console.log('S3 Image URL:', imageUrl);
-    console.log("url bamzi : "+imageUrl.toString());
+    //   console.log('S3 Image URL:', imageUrl);
+    // console.log("url bamzi : "+imageUrl.toString());
     // const imageUrl='abc'
       const productWithImage = {
         ...data,
@@ -166,8 +209,13 @@ const getImageUrlFromS3 = async (fileKey) => {
         price: '',
         manufacturer:'',
         category:'',
+        warehouseQuantity: '',
+        shelfQuantity:'',
+        warehouseInventoryLimit:'',
+        shelfInventoryLimit:''
+
       });
-      setCategoryName('Choose Category');
+      setCategory('Choose Category');
       reset(); 
       setSelectedImage(null);
     } catch (error) {
@@ -215,7 +263,7 @@ const getImageUrlFromS3 = async (fileKey) => {
      )}
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.headerContainer}>
-                <TouchableOpacity style={styles.arrowBack}  onPress={()=> navigation.goBack()}>
+                <TouchableOpacity style={styles.arrowBack}  onPress={()=> navigation.navigate('ProductsList')}>
                     <Ionic size={25} color='white' name ='chevron-back-outline'/>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.imageContainer} onPress={()=>handleLoading()}>
@@ -225,15 +273,24 @@ const getImageUrlFromS3 = async (fileKey) => {
         </SafeAreaView>
         <View style={styles.listContainer}>
             <ScrollView >
-                <View style={styles.cameraContainer}>
-                    <TouchableOpacity style={styles.imageContainer} onPress={()=>handleChoosePhoto()}>
-                        <Ionic style={styles.cameraImage} size={105} color='rgba(200, 200, 200,4)' name ='camera-outline'/>
-                        <Ionic style={styles.plusImage} size={38} color={COLORS.primary} name ='add-circle'/>
-                    </TouchableOpacity>
-                    <TouchableOpacity>
-                        <Text style={styles.addPictureText}>Add Picture</Text>
-                    </TouchableOpacity>
-                </View>
+            <View style={styles.cameraContainer}>
+    <TouchableOpacity style={styles.imageContainer} onPress={()=>handleChoosePhoto()}>
+        {selectedImage ? (
+            <Image source={{ uri: selectedImage }} style={styles.selectedImageStyle} />
+            
+        ) : (
+            <>
+                <Ionic style={styles.cameraImage} size={105} color='rgba(200, 200, 200,4)' name='camera-outline'/>
+                <Ionic style={styles.plusImage} size={38} color={COLORS.primary} name='add-circle'/>
+            </>
+        )}
+          {/* <Ionic style={styles.plusImage} size={38} color={COLORS.primary} name='add-circle'/> */}
+    </TouchableOpacity>
+    <TouchableOpacity>
+        <Text style={styles.addPictureText}>Add Picture</Text>
+    </TouchableOpacity>
+</View>
+
                 <View style={styles.formInputContainer}>
                     <View style={styles.formInputWrapper}>
                         <View style={styles.imageContainer}>
@@ -307,14 +364,14 @@ const getImageUrlFromS3 = async (fileKey) => {
                         </View>
                     </View>
                 </View>
-                <View style={styles.formInputContainerSelected}>
+                <View style={styles.formInputContainerSelectedCategory}>
                     <View style={styles.formInputWrapper}>
                         <View style={styles.imageContainer}>
                              <Ionic size={33} color='rgba(180, 180, 180,4)' name ='list-circle-outline'/>
                         </View>
                         <View style={styles.categoryContainer}>
                         <TouchableOpacity style={styles.categoryTextContainer} onPress={()=>navigation.navigate('Categories')}>
-                        <Text style={[styles.categoryText, { color: categoryName ? 'black' : 'rgba(170, 170, 170,4)' }]}> {categoryName ? categoryName : 'Choose Category'} </Text>
+                        <Text style={[styles.categoryText, { top:1,color: categoryName ? 'black' : 'rgba(170, 170, 170,4)' }]}> {categoryName ? categoryName : 'Choose Category'} </Text>
 
                         </TouchableOpacity>
                         </View>
@@ -396,9 +453,59 @@ const getImageUrlFromS3 = async (fileKey) => {
                         </View>
                     </View>
                 </View>
+                <View style={styles.formInputContainer}>
+                    <View style={styles.formInputWrapper}>
+                        <View style={styles.imageContainer}>
+                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='stopwatch-outline'/>
+                        </View>
+                        <View style={styles.inputContainer}>
+                    <Controller
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                        <TextInput
+                        style={styles.formInput}
+                        placeholder='Warehouse Min Quantity'
+                        placeholderTextColor='rgba(170, 170, 170,4)'
+                        onChangeText={field.onChange}
+                        value={field.value}
+                        />
+                    )}
+                    name="warehouseInventoryLimit"
+                    defaultValue=""
+                    />
+                    {errors.price && <Text style={styles.errorText}>Shelf Quantity is required</Text>}
+                        </View>
+                    </View>
+                </View>
+                <View style={styles.formInputContainer}>
+                    <View style={styles.formInputWrapper}>
+                        <View style={styles.imageContainer}>
+                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='stopwatch-outline'/>
+                        </View>
+                        <View style={styles.inputContainer}>
+                    <Controller
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                        <TextInput
+                        style={styles.formInput}
+                        placeholder='Shelf Min Quantity'
+                        placeholderTextColor='rgba(170, 170, 170,4)'
+                        onChangeText={field.onChange}
+                        value={field.value}
+                        />
+                    )}
+                    name="shelfInventoryLimit"
+                    defaultValue=""
+                    />
+                    {errors.price && <Text style={styles.errorText}>Shelf Quantity is required</Text>}
+                        </View>
+                    </View>
+                </View>
                 <View style={styles.saveContainer}>
                     <View style={styles.saveWrapper}>
-                        <TouchableOpacity style={styles.resetButton}>
+                        <TouchableOpacity style={styles.resetButton}  onPress={()=>resetForm()} >
                             <Text style={styles.resetText}>Reset</Text>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.saveButton}  onPress={handleSubmit(onSubmit)} >
@@ -464,8 +571,8 @@ const styles = StyleSheet.create({
     plusImage:{
         position:"absolute",
         right:-6,
-        bottom:6,
-        backgroundColor:'white'
+        bottom:1,
+        // backgroundColor:'white'
     },
     addPictureText:{
         fontSize:19,
@@ -480,6 +587,14 @@ const styles = StyleSheet.create({
         paddingLeft:17,
         
     },
+    formInputContainerSelectedCategory:{
+      borderBottomWidth:1,
+      borderColor:'lightgray',
+      paddingVertical:12,
+      paddingRight:20,
+      paddingLeft:17,
+     
+  },
     formInputContainerSelected:{
         borderBottomWidth:1,
         borderColor:'lightgray',
@@ -518,7 +633,12 @@ const styles = StyleSheet.create({
         alignItems:'center',
         // paddingVertical:10,
     },
- 
+    selectedImageStyle: {
+      width: 105, // Adjust the width as needed
+      height: 105, // Adjust the height as needed
+      borderRadius: 10, // Optional: for rounded corners
+  },
+  
     inputContainer:{
         flex:1,
         paddingLeft:20,
@@ -582,6 +702,7 @@ const styles = StyleSheet.create({
       color:'rgba(170, 170, 170,4)',
       width:'100%',
       alignItems:'flex-start',
+      
   },
     loadingContainer: {
         ...StyleSheet.absoluteFillObject,

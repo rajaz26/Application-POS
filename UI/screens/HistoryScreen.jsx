@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Image } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, ScrollView, Image, ActivityIndicator } from 'react-native';
 import Ionic from 'react-native-vector-icons/Ionicons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '../assets/theme/index.js';
 import { useNavigation } from '@react-navigation/native';
 import { listBills, userById } from '../src/graphql/queries.js';
 import { generateClient } from 'aws-amplify/api';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 
 const HistoryScreen = ({ route }) => {
   const navigation = useNavigation();
   const client = generateClient();
   const [formattedBills, setFormattedBills] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const fetchAllBills = async () => {
     try {
       const { data } = await client.graphql({
@@ -28,32 +31,22 @@ const HistoryScreen = ({ route }) => {
       const formattedData = formatBillsData(billsData);
       console.log("Formatted Bills",formattedData);
       setFormattedBills(formattedData);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching bills:', error);
+      setLoading(false);  
     }
   };
 
-  // useEffect(() => {
-  //   fetchAllBills();
-  // }, []);
-
-  const fetchUserByUserId = async (userId) => {
-    const { data } = await client.graphql({
-      query: userById,
-      variables: {
-        userId: userId,
-        filter: {
-          _deleted: {
-            ne: true
-          }
-        }
-      },
-      authMode: 'apiKey'
-    });
-  
-    // Assuming the first item is the desired user since userId should be unique
-    return data.userById.items.length > 0 ? data.userById.items[0] : null;
-  };
+  useEffect(() => {
+    console.log("Route", route.params);
+    if (route.params?.bills) {
+      const formattedData = formatBillsData(route.params.bills);
+      setFormattedBills(formattedData);
+    } else {
+      fetchAllBills();
+    }
+  }, [route.params]);
 
   const formatBillsData = (bills) => {
     console.log("Formatting",bills);
@@ -94,7 +87,8 @@ const HistoryScreen = ({ route }) => {
       }
     });
   
-    formattedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    formattedData.sort((a, b) => new Date(b.date) - new Date(a.date));
+    setLoading(false); 
     return formattedData;
   };
   
@@ -109,23 +103,10 @@ const HistoryScreen = ({ route }) => {
     return strTime;
   };
     
-
-
   const getMonthName = (monthIndex) => {
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     return monthNames[monthIndex];
   };
-
-  useEffect(() => {
-    console.log("Route", route.params);
-    if (route.params?.bills) {
-      const formattedData = formatBillsData(route.params.bills);
-      setFormattedBills(formattedData);
-    } else {
-      
-      fetchAllBills();
-    }
-  }, [route.params]);
 
   const handleViewPress = (bill, item) => {
     console.log("Passing", item);
@@ -133,7 +114,6 @@ const HistoryScreen = ({ route }) => {
   };
   
   const handleRefresh = () => {
-    // Call the fetchAllBills function to refresh the bills
     fetchAllBills();
   };
 
@@ -153,39 +133,113 @@ const HistoryScreen = ({ route }) => {
           <Ionic style={styles.dowloadIcon}  size={20} color={'rgb(73,204,148)'} name ='download-outline'/>
         </TouchableOpacity>
       </View>
-        {formattedBills.map((bill, index) => (
-          <View key={index}>
-            <View style={styles.dateContainer}>
-              <Text style={styles.dateText}>{bill.date}</Text>
-            </View>
-            {bill.items.map((item, itemIndex) => (
-              <View style={styles.billSection} key={itemIndex}>
-                <View style={styles.billContainer}>
-                  <Image style={styles.logoStyles} source={require("../assets/images/logo7.png")} />
-                  <View style={styles.billText}>
-                    <View style={styles.cashierName}>
-                      <Text style={styles.cashierText}>Cashier: {item.cashier}</Text>
-                      
-                      <Text style={styles.billTotal}>Rs. {item.total}</Text>
-                    </View>
-                    <View style={styles.billBottomText}>
-                      <Text style={styles.billTime}>{item.time}</Text>
-                     
-                     <TouchableOpacity
-  style={styles.billViewButton}
-  onPress={() => handleViewPress(bill, item)}
->
-  <Text style={styles.billViewText}>View</Text>
-</TouchableOpacity>
+        {loading ? ( // Display loading indicator
+         <View style={{flex:1,backgroundColor:'white',justifyContent:'center',paddingHorizontal:25}}>
+         <SkeletonPlaceholder borderRadius={4}>
+         <SkeletonPlaceholder.Item width={100} height={20} />
+          <View style={{paddingVertical:20}}>
+          <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+          <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+          <SkeletonPlaceholder.Item marginLeft={20}>
+            <SkeletonPlaceholder.Item width={200} height={20} />
+            <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+          </SkeletonPlaceholder.Item>
+        </SkeletonPlaceholder.Item>
+          </View>      
+      </SkeletonPlaceholder>
+      <SkeletonPlaceholder borderRadius={4}>
+      
+          <View style={{paddingVertical:20}}>
+          <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+          <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+          <SkeletonPlaceholder.Item marginLeft={20}>
+            <SkeletonPlaceholder.Item width={200} height={20} />
+            <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+          </SkeletonPlaceholder.Item>
+        </SkeletonPlaceholder.Item>
+          </View>
+       
+        
+      </SkeletonPlaceholder>
+      <SkeletonPlaceholder borderRadius={4}>
+      <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+          <View style={{paddingVertical:20}}>
+          <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+          <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+          <SkeletonPlaceholder.Item marginLeft={20}>
+            <SkeletonPlaceholder.Item width={200} height={20} />
+            <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+          </SkeletonPlaceholder.Item>
+        </SkeletonPlaceholder.Item>
+          </View>
+       
+        
+      </SkeletonPlaceholder>
+      <SkeletonPlaceholder borderRadius={4}>
+      <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+          <View style={{paddingVertical:20}}>
+          <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+          <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+          <SkeletonPlaceholder.Item marginLeft={20}>
+            <SkeletonPlaceholder.Item width={200} height={20} />
+            <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+          </SkeletonPlaceholder.Item>
+        </SkeletonPlaceholder.Item>
+          </View>
+       
+        
+      </SkeletonPlaceholder>
+      <SkeletonPlaceholder borderRadius={4}>
+      <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+          <View style={{paddingVertical:20}}>
+          <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+          <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+          <SkeletonPlaceholder.Item marginLeft={20}>
+            <SkeletonPlaceholder.Item width={200} height={20} />
+            <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+          </SkeletonPlaceholder.Item>
+        </SkeletonPlaceholder.Item>
+          </View>
+       
+        
+      </SkeletonPlaceholder>
+  
+      </View>
+        ) : (
+          formattedBills.map((bill, index) => (
+            <View key={index}>
+              <View style={styles.dateContainer}>
+                <Text style={styles.dateText}>{bill.date}</Text>
+              </View>
+              {bill.items.map((item, itemIndex) => (
+                <View style={styles.billSection} key={itemIndex}>
+                  <View style={styles.billContainer}>
+                    <Image style={styles.logoStyles} source={require("../assets/images/logo7.png")} />
+                    <View style={styles.billText}>
+                      <View style={styles.cashierName}>
+                        <Text style={styles.cashierText}>Cashier: {item.cashier}</Text>
+                        
+                        <Text style={styles.billTotal}>Rs. {item.total}</Text>
+                      </View>
+                      <View style={styles.billBottomText}>
+                        <Text style={styles.billTime}>{item.time}</Text>
+                       
+                       <TouchableOpacity
+    style={styles.billViewButton}
+    onPress={() => handleViewPress(bill, item)}
+  >
+    <Text style={styles.billViewText}>View</Text>
+  </TouchableOpacity>
 
 
+                      </View>
                     </View>
                   </View>
                 </View>
-              </View>
-            ))}
-          </View>
-        ))}
+              ))}
+            </View>
+          ))
+        )}
       </ScrollView>
     </SafeAreaView>
   );

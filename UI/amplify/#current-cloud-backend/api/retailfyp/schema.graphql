@@ -18,7 +18,7 @@ type Store @model @auth(rules: [{ allow: public }]) {
   users: [User] @hasMany
   products: [Product] @hasMany
   bills: [Bill] @hasMany
-  purchaseOrders: [PurchaseOrder] @hasMany
+  purchaseOrder: [PurchaseOrder] @hasMany
   warehouseScan: [WarehouseScan] @hasMany
   billItems: [BillItem] @hasMany
   category:[Category]  @hasMany
@@ -70,8 +70,11 @@ type Product @model @auth(rules: [{ allow: public }]) {
   category1: Category @belongsTo
   warehouseQuantity: Int!
   shelfQuantity: Int!
+  warehouseInventoryLimit: Int
+  shelfInventoryLimit: Int
   store: Store @belongsTo
   billItems: [BillItem] @hasMany
+  purchaseItems: [PurchaseItem] @hasMany
 }
 
 type BillItem @model @auth(rules: [{ allow: public }]) {
@@ -90,6 +93,7 @@ type BillItem @model @auth(rules: [{ allow: public }]) {
 type Bill @model @auth(rules: [{ allow: public }]) {
   id: ID!
   cashier:  String! @index(name: "byCashierId", queryField: "billByCashierId", sortKeyFields: ["id"])
+  cashierName: String
   items: [BillItem!]! @hasMany
   totalAmount: Float!
   status: BillStatus!
@@ -99,11 +103,23 @@ type Bill @model @auth(rules: [{ allow: public }]) {
 type PurchaseOrder @model @auth(rules: [{ allow: public }]) {
   id: ID!
   purchaser: ID! @index(name: "byPurchaserId", queryField: "poByPurchaserId", sortKeyFields: ["id"])
-  image: [String!]
+  purchaserName:String
   vendor: String
-  amount: Float
-  date: String
   store: Store @belongsTo
+  items: [PurchaseItem!]! @hasMany
+  totalAmount: Float!
+  status: BillStatus
+  purchaseItems: [PurchaseItem] @hasMany
+}
+
+type PurchaseItem @model @auth(rules: [{ allow: public }]) {
+  id: ID!
+  product: Product! @belongsTo 
+  productName: String
+  productPrice: Float
+  quantityOrdered:Int!
+  quantityReceived:Int!
+  purchaseOrder: PurchaseOrder @belongsTo
 }
 
 type WarehouseScan @model @auth(rules: [{ allow: public }]) {

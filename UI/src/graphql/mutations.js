@@ -25,7 +25,7 @@ export const createStore = /* GraphQL */ `
         startedAt
         __typename
       }
-      purchaseOrders {
+      purchaseOrder {
         nextToken
         startedAt
         __typename
@@ -83,7 +83,7 @@ export const updateStore = /* GraphQL */ `
         startedAt
         __typename
       }
-      purchaseOrders {
+      purchaseOrder {
         nextToken
         startedAt
         __typename
@@ -141,7 +141,7 @@ export const deleteStore = /* GraphQL */ `
         startedAt
         __typename
       }
-      purchaseOrders {
+      purchaseOrder {
         nextToken
         startedAt
         __typename
@@ -520,6 +520,8 @@ export const createProduct = /* GraphQL */ `
       }
       warehouseQuantity
       shelfQuantity
+      warehouseInventoryLimit
+      shelfInventoryLimit
       store {
         id
         name
@@ -532,6 +534,11 @@ export const createProduct = /* GraphQL */ `
         __typename
       }
       billItems {
+        nextToken
+        startedAt
+        __typename
+      }
+      purchaseItems {
         nextToken
         startedAt
         __typename
@@ -574,6 +581,8 @@ export const updateProduct = /* GraphQL */ `
       }
       warehouseQuantity
       shelfQuantity
+      warehouseInventoryLimit
+      shelfInventoryLimit
       store {
         id
         name
@@ -586,6 +595,11 @@ export const updateProduct = /* GraphQL */ `
         __typename
       }
       billItems {
+        nextToken
+        startedAt
+        __typename
+      }
+      purchaseItems {
         nextToken
         startedAt
         __typename
@@ -628,6 +642,8 @@ export const deleteProduct = /* GraphQL */ `
       }
       warehouseQuantity
       shelfQuantity
+      warehouseInventoryLimit
+      shelfInventoryLimit
       store {
         id
         name
@@ -640,6 +656,11 @@ export const deleteProduct = /* GraphQL */ `
         __typename
       }
       billItems {
+        nextToken
+        startedAt
+        __typename
+      }
+      purchaseItems {
         nextToken
         startedAt
         __typename
@@ -672,6 +693,8 @@ export const createBillItem = /* GraphQL */ `
         category
         warehouseQuantity
         shelfQuantity
+        warehouseInventoryLimit
+        shelfInventoryLimit
         createdAt
         updatedAt
         _version
@@ -690,6 +713,7 @@ export const createBillItem = /* GraphQL */ `
       bill {
         id
         cashier
+        cashierName
         totalAmount
         status
         createdAt
@@ -740,6 +764,8 @@ export const updateBillItem = /* GraphQL */ `
         category
         warehouseQuantity
         shelfQuantity
+        warehouseInventoryLimit
+        shelfInventoryLimit
         createdAt
         updatedAt
         _version
@@ -758,6 +784,7 @@ export const updateBillItem = /* GraphQL */ `
       bill {
         id
         cashier
+        cashierName
         totalAmount
         status
         createdAt
@@ -808,6 +835,8 @@ export const deleteBillItem = /* GraphQL */ `
         category
         warehouseQuantity
         shelfQuantity
+        warehouseInventoryLimit
+        shelfInventoryLimit
         createdAt
         updatedAt
         _version
@@ -826,6 +855,7 @@ export const deleteBillItem = /* GraphQL */ `
       bill {
         id
         cashier
+        cashierName
         totalAmount
         status
         createdAt
@@ -867,6 +897,7 @@ export const createBill = /* GraphQL */ `
     createBill(input: $input, condition: $condition) {
       id
       cashier
+      cashierName
       items {
         nextToken
         startedAt
@@ -903,6 +934,7 @@ export const updateBill = /* GraphQL */ `
     updateBill(input: $input, condition: $condition) {
       id
       cashier
+      cashierName
       items {
         nextToken
         startedAt
@@ -939,6 +971,7 @@ export const deleteBill = /* GraphQL */ `
     deleteBill(input: $input, condition: $condition) {
       id
       cashier
+      cashierName
       items {
         nextToken
         startedAt
@@ -975,10 +1008,8 @@ export const createPurchaseOrder = /* GraphQL */ `
     createPurchaseOrder(input: $input, condition: $condition) {
       id
       purchaser
-      image
+      purchaserName
       vendor
-      amount
-      date
       store {
         id
         name
@@ -990,12 +1021,24 @@ export const createPurchaseOrder = /* GraphQL */ `
         _lastChangedAt
         __typename
       }
+      items {
+        nextToken
+        startedAt
+        __typename
+      }
+      totalAmount
+      status
+      purchaseItems {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      storePurchaseOrdersId
+      storePurchaseOrderId
       __typename
     }
   }
@@ -1008,10 +1051,8 @@ export const updatePurchaseOrder = /* GraphQL */ `
     updatePurchaseOrder(input: $input, condition: $condition) {
       id
       purchaser
-      image
+      purchaserName
       vendor
-      amount
-      date
       store {
         id
         name
@@ -1023,12 +1064,24 @@ export const updatePurchaseOrder = /* GraphQL */ `
         _lastChangedAt
         __typename
       }
+      items {
+        nextToken
+        startedAt
+        __typename
+      }
+      totalAmount
+      status
+      purchaseItems {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      storePurchaseOrdersId
+      storePurchaseOrderId
       __typename
     }
   }
@@ -1041,10 +1094,8 @@ export const deletePurchaseOrder = /* GraphQL */ `
     deletePurchaseOrder(input: $input, condition: $condition) {
       id
       purchaser
-      image
+      purchaserName
       vendor
-      amount
-      date
       store {
         id
         name
@@ -1056,12 +1107,201 @@ export const deletePurchaseOrder = /* GraphQL */ `
         _lastChangedAt
         __typename
       }
+      items {
+        nextToken
+        startedAt
+        __typename
+      }
+      totalAmount
+      status
+      purchaseItems {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      storePurchaseOrdersId
+      storePurchaseOrderId
+      __typename
+    }
+  }
+`;
+export const createPurchaseItem = /* GraphQL */ `
+  mutation CreatePurchaseItem(
+    $input: CreatePurchaseItemInput!
+    $condition: ModelPurchaseItemConditionInput
+  ) {
+    createPurchaseItem(input: $input, condition: $condition) {
+      id
+      product {
+        id
+        name
+        barcode
+        image
+        price
+        manufacturer
+        category
+        warehouseQuantity
+        shelfQuantity
+        warehouseInventoryLimit
+        shelfInventoryLimit
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeProductsId
+        categoryProductId
+        __typename
+      }
+      productName
+      productPrice
+      quantityOrdered
+      quantityReceived
+      purchaseOrder {
+        id
+        purchaser
+        purchaserName
+        vendor
+        totalAmount
+        status
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storePurchaseOrderId
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      productPurchaseItemsId
+      purchaseOrderItemsId
+      purchaseOrderPurchaseItemsId
+      __typename
+    }
+  }
+`;
+export const updatePurchaseItem = /* GraphQL */ `
+  mutation UpdatePurchaseItem(
+    $input: UpdatePurchaseItemInput!
+    $condition: ModelPurchaseItemConditionInput
+  ) {
+    updatePurchaseItem(input: $input, condition: $condition) {
+      id
+      product {
+        id
+        name
+        barcode
+        image
+        price
+        manufacturer
+        category
+        warehouseQuantity
+        shelfQuantity
+        warehouseInventoryLimit
+        shelfInventoryLimit
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeProductsId
+        categoryProductId
+        __typename
+      }
+      productName
+      productPrice
+      quantityOrdered
+      quantityReceived
+      purchaseOrder {
+        id
+        purchaser
+        purchaserName
+        vendor
+        totalAmount
+        status
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storePurchaseOrderId
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      productPurchaseItemsId
+      purchaseOrderItemsId
+      purchaseOrderPurchaseItemsId
+      __typename
+    }
+  }
+`;
+export const deletePurchaseItem = /* GraphQL */ `
+  mutation DeletePurchaseItem(
+    $input: DeletePurchaseItemInput!
+    $condition: ModelPurchaseItemConditionInput
+  ) {
+    deletePurchaseItem(input: $input, condition: $condition) {
+      id
+      product {
+        id
+        name
+        barcode
+        image
+        price
+        manufacturer
+        category
+        warehouseQuantity
+        shelfQuantity
+        warehouseInventoryLimit
+        shelfInventoryLimit
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeProductsId
+        categoryProductId
+        __typename
+      }
+      productName
+      productPrice
+      quantityOrdered
+      quantityReceived
+      purchaseOrder {
+        id
+        purchaser
+        purchaserName
+        vendor
+        totalAmount
+        status
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storePurchaseOrderId
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      productPurchaseItemsId
+      purchaseOrderItemsId
+      purchaseOrderPurchaseItemsId
       __typename
     }
   }

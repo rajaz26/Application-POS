@@ -47,15 +47,7 @@ const AddAccount = () => {
     {key:'2', value:'PURCHASER'},
     {key:'3', value:'WAREHOUSE_MANAGER'}
   ];
-  // const handleChoosePhoto = () => {
-  //   launchImageLibrary({}, (response) => {
-  //     if (response.assets && response.assets.length > 0) {
-  //       const selectedImageUri = response.assets[0].uri;
-  //       setSelectedImage(response.assets[0]); // Set the selected image
-  //       console.log("Selected image URI:", selectedImageUri); // Log the URI
-  //     }
-  //   });
-  // };
+
   
   const handleChoosePhoto = () => {
     launchImageLibrary({}, (response) => {

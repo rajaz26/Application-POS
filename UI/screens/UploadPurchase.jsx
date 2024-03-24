@@ -1,50 +1,78 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Keyboard, Alert, Image } from 'react-native';
-import { COLORS } from '../assets/theme';
-import { createPurchaseOrder } from '../src/graphql/mutations';
+import React, {useState, useEffect, useRef} from 'react';
+import { TextInput,Animated, StyleSheet, Text, View, TouchableOpacity, ScrollView, Keyboard } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context'
+import Ionic from 'react-native-vector-icons/Ionicons';
+import { COLORS } from '../assets/theme/index.js';
+import { Dimensions } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native'; 
+// import RNFetchBlob from 'rn-fetch-blob';
+import { BluetoothEscposPrinter } from 'react-native-bluetooth-escpos-printer';
 import { generateClient } from 'aws-amplify/api';
-import { useNavigation } from '@react-navigation/native';
-import { useForm } from 'react-hook-form';
-import DatePicker from 'react-native-datepicker';
-import { launchImageLibrary } from 'react-native-image-picker';
-import { useSelector } from 'react-redux';
-import { getUrl, uploadData } from 'aws-amplify/storage';
+import { deleteBill, deleteBillItem, updateBill, updateProduct,createNotifications, createPurchaseOrder, createPurchaseItem, updatePurchaseOrder } from '../src/graphql/mutations';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
+import { getProduct } from '../src/graphql/queries.js';
+import { useSelector } from 'react-redux';
+import { useForm } from 'react-hook-form';
+import { DataTable } from 'react-native-paper';
 
 const UploadPurchase = () => {
+    const route = useRoute();
+    const vendorRef = useRef('');
     const [date, setDate] = useState('');
     const [vendor, setVendor] = useState('');
     const [amount, setAmount] = useState('');
+    const [scannedProducts, setScannedProducts] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [loadingMessage, setLoadingMessage] = useState(true);
+    const [loadingMessage, setLoadingMessage] = useState(false);
     const [successMessage, setSuccessMessage] = useState(false);
     const [isEmptyField, setIsEmptyField] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
     const userId= useSelector((state) => state.user.userId);
-    const [purchaseOrderInput, setPurchaseOrderInput] = useState({
-        date: '',
-        vendor: '',
-        amount: '',
-        userId:'',
-        image: '',
-    });
+    const userName = useSelector((state) => state.user.username);
+    const [totalAmount, setTotalAmount] = useState(0);
 
+    // useEffect(() => {
+    //     vendorRef.current = vendor;
+    //   }, [vendor]);
+    
     const [selectedImage, setSelectedImage] = useState(null);
     const [selectedImageUri, setSelectedImageUri] = useState(null);
     const client = generateClient();
     const navigation = useNavigation();
     const { handleSubmit, control, formState: { errors }, reset } = useForm();
+    const handleScannedProduct = (product) => {
+        setScannedProducts([...scannedProducts, product]);
+    }
+    
+    useEffect(() => {
+        let calculatedTotalAmount = 0;
+        scannedProducts.forEach((product) => {
+          calculatedTotalAmount += product.price * product.quantity;
+        });
+        setTotalAmount(calculatedTotalAmount);
+      }, [scannedProducts]);
+
     const handleLoading = () => {
         setLoading(true)
         setSuccessMessage(true);
       }
+
       const handleSuccessButtonPress= () => {
         setLoading(false)
-        setSuccessMessage(false);
-        reset(); 
+        setSuccessMessage(false); 
+        setSuccess(false); 
+        navigation.goBack();
       }
+
+      const handleErrorButtonPress= () => {
+        setLoading(false)
+        setError(false); 
+      }
+
+      
+
     const handleChoosePhoto = () => {
         launchImageLibrary({}, (response) => {
           console.log(response);
@@ -58,7 +86,80 @@ const UploadPurchase = () => {
           }
         });
     };
+     
+    const printReceipt = async () => {
+        setLoading(true);
+        try {
+            const updateBillInput = {
+              id: currentBillId,
+              totalAmount: totalBillAmount,
+              status: "PAID",
+              _version: version,
+            };
       
+            await client.graphql({
+              query: updateBill,
+              variables: { input: updateBillInput },
+              authMode: 'apiKey',
+            });
+      
+            console.log("Bill Finalized Successfully");
+            await updateProductShelfQuantity();
+            console.log("Shelf Quantity Updated Successfully");
+            setLoading(false);
+            setBillStatus('PAID');
+            setScannedProducts([]);
+            
+          } catch (error) {
+            setLoading(false);
+            console.error("Error finalizing the bill:", error);
+          }
+        console.log("Printing ",scannedProducts);
+        try {
+          await BluetoothEscposPrinter.printerInit();
+          await BluetoothEscposPrinter.printerLeftSpace(0);
+          await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.CENTER);
+          await BluetoothEscposPrinter.setBlob(0);
+          await BluetoothEscposPrinter.printText(`${storeName || 'Storename'}\n`, {
+            encoding: 'GBK',
+            codepage: 0,
+            widthtimes: 3,
+            heigthtimes: 3,
+            fonttype: 1
+        });
+        
+          await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.LEFT);
+          await BluetoothEscposPrinter.printText(`Cashier: ${userName}\n`, {});
+          await BluetoothEscposPrinter.printText("--------------------------------\n", {});
+        
+          await BluetoothEscposPrinter.printText("PRODUCT NAME        QTY      PRICE      SUBTOTAL\n", {});
+
+          scannedProducts.forEach(async (item) => {
+            let itemName = item.name.padEnd(20); 
+            let itemLine = `${itemName} ${item.quantity.toString().padEnd(7)} ${item.price.toString().padEnd(10)} ${item.subtotal.toFixed(2)}\n`;
+            await BluetoothEscposPrinter.printText(itemLine, {});
+          });
+        
+          await BluetoothEscposPrinter.printText("--------------------------------\n", {});
+          await BluetoothEscposPrinter.printText(`Total: ${totalBillAmount.toFixed(2)}\n`, {});
+          await BluetoothEscposPrinter.printText("Thank you for your purchase!\n\n\n", {});
+        } catch (error) {
+          console.error("Failed to print receipt:", error);
+        }
+        
+      };
+      const handleAddProduct = () => {
+        navigation.navigate('ScanPurchaseOrder', { vendor });
+    };
+    
+    useEffect(() => {
+        console.log("Products",scannedProducts);
+        if (route.params?.scannedProducts) {
+            setScannedProducts(route.params.scannedProducts);
+        }
+    }, [route.params?.scannedProducts]);
+    
+    
     const uploadImageToS3 = async (imageUri, fileName) => {
         try {
             const response = await fetch(imageUri);
@@ -106,199 +207,210 @@ const UploadPurchase = () => {
       
     
     const onSubmit = async () => {
-        console.log('Product Input:');
-        setLoading(true);
+        console.log('Product:');
         Keyboard.dismiss();
-        if (!date || !vendor || !amount || !selectedImage) {
-            setIsEmptyField(true);
-            setLoadingMessage(false);
-            setError(true);
-            setErrorMessage("Kindly fill the fields");
-            return;
-        }
-
+        setLoading(true);
         try {
-            const fileName = `po-image-${Date.now()}.jpeg`;
-            console.log('Here 1');
-            const fileKey = await uploadImageToS3(selectedImage, fileName);
-            console.log('Here 2');
-            console.log('File uploaded with key:', fileKey);
-        
-            const imageUrl = await getImageUrlFromS3(fileKey);
-            console.log('S3 Image URL:', imageUrl);
-            console.log("url bamzi : "+imageUrl.toString());
-            
-            const purchaseOrderData = {
-                date: date,
-                vendor: vendor,
-                amount: amount,
-                image: [imageUrl],
-                purchaser: userId,
-            };
-            console.log("Purchase input",purchaseOrderData);
+            console.log('Scanned Products:', scannedProducts);
+            let totalAmount = 0;
+            scannedProducts.forEach(product => {
+                totalAmount += product.price * product.quantity;
+            });
+    
             const newPurchaseOrder = await client.graphql({
                 query: createPurchaseOrder,
-                variables: { input: {
-                    date: date,
-                    vendor: vendor,
-                    amount: amount,
-                    image: [imageUrl],
-                    purchaser: userId,
-                }},
+                variables: {
+                    input: {
+                        purchaser: userId,
+                        purchaserName: userName,
+                        vendor: vendor,
+                        totalAmount: totalAmount,
+                        status: 'PENDING'
+                    }
+                },
                 authMode: 'apiKey',
             });
-            setLoadingMessage(false);
-            setSuccess(true);
-            setDate('');
-            setAmount('');
-            setVendor('');
-            setSelectedImage('');
-            setSelectedImageUri('');
-            console.log('New Purchase Order created:', newPurchaseOrder.data);
-            setPurchaseOrderInput({
-                date: '',
-                vendor: '',
-                amount: '',
-                image:'',
-                userId:''
+    
+            console.log("New",newPurchaseOrder);
+    
+            const createPurchaseItemPromises = scannedProducts.map(async (product) => {
+                const createPurchaseItemInput = {
+                    productName: product.name,
+                    productPrice: product.price,
+                    quantityOrdered: product.quantity,
+                    quantityReceived: 0,
+                    purchaseOrderPurchaseItemsId: newPurchaseOrder.data.createPurchaseOrder.id,
+                    productPurchaseItemsId: product.id,
+                };
+    
+                console.log("Item Input", createPurchaseItemInput);
+    
+                return client.graphql({
+                    query: createPurchaseItem,
+                    variables: { input: createPurchaseItemInput },
+                    authMode: 'apiKey',
+                });
             });
-            reset(); 
-            setSelectedImage(null);
+    
+           
+            const createdPurchaseItems = await Promise.all(createPurchaseItemPromises);
+            console.log('Created Purchase Items:', createdPurchaseItems);
+            const updatePurchaseOrderInput = {
+                id: newPurchaseOrder.data.createPurchaseOrder.id,
+                totalAmount: totalAmount.toString(), 
+                _version: newPurchaseOrder.data.createPurchaseOrder._version,
+            };
+    
+            const updatingPurchaseOrders=await client.graphql({
+                query: updatePurchaseOrder,
+                variables: { input: updatePurchaseOrderInput},
+                authMode: 'apiKey',
+            });
+           
+            console.log('Number of Purchase Items Created:', createdPurchaseItems.length);
+            console.log('Number of Purchase Items Created:',updatingPurchaseOrders);
+            setSuccess(true);
+            setSuccessMessage(true);
+           
+            
         } catch (error) {
-            setLoadingMessage(false);
             setError(true);
-            setErrorMessage(error);
-            console.error('Error creating PO', error);
-            Alert.alert('Login Error', error.message);
+            console.error('Error creating purchase order items:', error);
         }
     };
     
-    return (
-        <View style={{flex:1}}>
-           {loading && (
-      <View style={styles.loadingContainer}>
-      <AnimatedCircularProgress
-  size={120}
-  width={15}
-  duration={2200} 
-  delay={0}
-  fill={100}
-  tintColor={COLORS.secondary}
-  onAnimationComplete={() => console.log('onAnimationComplete')}
-  backgroundColor="#3d5875" />
-{loadingMessage ? (
-  <Text style={styles.loadingText}>Adding Purchase Order</Text>
-) : success ? (
-  <View style={styles.successMessageContainer}>
-    <Text style={styles.loadingText}>PO Added Successfully</Text>
-    <TouchableOpacity
-      style={styles.successButton}
-      onPress={handleSuccessButtonPress}>
-      <Text style={styles.buttonText}>Go Back</Text>
-    </TouchableOpacity>
-  </View>
-) : error ? (
-  <View style={styles.successMessageContainer}>
-    <Text style={styles.loadingText}>Adding PO FAILED</Text>
-    <Text style={styles.loadingTextSubtitle}>{errorMessage}</Text>
-    <TouchableOpacity
-      style={styles.successButton}
-      onPress={handleSuccessButtonPress}>
-      <Text style={styles.buttonText}>Go Back</Text>
-    </TouchableOpacity>
-  </View>
-) : null}
+       
+    
+    const handleDeleteItem = (index) => {
+        const updatedScannedProducts = [...scannedProducts]; // Create a copy of the scannedProducts array
+        updatedScannedProducts.splice(index, 1); // Remove the item at the specified index
+        setScannedProducts(updatedScannedProducts); // Update the state with the modified array
+    };
 
-      </View>
-     )}
-            <View style={styles.headerContainer}>
-            
-                {/* {isEmptyField && (
-                    <View style={styles.loadingContainer}>
-                        <Text style={styles.errorText}>Please fill in all fields and upload an image</Text>
-                    </View>
-                )} */}
-                <View style={styles.headerWrapper}>
-                    <Text style={styles.headerText}>Upload Purchase Order</Text>
+    return (
+     
+    <SafeAreaView style={styles.headContainer}>
+    {loading && (
+ <View style={styles.loadingContainer}>
+ <AnimatedCircularProgress
+   size={120}
+   width={15}
+   duration={2200} 
+   delay={10}
+   fill={100}
+   tintColor={COLORS.secondary}
+   onAnimationComplete={() => console.log('onAnimationComplete')}
+   backgroundColor="#3d5875" 
+/>
+{success &&
+                <View style={styles.successMessageContainer}>
+                    <Text style={styles.successText}>PO generated successfully!</Text>
+                    <TouchableOpacity style={styles.successButton} onPress={handleSuccessButtonPress}>
+    <Text style={styles.buttonText}>OK</Text>
+</TouchableOpacity>
+
                 </View>
-            </View>
-            <View>
-                <View>
-                    <View>
-                        <View style={styles.formInputContainer}>
-                            <View style={styles.formInputWrapper}>
-                                <View style={styles.imageContainer}>
-                                    <Text style={styles.label}>Date</Text>
-                                </View>
-                                <View style={styles.inputContainer}>
-                                    <TextInput
-                                        value={date}
-                                        onChangeText={setDate}
-                                        style={styles.formInput}
-                                        placeholderTextColor='rgba(170, 170, 170,4)'
-                                    />
-                                </View>
-                            </View>
-                        </View>
-                        <View style={styles.formInputContainer}>
-                            <View style={styles.formInputWrapper}>
-                                <View style={styles.imageContainer}>
-                                    <Text style={styles.label}>Vendor</Text>
-                                </View>
-                                <View style={styles.inputContainer}>
-                                    <TextInput
+}
+            {error && (
+                <View style={styles.errorMessageContainer}>
+                    <Text style={styles.errorText}>{errorMessage}</Text>
+                    <TouchableOpacity style={styles.errorButton} onPress={handleErrorButtonPress}>
+                        <Text style={styles.buttonText}>OK</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
+ </View>
+)}
+   <View style={styles.header}>
+       <TouchableOpacity style={styles.arrowBackIcon}  onPress={()=> navigation.goBack()}>
+           <Ionic size={24} color={COLORS.primary} name ='chevron-back-outline'/>
+       </TouchableOpacity>
+   </View>
+   {/* <View style={styles.mainLogo}>
+       <Ionic style={styles.logo}  size={90} color={'black'} name ='logo-behance'/>
+   </View> */}
+   <View style={styles.headContainer2}>
+   <View style={styles.headingText}> 
+    <Text style={styles.totalBill}>PurchaseOrder</Text>
+    <View style={styles.totalAmountContainer}>
+        <Text style={styles.totalAmountText}>Total Amount: ${totalAmount.toFixed(2)}</Text>
+      </View>
+    </View>
+
+    <View  style={styles.headerContainer}>
+{/* 
+   <View style={styles.vendorComponent}>
+   <Text style={styles.totalBill}>From :</Text>
+<TextInput
                                         value={vendor}
                                         onChangeText={setVendor}
                                         style={styles.formInput}
                                         placeholderTextColor='rgba(170, 170, 170,4)'
+                                        multiline={true}
+                                        numberOfLines={4} 
                                     />
-                                </View>
-                            </View>
-                        </View>
-                        <View style={styles.formInputContainer}>
-                            <View style={styles.formInputWrapper}>
-                                <View style={styles.imageContainer}>
-                                    <Text style={styles.label}>Amount</Text>
-                                </View>
-                                <View style={styles.inputContainer}>
-                                    <TextInput
-                                        value={amount}
-                                        onChangeText={setAmount}
+   </View> */}
+   <View style={styles.vendorComponent}>
+<Text style={styles.totalBill}>Vendor :</Text>
+<TextInput
+                                        value={vendor}
+                                        onChangeText={setVendor}
                                         style={styles.formInput}
                                         placeholderTextColor='rgba(170, 170, 170,4)'
+                                        multiline={true} 
+                                        numberOfLines={4} 
                                     />
-                                </View>
-                            </View>
-                        </View>
-                        <View style={styles.formInputContainer}>
-                            <View style={styles.uploadContainer}>
-                                <View style={styles.uploadWrapper}>
-                                    <TouchableOpacity style={styles.resetButton} onPress={handleChoosePhoto}>
-                                    {selectedImageUri ? (
-          <Image source={{uri: selectedImageUri.uri}} style={styles.selectedImage} />
-        ) : (
-          <Text style={styles.uploadText}>Upload Image</Text>
-        )}
-                                    </TouchableOpacity>
-                                   
-                                </View>
-                            </View>
-                        </View>
-             
-                        <View style={styles.saveContainer}>
-                            <View style={styles.saveWrapper}>
-                                <TouchableOpacity style={styles.saveButton} onPress={onSubmit}>
-                                    <Text style={styles.saveText}>Confirm</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-                    </View>
-                </View>
-            </View>
-        </View>
-    )
+</View>
+                                  
+</View>
+</View>
+   <DataTable style={styles.columnHeadingContainer}>
+                <DataTable.Header >
+                    <DataTable.Title textStyle={{color: 'white'}} style={{justifyContent:'flex-start',flex:1.2}} >ITEM</DataTable.Title>
+                    <DataTable.Title textStyle={{color: 'white'}} style={{justifyContent:'center'}}>QTYORD</DataTable.Title>
+                    <DataTable.Title textStyle={{color: 'white'}}  style={{justifyContent:'center'}}>PRICE</DataTable.Title>
+                    {/* <DataTable.Title style={{justifyContent:'center'}}>SUBTOTAL</DataTable.Title> */}
+                    <DataTable.Title textStyle={{color: 'white'}}  style={{justifyContent:'center'}}>QTYREC</DataTable.Title>
+                    <DataTable.Title textStyle={{color: 'white'}}  style={{justifyContent:'center',flex:0.5}}>EDIT</DataTable.Title>
+                </DataTable.Header>
+                </DataTable>
+
+                <ScrollView style={styles.scrollView}>
+    {scannedProducts.map((product, index) => (
+        <DataTable key={index}>
+            <DataTable.Row key={index}>
+                <DataTable.Cell style={{justifyContent:'flex-start',flex:1.2}} >{product.name}</DataTable.Cell>
+                <DataTable.Cell style={{justifyContent:'center'}}>{product.quantity}</DataTable.Cell>
+                <DataTable.Cell style={{justifyContent:'center'}}>{product.price}</DataTable.Cell>
+                <DataTable.Cell style={{justifyContent:'center'}}></DataTable.Cell>
+                <DataTable.Cell style={{ justifyContent: 'center', flex: 0.5 }}>
+                    <TouchableOpacity style={styles.deleteBill} onPress={() => handleDeleteItem(index)}>
+                        <Ionic style={styles.trash} size={21.5} color={'red'} name='trash' />
+                    </TouchableOpacity>
+                </DataTable.Cell>
+            </DataTable.Row>
+        </DataTable>
+    ))}
+</ScrollView>
+
+  
+   <View style={styles.footerContainer}>
+       <View style={styles.footerWrapper}>
+           
+           <TouchableOpacity style={styles.addButton} onPress={handleAddProduct}>
+               <Text style={styles.addText}>Add Product</Text>
+           </TouchableOpacity>
+           <TouchableOpacity style={styles.confirmButton} onPress={onSubmit}>
+               <Text style={styles.confirmText}>Confirm</Text>
+           </TouchableOpacity>
+       </View>
+   </View>
+</SafeAreaView>
+)
 }
 
+ 
 export default UploadPurchase;
 
 const styles = StyleSheet.create({
@@ -306,25 +418,22 @@ const styles = StyleSheet.create({
         flex:0,
         backgroundColor:COLORS.primary,
     },
-    // loadingContainer: {
-    //     ...StyleSheet.absoluteFillObject,
-    //     position:'absolute',
-    //     zIndex:999999,
-    //     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    //     justifyContent: 'center',
-    //     alignItems: 'center',
-    //   },
     errorText: {
         color: 'red',
         textAlign: 'center',
         marginTop: 10,
     },
-
     headerWrapper:{
         paddingVertical:45,
         borderBottomRightRadius:10,
         justifyContent:'center',
         alignItems:'center',
+    },
+    headerContainer:{
+        borderBottomRightRadius:10,
+        justifyContent:'space-between',
+        alignItems:'center',
+        flexDirection:'row'
     },
     headerText:{
         fontFamily:'Poppins-Regular',
@@ -363,14 +472,18 @@ formInputWrapper:{
 formInput:{
     flex:0,
     width:'100%',
-    fontSize:18.5,
-    top:6,
-    right:10,
+    // width:100,
+    // height:100,
+    width:300,
+    height:50,
+    fontSize:15,
     fontFamily:'Poppins-Regular',
     justifyContent:'center',
     alignItems:'center',
-    color:'rgba(140, 140, 140,4)',
-    textAlign:'center',
+    color:'rgba(0, 0, 0,0.6)',
+    // textAlign:'center',
+    borderWidth:0.5,
+    
 },
 formInputSize:{
     flex:0,
@@ -516,5 +629,188 @@ loadingContainer: {
     textAlign: 'center',
     top:1,
   },
+  headContainer:{ 
+   flex:1,
+},
+headContainer2:{ 
+    minHeight:100,
+ },
+loadingContainer: {
+    ...StyleSheet.absoluteFillObject,
+    position:'absolute',
+    zIndex:999999,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+header:{
+   marginTop:25,
+    flex:0,
+    flexDirection:'row',
+    alignItems:'center',
+    justifyContent:'center',
+    height:30
+},
+settingsText:{
+    fontSize:24,
+    color:COLORS.primary,
+    top:2,
+    fontFamily:'Poppins-Regular',
+},
+arrowBackIcon:{
+    position:'absolute',
+    left:8
+},
+mainLogo:{
+    flex:0,
+    justifyContent:'center',
+    alignItems:'center'
+},
+totalBill:{
+    color:COLORS.primary,
+    fontSize:20,
+    fontFamily:'Poppins-SemiBold',
+    marginTop:15,
+},
+vendorComponent:{
+    paddingHorizontal:10,
+    margin:10,
+},
+totalAmountText:{
+    color:COLORS.primary,
+    fontFamily:'Poppins-Regular',
+},
+columnHeadingContainer:{
+    backgroundColor:COLORS.primary,
+    height:50,
+    borderRadius:15,
+},
+columnHeading:{
+    flex:1,
+    flexDirection:'row',
+    justifyContent:'space-around',
+    alignItems:'center',
+    color:'white',
+    paddingRight:2,
+},
+headingText1:{
+    color:'white',
+    fontSize:12,
+    flex:0.8,
+    left:5,
+},
+headingText:{
+    justifyContent:'center',
+    alignItems:'center'
+},
+billValuesContainer:{
+    flex:1,
+    height:50,
+    marginTop:8,
+    marginHorizontal:10,
+    borderBottomWidth:1,
+    flexDirection:'row',
+    justifyContent:'space-evenly',
+    alignItems:'center',
+    color:'white',
+    paddingHorizontal:12,
+    borderColor:'rgba(180, 180, 180,4)',
+},
+billValuesContainer1:{
+    flex:0,
+    height:50,
+    marginTop:8,
+    marginHorizontal:10,
+   borderBottomWidth:1,
+    flexDirection:'row',
+    justifyContent:'space-around',
+    alignItems:'center',
+    color:'white',
+    paddingHorizontal:12,
+    borderColor:'rgba(180, 180, 180,4)'
+},
 
+paidContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  paidText: {
+    fontSize: 50, 
+    fontWeight: 'bold',
+    color: 'green',
+  },
+billValues1:{
+    fontSize:16,
+    color:'gray',
+    borderWidth:2,borderColor:'green' 
+},
+billValues:{
+    fontSize:15,
+    right:3,
+    color:'gray',
+    borderWidth:2,borderColor:'red' 
+
+},
+successText:{
+    color:'white',
+    fontSize:20,
+    fontFamily:'Poppins-Regular',
+    top:10,
+  },
+valueQty:{
+    flexDirection:'row',justifyContent:'center',alignItems:'center',right:3,
+  
+
+},
+valuePrice:{
+    flexDirection:'row',justifyContent:'center',alignItems:'center',
+   
+},
+
+itemText:{
+    
+    paddingLeft:4,        
+},
+footerWrapper:{
+
+    justifyContent:'center',
+    alignItems:'center',
+    paddingVertical:13,
+},
+confirmButton:{
+    backgroundColor:COLORS.primary,
+    flex:0,
+    justifyContent:'center',
+    alignItems:'center',
+    width:300,
+    marginHorizontal:10,
+    paddingVertical:8,
+    borderRadius:25,
+    marginVertical:10,
+},
+confirmText:{
+    fontSize:18,
+    color:'white',
+    fontFamily:'Poppins-Regular',
+    top:2,
+},
+addButton:{
+    backgroundColor:'white',
+    flex:0,
+    justifyContent:'center',
+    alignItems:'center',
+    width:300,
+    marginHorizontal:10,
+    paddingVertical:8,
+    borderRadius:25,
+    borderWidth:1,
+    borderColor:COLORS.primary,
+},
+addText:{
+    fontSize:18,
+    color:COLORS.primary,
+    fontFamily:'Poppins-Regular',
+    top:2,
+}
 })

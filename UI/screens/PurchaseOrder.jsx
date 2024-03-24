@@ -1,455 +1,680 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, TextInput, Keyboard, Alert, Image } from 'react-native';
-import { COLORS } from '../assets/theme';
-import { getPurchaseOrder } from '../src/graphql/queries';
-import { generateClient } from 'aws-amplify/api';
-import { useNavigation } from '@react-navigation/native';
-import { deletePurchaseOrder, updatePurchaseOrder } from '../src/graphql/mutations';
-import Animated, { FadeIn, Easing, FadeInDown, FadeInUp } from 'react-native-reanimated';
+import React, {useState, useEffect, useRef} from 'react';
+import { TextInput, Animated, StyleSheet, Text, View, TouchableOpacity, ScrollView, Keyboard, Picker } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context'
+
 import Ionic from 'react-native-vector-icons/Ionicons';
-import { launchImageLibrary } from 'react-native-image-picker';
+import { COLORS } from '../assets/theme/index.js';
+import { Dimensions } from 'react-native';
+import { useNavigation, useRoute } from '@react-navigation/native'; 
+import { BluetoothEscposPrinter } from 'react-native-bluetooth-escpos-printer';
+import { generateClient } from 'aws-amplify/api';
+import { deleteBill, deleteBillItem, updateBill, updateProduct,createNotifications, createPurchaseOrder, createPurchaseItem, updatePurchaseOrder, updatePurchaseItem } from '../src/graphql/mutations';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
-const PurchaseOrder = ({ route }) => {
-    const [purchaseOrder, setPurchaseOrder] = useState(null);
-    const [image, setImage] = useState(false);
-    const [editing, setEditing] = useState(false);
-    const client = generateClient();
-    const navigation = useNavigation();
-    const [loading, setLoading] = useState(true);
-    const [purchaseOrderDate, setPurchaseOrderDate] = useState(route.params.purchaseOrderDate);
-    const [purchaseOrderAmount, setPurchaseOrderAmount] = useState(route.params.purchaseOrderAmount);
-    const [purchaseOrderVendor, setPurchaseOrderVendor] = useState(route.params.purchaseOrderVendor);
-    const [purchaseOrderImage, setPurchaseOrderImage] = useState(null);
-    const [originalPurchaseOrderImage, setOriginalPurchaseOrderImage] = useState(null);
-    const purchaseOrderVersion=route.params.purchaseOrderVersion;
+import { useSelector } from 'react-redux';
+import { useForm } from 'react-hook-form';
+import { DataTable } from 'react-native-paper';
+import { SelectList } from 'react-native-dropdown-select-list';
+
+const PurchaseOrder = ({route}) => {
     const purchaseOrderId = route.params.purchaseOrderId;
-    const [loadingMessage, setLoadingMessage] = useState(true);
+    const purchaseStatus = route.params.purchaseStatus;
+    const [status, setStatus] = useState(route.params.purchaseStatus);
+    const [purchaseOrderItems, setPurchaseOrderItems] = useState([]);
+    const purchaseOrderVendor = route.params.purchaseOrderVendor;
+    const purchaseOrderAmount = route.params.purchaseOrderAmount;
+    const purchaseOrderVersion = route.params.purchaseOrderVersion;
+    const [vendorName, setVendorName] = useState(route.params.purchaseOrderVendor);
+    // const [vendor, setVendor] = useState(route.params.purchaseOrderVendor);
+    const [scannedProducts, setScannedProducts] = useState([]);
+    const [loading, setLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState(false);
-    const [isEmptyField, setIsEmptyField] = useState(false);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
     const [errorMessage, setErrorMessage] = useState('');
-
-    const handleSuccessButtonPress= () => {
-        setLoading(false)
-        setSuccessMessage(false);
-        navigation.navigate('PurchaseHistory');
-      }
-      const handleChoosePhoto = () => {
-        launchImageLibrary({}, (response) => {
-          if (response.assets && response.assets.length > 0) {
-            const imageUri = response.assets[0].uri;
-            setPurchaseOrderImage(imageUri);
-          } else {
-            console.log('No image selected or unexpected response structure');
-          }
-        });
-      };
-    
-      const uploadImageToS3 = async (imageUri, fileName) => {
-        try {
-          const response = await fetch(imageUri);
-          const blob = await response.blob();
-    
-          const uploadResult = await uploadData({
-            key: fileName,
-            data: blob,
-            options: {
-              contentType: 'image/jpeg',
-              accessLevel: 'guest',
-            },
-          }).result;
-    
-          return uploadResult.key;
-        } catch (error) {
-          console.error('Upload error:', error);
-          throw error;
+    const userId= useSelector((state) => state.user.userId);
+    const userName = useSelector((state) => state.user.username);
+    const [totalAmount, setTotalAmount] = useState(0);
+    const getPurchaseItemsByPurchaseOrderIdQuery = /* GraphQL */ `
+    query GetPurchaseItemsByPurchaseOrderId($purchaseOrderId: ID!) {
+      listPurchaseItems(filter: { 
+        purchaseOrderPurchaseItemsId: { eq: $purchaseOrderId },
+        _deleted: { ne: true } 
+      }) {
+        items {
+          id
+          productName
+          quantityOrdered
+          quantityReceived
+          productPrice
+          createdAt
+          updatedAt
+          _version
+          _deleted
         }
-      };
-    
-      const getImageUrlFromS3 = async (fileKey) => {
-        try {
-          const getUrlResult = await getUrl({
-            key: fileKey,
-            options: {
-              accessLevel: 'guest',
-              useAccelerateEndpoint: true,
-            },
-          });
-    
-          return getUrlResult.url;
-        } catch (error) {
-          console.error('Error getting image URL:', error);
-          throw error;
-        }
-      };
-    
-      const handleUpdatePurchaseOrder = async () => {
-        setLoading(true);
-        if (!purchaseOrderDate || !purchaseOrderAmount || !purchaseOrderVendor || !purchaseOrderImage) {
-            setIsEmptyField(true);
-            setLoadingMessage(false);
-            return;
-        }
-        console.log("Updating");
-        try {
-          if (originalPurchaseOrderImage !== purchaseOrderImage) {
-            try {
-              const fileName = extractFilename(originalPurchaseOrderImage);
-              await remove({ key: fileName });
-            } catch (error) {
-              console.log('Error deleting previous image:', error);
-              setLoadingMessage(false);
-              setError(true);
-              setErrorMessage(error);
-            }
-
-            try{
-                const fileName = `purchase-order-image-${Date.now()}.jpeg`;
-                const fileKey = await uploadImageToS3(purchaseOrderImage, fileName);
-                const newImageUrl = await getImageUrlFromS3(fileKey);
-                purchaseOrderImage = newImageUrl;
-                originalPurchaseOrderImage=purchaseOrderImage;
-            }catch(error){
-                console.log(error)
-                setLoadingMessage(false);
-            setError(true);
-            setErrorMessage(error);
-            }
-          }
-          console.log("UPDATING PURCHASE ORDER WITH DATA")
-          const purchaseOrderInput = {
-            id: purchaseOrderId,
-            image: [purchaseOrderImage],
-            vendor: purchaseOrderVendor,
-            amount: purchaseOrderAmount,
-            date: purchaseOrderDate,
-            _version: purchaseOrderVersion,
-        };
-        console.log("PO Input After Image" ,purchaseOrderInput);
-          const updatedPurchaseOrder = await client.graphql({
-            query: updatePurchaseOrder,
-            variables: { input: purchaseOrderInput },
-            authMode: 'apiKey',
-          });
-      
-          setLoadingMessage(false);
-            setSuccess(true);
-          setEditing(false);
-         
-          console.log('Updated Purchase Order:', updatedPurchaseOrder);
-          
-        } catch (error) {
-        setLoadingMessage(false);
-        setError(true);
-        setErrorMessage(error);
-          console.error('Error updating purchase order:', error);
-        }
-      };
-      
-      const handleCancel = () => {
-        setPurchaseOrderDate(route.params.purchaseOrderDate);
-        setPurchaseOrderAmount(route.params.purchaseOrderAmount);
-        setPurchaseOrderVendor(route.params.purchaseOrderVendor);
-        setPurchaseOrderImage(originalPurchaseOrderImage); 
-        setEditing(false);
-    };
-
-    
-      const onSubmit = async () => {
-        handleUpdatePurchaseOrder();
-      };
-    
-      
-    const getPurchaseOrder = /* GraphQL */ `
-    query GetPurchaseOrder($id: ID!) {
-      getPurchaseOrder(id: $id) {
-        id
-        purchaser
-        image
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        storePurchaseOrdersId
-        __typename
       }
     }
   `;
-    
+  
+  const [editingQuantityReceived, setEditingQuantityReceived] = useState(false);
+  
 
-        useEffect(() => {
-            
-            const fetchPurchaseOrder = async () => {
-                setLoading(true);
-               console.log("Start");
-                try {
-                    const { data } = await client.graphql({
-                        query: getPurchaseOrder,
-                        variables: { id: purchaseOrderId },
-                        authMode: 'apiKey',
-                    });
-                    console.log("Received", purchaseOrder);
-                    setPurchaseOrderImage(data.getPurchaseOrder.image[0]);
-                    setOriginalPurchaseOrderImage(data.getPurchaseOrder.image[0]);
-                    setLoading(false);
-                    console.log("FINISH");
-                } catch (error) {
-                    console.error('Error fetching PO:', error);
-                
-                }
-            };
-        
-            fetchPurchaseOrder();
-        },  [purchaseOrderId, route.params]);
-
-        useEffect(() => {
-            setImage(true);
-            console.log("Second", purchaseOrderId);
-        },[purchaseOrderId]);
-        
-        useEffect(() => {
-            setLoadingMessage(true);
-            setSuccessMessage(false);
-            setIsEmptyField(false);
-            setSuccess(false);
-            setError(false);
-            setPurchaseOrderDate(route.params.purchaseOrderDate);
-            setPurchaseOrderAmount(route.params.purchaseOrderAmount);
-            setPurchaseOrderVendor(route.params.purchaseOrderVendor);
-            console.log("Second", purchaseOrderId);
-        },[purchaseOrderId]);
-
-    const handleEdit = () => {
-        setEditing(true);
-    }
-    // const handleUpdate = () => {
-    //     setEditing(false);
-    // }
-    
-  const showConfirmationDialog = () => {
-    Alert.alert(
-      "Confirm Deletion",
-      "Are you sure you want to delete this Purchase Order?", 
-      [
-        {
-          text: "Cancel",
-          onPress: () => console.log("Deletion cancelled"),
-          style: "cancel"
-        },
-        { text: "OK", onPress: () => handleDelete() }
-      ],
-      { cancelable: false }
-    );
+  const toggleQuantityReceivedEditing = () => {
+      setEditingQuantityReceived(!editingQuantityReceived);
   };
-  const handleDelete = async () => {
-    Keyboard.dismiss();
-    const purchaseOrderInput = {
-        id: purchaseOrderId,
-        _version: purchaseOrderVersion,
-    };
-    console.log("PO Input",purchaseOrderInput);
+
+  const handleQuantityReceivedChange = (index, value) => {
+    const updatedItems = [...purchaseOrderItems];
+    updatedItems[index].quantityReceived = parseInt(value) || 0;
+    setPurchaseOrderItems(updatedItems);
+};
+
+
+const handleStatusChange = (value) => {
+    setStatus(value); // Update the status state when status changes
+};
+
+// Function to update the status along with other fields
+const updatePurchaseOrderStatus = async () => {
+    console.log("Status",status);
     try {
-      const response = await client.graphql({
-        query: deletePurchaseOrder,
-        variables: { input: purchaseOrderInput },
-        authMode: 'apiKey',
-      });
-        try {
-          const fileName = extractFilename(originalPurchaseOrderImage);
-          await remove({ key: fileName });
-        } catch (error) {
-          console.log('Error deleting image of PO:', error);
-          setLoadingMessage(false);
-          setError(true);
-          setErrorMessage(error);
-        }
-      console.log('PO Deleted:', response.data.deletePurchaseOrder);
-      setLoadingMessage(false);
-      setSuccess(true);
-        setEditing(false);
-      Alert.alert('PO Deleted successfully!');
-      setEditing(false);
-    } catch (error) {
-      console.error('Error deleting PO:', error);
-      Alert.alert('Failed to deletig po.');
-      setLoadingMessage(false);
-      setError(true);
-      setErrorMessage(error);
-    }
-  };
-    const handleConfirm = () => {
-        // Run your update query here
-        // setEditing(false); // Set editing back to false after confirmation
-        const purchaseOrderInput = {
+        const updatePurchaseOrderInput = {
             id: purchaseOrderId,
-            image: [purchaseOrderImage],
-            vendor: purchaseOrderVendor,
-            amount: purchaseOrderAmount,
-            date: purchaseOrderDate,
-            _version: purchaseOrderVersion,
+            status: status,
+            _version:route.params.purchaseOrderVersion,
         };
-        console.log("PO Input",purchaseOrderInput);
+
+        await client.graphql({
+            query: updatePurchaseOrder,
+            variables: { input: updatePurchaseOrderInput },
+            authMode: 'apiKey',
+        });
+
+        console.log('Purchase order status updated successfully');
+    } catch (error) {
+        console.error('Error updating purchase order status:', error);
     }
+};
+const updateProductQuantityInShelf = async (productName, quantityChange) => {
+    try {
+        const productData = await client.graphql({
+            query: getProductByName,
+            variables: { name: productName },
+            authMode: 'apiKey',
+        });
+
+        if (!productData || !productData.data || !productData.data.productByName || !productData.data.productByName.items) {
+            console.error("Product data or items not found");
+            return;
+        }
+
+        const items = productData.data.productByName.items;
+        if (items.length === 0) {
+            console.error("No items found for the product");
+            return;
+        }
+
+        const productItem = items[0];
+        console.log("Old quantity",productItem.warehouseQuantity);
+        const newWarehouseQuantity = productItem.warehouseQuantity + quantityChange;
+        console.log("New quantity",newWarehouseQuantity);
+        const updateProductResponse = await client.graphql({
+            query: updateProduct,
+            variables: {
+                input: {
+                    id: productItem.id,
+                    warehouseQuantity: newWarehouseQuantity,
+                    _version: productItem._version,
+                },
+            },
+            authMode: 'apiKey',
+        });
+
+        console.log("Input", productItem.id,
+        newWarehouseQuantity,
+       productItem._version,);
+        console.log("Product quantity in shelf updated successfully", updateProductResponse);
+    } catch (error) {
+        console.error("Error updating product quantity in shelf:", error);
+    }
+};
+
+const updateQuantityReceived = async (itemId, quantityReceived, version,productName) => {
+    try {
+        console.log(`Updating quantity received for item ${itemId} to ${quantityReceived}`);
+        const updatePurchaseItemInput = {
+            id: itemId,
+            quantityReceived: quantityReceived,
+            _version: version, 
+        };
+
+        await client.graphql({
+            query: updatePurchaseItem,
+            variables: { input: updatePurchaseItemInput },
+            authMode: 'apiKey',
+        });
+        await updateProductQuantityInShelf(productName,quantityReceived);
+
+        console.log(`Quantity received updated successfully for item ${itemId}`);
+    } catch (error) {
+        console.error(`Error updating quantity received for item ${itemId}:`, error);
+    }
+};
+
+
+const getProductByName = /* GraphQL */ `
+query GetProductByName($name: String!) {
+  productByName(name: $name) {
+    items {
+      id
+      name
+      barcode
+      price
+      manufacturer
+      category
+      warehouseQuantity
+      shelfQuantity
+      _version
+    }
+  }
+}
+`;
+
+const confirmUpdateQuantityReceived = async () => {
+    setLoading(true);
+    try {
+        for (const item of purchaseOrderItems) {
+            console.log("Item",item);
+            await updateQuantityReceived(item.id, item.quantityReceived, item._version,item.productName);
+
+        }
+         await updatePurchaseOrderStatus();
+        console.log('All items updated successfully');
+        setSuccess(true);
+        setEditing(false);
+    } catch (error) {
+        setError(true);
         
-    return (
-        <View style={{flex:1}}>
-             {loading && (
-      <View style={styles.loadingContainer}>
-      <AnimatedCircularProgress
-  size={120}
-  width={15}
-  duration={2200} 
-  delay={0}
-  fill={100}
-  tintColor={COLORS.secondary}
-  onAnimationComplete={() => console.log('onAnimationComplete')}
-  backgroundColor="#3d5875" />
-{loadingMessage ? (
-  <Text style={styles.loadingText}>Updating Purchase Order</Text>
-) : success ? (
-  <View style={styles.successMessageContainer}>
-    <Text style={styles.loadingText}>PO Added Successfully</Text>
-    <TouchableOpacity
-      style={styles.successButton}
-      onPress={handleSuccessButtonPress}>
-      <Text style={styles.buttonText}>Go Back</Text>
-    </TouchableOpacity>
-  </View>
-) : error ? (
-  <View style={styles.successMessageContainer}>
-    <Text style={styles.loadingText}>Adding PO FAILED</Text>
-    <Text style={styles.loadingTextSubtitle}>{errorMessage}</Text>
-    <TouchableOpacity
-      style={styles.successButton}
-      onPress={handleSuccessButtonPress}>
-      <Text style={styles.buttonText}>Go Back</Text>
-    </TouchableOpacity>
-  </View>
-)  : isEmptyField ? (
-    <View style={styles.successMessageContainer}>
-      <Text style={styles.loadingText}>Empty Fields</Text>
-      <Text style={styles.loadingTextSubtitle}>All fields must be filled</Text>
-      <TouchableOpacity
-        style={styles.successButton}
-        onPress={handleSuccessButtonPress}>
-        <Text style={styles.buttonText}>Go Back</Text>
-      </TouchableOpacity>
-    </View>
-  ): null}
+        console.error('Error updating quantity received for all items:', error);
+    }
+};
 
-      </View>
-     )}
-            <View style={styles.headerContainer}>
-                <View style={styles.headerWrapper}>
-                <TouchableOpacity style={styles.arrowBackIcon}  onPress={()=> navigation.navigate('PurchaseHistory')}>
-            <Ionic size={24} color='white' name ='chevron-back-outline'/>
-        </TouchableOpacity>
-                    <Text style={styles.headerText}>Purchase Order</Text>
-                </View>
-            </View>
+    // useEffect(() => {
+    //     vendorRef.current = vendor;
+    //   }, [vendor]);
+
+      const fetchPurchaseOrderItems = async () => {
+        try {
+            if (purchaseOrderId) {
+                const response = await client.graphql({
+                    query: getPurchaseItemsByPurchaseOrderIdQuery,
+                    variables: { purchaseOrderId },
+                    authMode: 'apiKey',
+                });
+                const purchaseItems = response.data.listPurchaseItems.items;
+                setPurchaseOrderItems(purchaseItems);
+                console.log(purchaseOrderItems);
+            } else {
+                console.error('Purchase Order ID is null');
+            }
+        } catch (error) {
+            console.error('Error fetching purchase order items:', error);
+        }
+    };
+      useEffect(() => {
+     
+        fetchPurchaseOrderItems();
+    }, [purchaseOrderId]);
+    useEffect(() => {
+        setStatus(route.params.purchaseStatus);
+    }, [route.params.purchaseStatus]);
+
+
+   const getPurchaseItemsByPurchaseOrderId = async (billId) => {
+    try {
+        const response = await client.graphql({
+            query: getPurchaseItemsByPurchaseOrderIdQuery,
+            variables: { purchaseOrderId },
+            filter: {
+                _deleted: {
+                    ne: true
+                }
+            },
+            authMode: 'apiKey'
+        });
+        const billItems = response.data.listBillItems.items;
+        console.log("Bill Items",billItems);
+        return billItems;
+    } catch (error) {
+        console.error('Error fetching bill items:', error);
+        return [];
+    }
+};
+    const [editing, setEditing] = useState(false);
+    const client = generateClient();
+    const navigation = useNavigation();
+
+    const handleScannedProduct = (product) => {
+        setScannedProducts([...scannedProducts, product]);
+    }
+    
+    useEffect(() => {
+      let calculatedTotalAmount = 0;
+      purchaseOrderItems.forEach((item) => {
+          calculatedTotalAmount += item.productPrice * item.quantityOrdered;
+      });
+      setTotalAmount(calculatedTotalAmount);
+  }, [purchaseOrderItems]);
+  
+    const handleLoading = () => {
+        setLoading(true)
+        setSuccessMessage(true);
+      }
+
+      const handleSuccessButtonPress= () => {
+        setLoading(false)
+        setSuccessMessage(false); 
+      }
+
+     
+    const printReceipt = async () => {
+        setLoading(true);
+        try {
+            const updateBillInput = {
+              id: currentBillId,
+              totalAmount: totalBillAmount,
+              status: "PAID",
+              _version: version,
+            };
+      
+            await client.graphql({
+              query: updateBill,
+              variables: { input: updateBillInput },
+              authMode: 'apiKey',
+            });
+      
+            console.log("Bill Finalized Successfully");
+            await updateProductShelfQuantity();
+            console.log("Shelf Quantity Updated Successfully");
+            setLoading(false);
+            setBillStatus('PAID');
+            setScannedProducts([]);
             
-            <View>
-                <View>
-                    <View style={styles.formInputContainer}>
-                        <View style={styles.formInputWrapper}>
-                            <View style={styles.imageContainer}>
-                                <Text style={styles.label}>Date</Text>
-                            </View>
-                            <View style={styles.inputContainer}>
-                                {editing ? (
-                                    <TextInput
-                                        style={styles.formInput}
-                                        value={purchaseOrderDate}
-                                        onChangeText={setPurchaseOrderDate}
-                                    />
-                                ) : (
-                                    <Text style={styles.formInput}>{purchaseOrderDate}</Text>
-                                )}
-                            </View>
-                        </View>
-                    </View>
-                    <View style={styles.formInputContainer}>
-                        <View style={styles.formInputWrapper}>
-                            <View style={styles.imageContainer}>
-                                <Text style={styles.label}>Vendor</Text>
-                            </View>
-                            <View style={styles.inputContainer}>
-                                {editing ? (
-                                    <TextInput
-                                        style={styles.formInput}
-                                        value={purchaseOrderVendor}
-                                        onChangeText={setPurchaseOrderVendor}
-                                    />
-                                ) : (
-                                    <Text style={styles.formInput}>{purchaseOrderVendor}</Text>
-                                )}
-                            </View>
-                        </View>
-                    </View>
-                    <View style={styles.formInputContainer}>
-                        <View style={styles.formInputWrapper}>
-                            <View style={styles.imageContainer}>
-                                <Text style={styles.label}>Amount</Text>
-                            </View>
-                            <View style={styles.inputContainer}>
-                                {editing ? (
-                                    <TextInput
-                                    style={styles.formInput}
-                                    value={String(purchaseOrderAmount)}
-                                    onChangeText={setPurchaseOrderAmount}
-                                />                                
-                                ) : (
-                                    <Text style={styles.formInput}>{purchaseOrderAmount}</Text>
-                                )}
-                            </View>
-                        </View>
-                    </View>
-                    <View style={styles.formInputContainer}>
-                    <View style={styles.uploadContainer}>
-                    <View style={styles.uploadWrapper}>
-    {editing ? (
-        <TouchableOpacity style={styles.resetButton} onPress={handleChoosePhoto}>
-            {loading ? (<Text style={styles.loading}>Loading ...</Text>) : (<Image source={image ? { uri: purchaseOrderImage } : require("../assets/images/person.jpg")} style={styles.selectedImage} />)}
-        </TouchableOpacity>
-    ) : (
-        <TouchableOpacity style={styles.resetButton}>
-            {loading ? (<Text style={styles.loading}>Loading ...</Text>) : (<Image source={image ? { uri: purchaseOrderImage } : require("../assets/images/person.jpg")} style={styles.selectedImage} />)}
-        </TouchableOpacity>
-    )}
-</View>
-</View>
+          } catch (error) {
+            setLoading(false);
+            console.error("Error finalizing the bill:", error);
+          }
+        console.log("Printing ",scannedProducts);
+        try {
+          await BluetoothEscposPrinter.printerInit();
+          await BluetoothEscposPrinter.printerLeftSpace(0);
+          await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.CENTER);
+          await BluetoothEscposPrinter.setBlob(0);
+          await BluetoothEscposPrinter.printText(`${storeName || 'Storename'}\n`, {
+            encoding: 'GBK',
+            codepage: 0,
+            widthtimes: 3,
+            heigthtimes: 3,
+            fonttype: 1
+        });
+        
+          await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.LEFT);
+          await BluetoothEscposPrinter.printText(`Cashier: ${userName}\n`, {});
+          await BluetoothEscposPrinter.printText("--------------------------------\n", {});
+        
+          await BluetoothEscposPrinter.printText("PRODUCT NAME        QTY      PRICE      SUBTOTAL\n", {});
 
-                    </View>
-                     <View style={styles.formInputContainer}>
-                        <View style={styles.uploadContainerButton}>
-                            <View style={styles.uploadWrapperButton}>
-                                {editing ?
-                                 (  <TouchableOpacity style={styles.updateButton} onPress={handleUpdatePurchaseOrder}>
-                             
-                                    <Text style={styles.updateText}>Update</Text>
-                                </TouchableOpacity>):(  <TouchableOpacity style={styles.updateButton} onPress={handleEdit}>
-                                    <Text style={styles.updateText}>Edit</Text>
-                                </TouchableOpacity>)}
-                                {editing ?
-                                 (  <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
-                                    <Text style={styles.cancelText}>Cancel</Text>
-                                </TouchableOpacity>):(  
-                                <TouchableOpacity style={styles.deleteButton} onPress={showConfirmationDialog}>
-                                <Text style={styles.deleteText}>Delete</Text>
-                            </TouchableOpacity>
-                                )}
-                                
-                            </View>
-                        </View>
-                    </View>
+          scannedProducts.forEach(async (item) => {
+            let itemName = item.name.padEnd(20); 
+            let itemLine = `${itemName} ${item.quantity.toString().padEnd(7)} ${item.price.toString().padEnd(10)} ${item.subtotal.toFixed(2)}\n`;
+            await BluetoothEscposPrinter.printText(itemLine, {});
+          });
+        
+          await BluetoothEscposPrinter.printText("--------------------------------\n", {});
+          await BluetoothEscposPrinter.printText(`Total: ${totalBillAmount.toFixed(2)}\n`, {});
+          await BluetoothEscposPrinter.printText("Thank you for your purchase!\n\n\n", {});
+        } catch (error) {
+          console.error("Failed to print receipt:", error);
+        }
+        
+      };
+
+      const handleAddProduct = () => {
+        console.log("Passing",vendor,
+            purchaseOrderItems);
+ 
+
+        navigation.navigate('ScanPurchaseOrder2', {   
+            purchaseOrderVendor,
+            purchaseOrderItems,
+            purchaseOrderId,
+            purchaseOrderAmount,
+            handleScannedProduct }); 
+    };
+    
+    useEffect(() => {
+        const refreshPurchaseOrder = route.params?.refreshPurchaseOrder;
+        if (refreshPurchaseOrder) {
+            fetchPurchaseOrderItems();
+            
+        }
+        console.log("Vendor Name",vendorName);
+        setVendorName(route.params.purchaseOrderVendor);
+        console.log("Vendor Name",vendorName);
+        console.log("Vendor",purchaseOrderVendor);
+    }, [route.params?.refreshPurchaseOrder]);
+
+    useEffect(() => {
+        console.log("Products",scannedProducts);
+        if (route.params?.scannedProducts) {
+            setScannedProducts(route.params.scannedProducts);
+        }
+
+        console.log("Vendor Name",vendorName);
+        console.log("Vendor",purchaseOrderVendor);
+    }, [route.params?.scannedProducts]);
+    
+
+    const onSubmit = async () => {
+        console.log('Product:');
+        Keyboard.dismiss();
+        setLoading(true);
+        if (!editing) { // Change the condition to check if not editing
+          setLoading(false);
+          setSuccessMessage(true);
+          setEditing(true); // This line is only executed once
+          return;
+      }
+        try {
+            console.log('Scanned Products:', scannedProducts);
+            let totalAmount = 0;
+            scannedProducts.forEach(product => {
+                totalAmount += product.price * product.quantity;
+            });
+    
+            const newPurchaseOrder = await client.graphql({
+                query: createPurchaseOrder,
+                variables: {
+                    input: {
+                        purchaser: userId,
+                        purchaserName: userName,
+                        vendor: vendor,
+                        totalAmount: totalAmount,
+                        status: 'PENDING'
+                    }
+                },
+                authMode: 'apiKey',
+            });
+    
+            console.log(newPurchaseOrder);
+    
+            const createPurchaseItemPromises = scannedProducts.map(async (product) => {
+                const createPurchaseItemInput = {
+                    productName: product.name,
+                    productPrice: product.price,
+                    quantityOrdered: product.quantity,
+                    quantityReceived: 0,
+                    purchaseOrderPurchaseItemsId: newPurchaseOrder.data.createPurchaseOrder.id,
+                    productPurchaseItemsId: product.id,
+                };
+    
+                console.log("Item Input", createPurchaseItemInput);
+    
+                return client.graphql({
+                    query: createPurchaseItem,
+                    variables: { input: createPurchaseItemInput },
+                    authMode: 'apiKey',
+                });
+            });
+    
+            // Execute all create purchase item mutations
+            const createdPurchaseItems = await Promise.all(createPurchaseItemPromises);
+            console.log('Created Purchase Items:', createdPurchaseItems);
+            const updatePurchaseOrderInput = {
+                id: newPurchaseOrder.data.createPurchaseOrder.id,
+                totalAmount: totalAmount.toString(), // Update total amount here
+                _version: newPurchaseOrder.data.createPurchaseOrder._version,
+            };
+    
+            await client.graphql({
+                query: updatePurchaseOrder,
+                variables: { input: updatePurchaseOrderInput},
+                authMode: 'apiKey',
+            });
+            // Log the number of created purchase items
+            console.log('Number of Purchase Items Created:', createdPurchaseItems.length);
+            setSuccess(true);
+            setSuccessMessage(true);
+            setLoading(false);
+        } catch (error) {
+            setLoading(false);
+            console.error('Error creating purchase order items:', error);
+        }
+    };
+    
+    const handleDeleteItem = (index) => {
+        const updatedScannedProducts = [...scannedProducts]; // Create a copy of the scannedProducts array
+        updatedScannedProducts.splice(index, 1); // Remove the item at the specified index
+        setScannedProducts(updatedScannedProducts); // Update the state with the modified array
+    };
+
+const updateQuantityReceivedForPOItem = async (purchaseOrderId, itemId, quantityReceived) => {
+    try {
+        const response = await client.graphql({
+            query: updatePurchaseItem,
+            variables: {
+                input: {
+                    id: itemId,
+                    quantityReceived: quantityReceived,
+                }
+            },
+            authMode: 'apiKey',
+        });
+        console.log(`Quantity received updated for item ${itemId} in PO ${purchaseOrderId} to ${quantityReceived}`);
+    } catch (error) {
+        console.error(`Error updating quantity received for item ${itemId} in PO ${purchaseOrderId}:`, error);
+    }
+};
+
+
+const updateValuesForPO = async (purchaseOrderId, items) => {
+    try {
+        for (const item of items) {
+            await updateQuantityReceivedForPOItem(purchaseOrderId, item.id, item.quantityReceived);
+        }
+        console.log(`All items updated successfully for PO ${purchaseOrderId}`);
+    } catch (error) {
+        console.error(`Error updating values for PO ${purchaseOrderId}:`, error);
+    }
+};
+
+const updateValuesForMultiplePOs = async () => {
+    try {
+        for (const purchaseOrder of purchaseOrders) {
+            await updateValuesForPO(purchaseOrder.id, purchaseOrder.items);
+        }
+        console.log('All purchase orders updated successfully');
+    } catch (error) {
+        console.error('Error updating values for multiple purchase orders:', error);
+    }
+};
+const handleUpdatePO = async () => {
+    try {
+        
+        await updateValuesForMultiplePOs();
+
+        await updatePurchaseOrderStatus();
+
+     
+        console.log('Purchase order updated successfully');
+    } catch (error) {
+        console.error('Error updating purchase order:', error);
+    }
+};
+
+
+    return (
+     
+    <SafeAreaView style={styles.headContainer}>
+         <TouchableOpacity style={styles.arrowBackIcon}  onPress={()=> navigation.navigate('PurchaseHistory')}>
+            <Ionic size={24} color={COLORS.primary} name ='chevron-back-outline'/>
+        </TouchableOpacity>
+    {loading && (
+ <View style={styles.loadingContainer}>
+ <AnimatedCircularProgress
+   size={120}
+   width={15}
+   duration={2200} 
+   delay={10}
+   fill={100}
+   tintColor={COLORS.secondary}
+   onAnimationComplete={() => console.log('onAnimationComplete')}
+   backgroundColor="#3d5875" 
+/>
+        {success && (
+                <View style={styles.successMessageContainer}>
+                    <Text style={styles.successText}>PO Updated successfully!</Text>
+                    <TouchableOpacity style={styles.successButton} onPress={handleSuccessButtonPress}>
+                        <Text style={styles.buttonText}>OK</Text>
+                    </TouchableOpacity>
                 </View>
+            )}
+            {error && (
+                <View style={styles.errorMessageContainer}>
+                    <Text style={styles.errorText}>{errorMessage}</Text>
+                    <TouchableOpacity style={styles.errorButton} onPress={handleErrorButtonPress}>
+                        <Text style={styles.buttonText}>OK</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
+ </View>
+)}
+   
+   <View style={styles.headContainer2}>
+   <View style={styles.headingText}> 
+    <Text style={styles.totalBill}>PurchaseOrder</Text>
+    <View style={styles.totalAmountContainer}>
+        <Text style={styles.totalAmountText}>Total Amount: ${purchaseOrderAmount}</Text>
+      </View>
+    </View>
+
+    <View  style={styles.headerContainer}>
+            <View style={styles.vendorComponent}>
+            <Text style={styles.totalBill}>Status :</Text>
+        {editing ? (
+          <SelectList
+          data={[
+              { key: '1', value: 'PENDING' },
+              { key: '2', value: 'CONFIRMED' },
+          ]}
+          setSelected={(status) => setStatus(status)} 
+         
+          search={false} 
+          renderRightIcon={{ size: 30 }}
+          save="value"
+          placeholder={status}
+          selected={status}
+          boxStyles={styles.formInput3} 
+          arrowicon={<Ionic style={{ position: 'absolute', right: 10, top: 14 }} size={0} color='rgba(180, 180, 180,4)' name='chevron-down-outline' />}
+          searchicon={<Ionic style={{ position: 'absolute', right: 10, top: 14 }} size={0} color='rgba(180, 180, 180,4)' name='chevron-down-outline' />}
+          closeicon={<Ionic style={{ position: 'absolute', right: 10, top: 14 }} size={0} color='rgba(180, 180, 180,4)' name='chevron-down-outline' />}
+          inputStyles={{ fontSize: 12.5, top: -1, fontFamily: 'Poppins-Regular', color: 'rgba(140, 140, 140,4)' }} // Adjust the style if needed
+          dropdownTextStyles={{ zIndex:999,color: 'rgba(140, 140, 140,4)' }} 
+      />
+      
+        ) : (
+            <Text style={styles.formInput}>{status}</Text>
+        )}
+
             </View>
+        <View style={styles.vendorComponent}>
+        <Text style={styles.totalBill}>Vendor :</Text>
+        <Text style={styles.formInput}>{route.params.purchaseOrderVendor}</Text>
+
         </View>
-    )
+                                 
+</View>
+</View>
+   <DataTable style={styles.columnHeadingContainer}>
+                <DataTable.Header >
+                    <DataTable.Title textStyle={{color: 'white'}} style={{justifyContent:'flex-start',flex:1.2}} >ITEM</DataTable.Title>
+                    <DataTable.Title textStyle={{color: 'white'}} style={{justifyContent:'center'}}>QTYORD</DataTable.Title>
+                    <DataTable.Title textStyle={{color: 'white'}}  style={{justifyContent:'center'}}>PRICE</DataTable.Title>
+                    {/* <DataTable.Title style={{justifyContent:'center'}}>SUBTOTAL</DataTable.Title> */}
+                    <DataTable.Title textStyle={{color: 'white'}}  style={{justifyContent:'center'}}>QTYREC</DataTable.Title>
+                    {/* {editing &&  <DataTable.Title textStyle={{color: 'white'}}  style={{justifyContent:'center',flex:0.5}}>EDIT</DataTable.Title>}}*/}
+                </DataTable.Header> 
+                </DataTable>
+
+               <ScrollView style={styles.scrollView}>
+    {purchaseOrderItems.map((item, index) => (
+        <DataTable key={index}>
+            <DataTable.Row key={index}>
+                <DataTable.Cell style={{ justifyContent: 'flex-start', flex: 1.2 }}>{item.productName}</DataTable.Cell>
+                <DataTable.Cell style={{ justifyContent: 'center' }}>{item.quantityOrdered}</DataTable.Cell>
+                <DataTable.Cell style={{ justifyContent: 'center' }}>{item.productPrice}</DataTable.Cell>
+               
+    {editing ? (
+        <View style={styles.formInputContainer2}>
+            <TextInput
+                style={styles.formInput2}
+                value={item.quantityReceived.toString()}
+                onChangeText={(text) => handleQuantityReceivedChange(index, text)}
+            />
+        </View>
+    ) : (
+        <DataTable.Cell style={{ justifyContent: 'center' }}>
+        {item.quantityReceived}
+        </DataTable.Cell>
+    )}
+
+{/* {editing &&  <DataTable.Cell style={{ justifyContent: 'center', flex: 0.5 }}>
+                    <TouchableOpacity style={styles.deleteBill} onPress={() => handleDeleteItem(index)}>
+                        <Ionic style={styles.trash} size={21.5} color={'red'} name='trash' />
+                    </TouchableOpacity>
+                </DataTable.Cell>} */}
+            </DataTable.Row>
+        </DataTable>
+    ))}
+
+    
+</ScrollView>
+
+  
+   <View style={styles.footerContainer}>
+       <View style={styles.footerWrapper}>
+           {/* {editing &&
+            <TouchableOpacity style={styles.addButton} onPress={handleAddProduct}>
+               <Text style={styles.addText}>Add Product</Text>
+           </TouchableOpacity>
+           } */}
+           {editing &&
+           <TouchableOpacity style={styles.addButton} onPress={confirmUpdateQuantityReceived}>
+           <Text style={styles.addText}>Update PO</Text>
+       </TouchableOpacity>
+       
+           }
+           {!editing && <TouchableOpacity style={styles.confirmButton} onPress={()=>setEditing(true)}>
+               <Text style={styles.confirmText}>Update Purchase Order</Text>
+           </TouchableOpacity>}
+           {editing &&
+           <TouchableOpacity style={styles.confirmButton} onPress={onSubmit}>
+           <Text style={styles.confirmText}>Generate Purchaser Order</Text>
+       </TouchableOpacity>
+           }
+             {editing &&
+           <TouchableOpacity style={styles.confirmButton}  onPress={()=>setEditing(false)}>
+           <Text style={styles.confirmText}>Cancel</Text>
+       </TouchableOpacity>
+           }
+          
+       </View>
+   </View>
+</SafeAreaView>
+)
 }
 
+ 
 export default PurchaseOrder;
 
 const styles = StyleSheet.create({
@@ -457,29 +682,27 @@ const styles = StyleSheet.create({
         flex:0,
         backgroundColor:COLORS.primary,
     },
-    // loadingContainer: {
-    //     ...StyleSheet.absoluteFillObject,
-    //     position:'absolute',
-    //     zIndex:999999,
-    //     backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    //     justifyContent: 'center',
-    //     alignItems: 'center',
-    //   },
     errorText: {
         color: 'red',
         textAlign: 'center',
         marginTop: 10,
-    },
-    arrowBackIcon:{
-        position:'absolute',
-        top:50,
-        left:8
     },
     headerWrapper:{
         paddingVertical:45,
         borderBottomRightRadius:10,
         justifyContent:'center',
         alignItems:'center',
+    },
+    vendorComponent:{
+        paddingHorizontal:20,
+        width:"50%",
+    },
+    headerContainer:{
+        borderBottomRightRadius:10,
+        justifyContent:'space-between',
+        alignItems:'center',
+        flexDirection:'row',
+        width:'100%',
     },
     headerText:{
         fontFamily:'Poppins-Regular',
@@ -518,14 +741,52 @@ formInputWrapper:{
 formInput:{
     flex:0,
     width:'100%',
-    fontSize:18.5,
-    top:6,
-    right:10,
+    // width:100,
+    // height:100,
+    width:300,
+    height:50,
+    fontSize:18,
     fontFamily:'Poppins-Regular',
     justifyContent:'center',
     alignItems:'center',
-    color:'rgba(140, 140, 140,4)',
-    textAlign:'center',
+    color:'rgba(0, 0, 0,0.6)',
+    // textAlign:'center',
+    // borderWidth:0.5,
+    
+},
+formInput3:{
+zIndex:999,
+    width:'90%',
+    height:40,
+    fontSize:12,
+    fontFamily:'Poppins-Regular',
+    justifyContent:'center',
+    alignItems:'center',
+    color:'rgba(0, 0, 0,0.6)',
+    
+},
+formInput2:{
+    height:'80%',
+    width:'100%',
+    fontSize:15,
+    flex:1,
+    alignSelf:'center',
+    alignItems:'center',
+    alignContent:'center',
+    justifyContent:'center',
+    fontFamily:'Poppins-Regular',
+    top:1,
+    color:'black',
+    // borderWidth:0.5,
+},
+formInputContainer2:{
+    borderColor:'lightgray',
+    width:'18%',
+    borderWidth:2,
+    flex:0,
+    alignItems:'center',
+    justifyContent:'center',
+    marginVertical:2,
 },
 formInputSize:{
     flex:0,
@@ -566,36 +827,13 @@ uploadWrapper:{
     flex:0,
     flexDirection:'row',
     justifyContent:'center',
-    alignItems:'center',
-    paddingHorizontal:30,
+    alignItems:'center'
 },
-uploadContainerButton:{
-    paddingVertical:5,
-
-},
-uploadWrapperButton:{
-    flex:0,
-    flexDirection:'row',
-    justifyContent:'space-around',
-    alignItems:'center',
-},
-updateButton:{
-    backgroundColor:COLORS.secondary,
-    paddingVertical:8,
-    // paddingHorizontal:50,
+saveButton:{
+    backgroundColor:COLORS.primary,
     width:150,
-    borderRadius:30,
-    borderWidth:1.5,
-    borderColor:COLORS.primary,
-},
-deleteButton:{
-    backgroundColor:'red',
     paddingVertical:8,
-    width:150,
     borderRadius:30,
-    borderWidth:1.5,
-    borderColor:COLORS.primary,
-    
 },
 resetButton:{
     backgroundColor:'white',
@@ -618,18 +856,6 @@ resetText:{
     color:COLORS.primary,
     textAlign:'center'
 },
-deleteText:{
-    fontFamily:'Poppins-Regular',
-    fontSize:18,
-    color:'white',
-    textAlign:'center'
-},
-updateText:{
-    fontFamily:'Poppins-Regular',
-    fontSize:18,
-    color:COLORS.primary,
-    textAlign:'center'
-},
 uploadText:{
     fontFamily:'Poppins-Regular',
     fontSize:18,
@@ -637,35 +863,13 @@ uploadText:{
     textAlign:'center',
 
 },
-cancelButton:{
-    backgroundColor:COLORS.primary,
-    paddingVertical:8,
-    width:150,
-    borderRadius:30,
-    borderWidth:1.5,
-},
-cancelText:{
-    fontFamily:'Poppins-Regular',
-    fontSize:18,
-    color:'white',
-    textAlign:'center'
-},
 selectedImage:{
     height:170,
     resizeMode: 'cover',
     borderRadius:30,
     borderColor:COLORS.primary,
-    
 },
-loading:{
-    height:170,
-    borderRadius:30,
-    borderColor:COLORS.primary,
-    fontFamily:'Poppins-Regular',
-    fontSize:18,
-    color:COLORS.primary,
-    textAlign:'center',
-},
+
 loadingContainer: {
     ...StyleSheet.absoluteFillObject,
     position:'absolute',
@@ -728,5 +932,187 @@ loadingContainer: {
     textAlign: 'center',
     top:1,
   },
+  headContainer:{ 
+   flex:1,
+},
+headContainer2:{ 
+    minHeight:100,
+ },
+loadingContainer: {
+    ...StyleSheet.absoluteFillObject,
+    position:'absolute',
+    zIndex:999999,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+header:{
+   marginTop:25,
+    flex:0,
+    flexDirection:'row',
+    alignItems:'center',
+    justifyContent:'center',
+    height:30
+},
+settingsText:{
+    fontSize:24,
+    color:COLORS.primary,
+    top:2,
+    fontFamily:'Poppins-Regular',
+},
 
+arrowBackIcon:{
+  position:'absolute',
+  top:25,
+  left:18
+},
+mainLogo:{
+    flex:0,
+    justifyContent:'center',
+    alignItems:'center'
+},
+totalBill:{
+    color:COLORS.primary,
+    fontSize:20,
+    fontFamily:'Poppins-SemiBold',
+    marginTop:15,
+},
+
+totalAmountText:{
+    color:COLORS.primary,
+    fontFamily:'Poppins-Regular',
+},
+columnHeadingContainer:{
+    backgroundColor:COLORS.primary,
+    height:50,
+    borderRadius:15,
+},
+columnHeading:{
+    flex:1,
+    flexDirection:'row',
+    justifyContent:'space-around',
+    alignItems:'center',
+    color:'white',
+    paddingRight:2,
+},
+headingText1:{
+    color:'white',
+    fontSize:12,
+    flex:0.8,
+    left:5,
+},
+headingText:{
+    justifyContent:'center',
+    alignItems:'center'
+},
+billValuesContainer:{
+    flex:1,
+    height:50,
+    marginTop:8,
+    marginHorizontal:10,
+    borderBottomWidth:1,
+    flexDirection:'row',
+    justifyContent:'space-evenly',
+    alignItems:'center',
+    color:'white',
+    paddingHorizontal:12,
+    borderColor:'rgba(180, 180, 180,4)',
+},
+billValuesContainer1:{
+    flex:0,
+    height:50,
+    marginTop:8,
+    marginHorizontal:10,
+   borderBottomWidth:1,
+    flexDirection:'row',
+    justifyContent:'space-around',
+    alignItems:'center',
+    color:'white',
+    paddingHorizontal:12,
+    borderColor:'rgba(180, 180, 180,4)'
+},
+
+paidContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+  paidText: {
+    fontSize: 50, 
+    fontWeight: 'bold',
+    color: 'green',
+  },
+billValues1:{
+    fontSize:16,
+    color:'gray',
+    borderWidth:2,borderColor:'green' 
+},
+billValues:{
+    fontSize:15,
+    right:3,
+    color:'gray',
+    borderWidth:2,borderColor:'red' 
+
+},
+successText:{
+    color:'white',
+    fontSize:20,
+    fontFamily:'Poppins-Regular',
+    top:10,
+  },
+valueQty:{
+    flexDirection:'row',justifyContent:'center',alignItems:'center',right:3,
+  
+
+},
+valuePrice:{
+    flexDirection:'row',justifyContent:'center',alignItems:'center',
+   
+},
+
+itemText:{
+    
+    paddingLeft:4,        
+},
+footerWrapper:{
+
+    justifyContent:'center',
+    alignItems:'center',
+    paddingVertical:13,
+},
+confirmButton:{
+    backgroundColor:COLORS.primary,
+    flex:0,
+    justifyContent:'center',
+    alignItems:'center',
+    width:300,
+    marginHorizontal:10,
+    paddingVertical:8,
+    borderRadius:25,
+    marginVertical:10,
+},
+confirmText:{
+    fontSize:18,
+    color:'white',
+    fontFamily:'Poppins-Regular',
+    top:2,
+},
+addButton:{
+    backgroundColor:'white',
+    flex:0,
+    justifyContent:'center',
+    alignItems:'center',
+    width:300,
+    marginHorizontal:10,
+    paddingVertical:8,
+    borderRadius:25,
+    borderWidth:1,
+    borderColor:COLORS.primary,
+},
+addText:{
+    fontSize:18,
+    color:COLORS.primary,
+    fontFamily:'Poppins-Regular',
+    top:2,
+}
 })

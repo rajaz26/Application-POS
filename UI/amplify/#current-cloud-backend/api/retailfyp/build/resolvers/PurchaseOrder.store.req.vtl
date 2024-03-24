@@ -1,7 +1,7 @@
 #if( $ctx.stash.deniedField )
   #return($util.toJson(null))
 #end
-#set( $partitionKeyValue = $util.defaultIfNull($ctx.stash.connectionAttibutes.get("storePurchaseOrdersId"), $ctx.source.storePurchaseOrdersId) )
+#set( $partitionKeyValue = $util.defaultIfNull($ctx.stash.connectionAttibutes.get("storePurchaseOrderId"), $ctx.source.storePurchaseOrderId) )
 #if( $util.isNull($partitionKeyValue) )
   #return
 #else

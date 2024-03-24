@@ -112,10 +112,9 @@ const connectedDevice = useSelector(state => selectConnectedDevice(state)?.name)
                      <Ionic name="archive" size={25} color={COLORS.primary} style={styles.homeIcon} />
                     <Text style={styles.iconText}>POs List</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('History')}>
-                  {/* //<TouchableOpacity style={styles.iconContainer} onPress={createNewProduct}> */}
-                    {/* <Ionic name="settings" size={25} color={COLORS.primary} style={styles.homeIcon} />
-                    <Text style={styles.iconText}>Settings</Text> */}
+                  {/* <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('History')}> */}
+                    <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('Staff')}>
+                  
                     <Ionic name="newspaper-outline" size={25} color={COLORS.primary} style={styles.homeIcon} />
                     <Text style={styles.iconText}>Bills</Text>
                   </TouchableOpacity>

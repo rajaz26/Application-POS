@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   Text,
@@ -6,8 +6,10 @@ import {
   View,
   Modal,
   TextInput,
-  Alert
+  Alert,
+  Animated,
 } from 'react-native';
+
 // import beep from '../android/app/src/main/res/raw/beep.mp3';
 // import SoundPlayer from 'react-native-sound-player'
 // import TrackPlayer from 'react-native-track-player';
@@ -38,8 +40,25 @@ export default function Scan({route}) {
   const devices = useCameraDevices();
   const device = devices.back;
   const client = generateClient();
-   // Assume these are part of your component's state or global variables
 
+   const [fadeAnim] = useState(new Animated.Value(0));
+
+   const playAnimation = () => {
+     Animated.sequence([
+       Animated.timing(fadeAnim, {
+         toValue: 1,
+         duration: 500, 
+         useNativeDriver: true,
+       }),
+       Animated.delay(1000), 
+       Animated.timing(fadeAnim, {
+         toValue: 0,
+         duration: 500,
+         useNativeDriver: true,
+       }),
+     ]).start();
+   };
+ 
    const Playsound = ()=>{
     var beep = new Sound('beep.mp3', Sound.MAIN_BUNDLE, (error) => {
       if (error) {
@@ -192,6 +211,7 @@ toggleBillModal();
   
               setScannedProducts(updatedScannedProducts);
               Playsound();
+              playAnimation();
           } catch (error) {
               console.error("Error updating bill item:", error);
           }
@@ -239,6 +259,7 @@ toggleBillModal();
                     barcode:productDetails.barcode,
                 };
                 Playsound();
+                playAnimation();
                 setScannedProducts([...scannedProducts, newProductDetails]);
             }
         }
@@ -276,6 +297,7 @@ toggleBillModal();
 useEffect(() => {
   const total = scannedProducts.reduce((acc, curr) => acc + (curr.subtotal || 0), 0);
   setTotalBillAmount(total);
+  
 }, [scannedProducts]);
 
 
@@ -367,13 +389,17 @@ const handleConfirmPressed = () => {
             isScanning ? styles.scanButtonPressed : styles.scanButtonNotPressed, // Change style based on scanning state
           ]}
         >
+          
+
           <Text style={styles.buttonText}>
             {isScanning ? 'Scanning...' : 'Hold to Scan'}
           </Text>
+          <Text style={
+          styles.buttonContainer2}>ALI</Text>
         </TouchableOpacity>
         <View style={styles.buttonContainer}>
-
         
+       
         <TouchableOpacity
           onPress={toggleManualEntryModal}
           style={styles.showModal}
@@ -381,8 +407,16 @@ const handleConfirmPressed = () => {
           <Ionic size={25} color={'white'} name="create-outline" />
           <Text style={styles.buttonTextShow}>Manual</Text>
         </TouchableOpacity>
-        
-        
+        <Animated.Text
+        style={[
+          styles.scannedFeedback,
+          {
+            opacity: fadeAnim, 
+          },
+        ]}
+      >
+        Scanned
+      </Animated.Text>
         
         {scannedProducts.length > 0 && (
           <TouchableOpacity onPress={showScannedBarcodes} style={styles.showButton}>
@@ -402,6 +436,7 @@ const handleConfirmPressed = () => {
               <Text style={styles.buttonTextShow}>Clear</Text>
             </TouchableOpacity>
         )}
+         
 
 <TouchableOpacity onPress={refreshCamera} style={styles.confirmButton}>
 <Ionic size={25} color={'white'} name="camera-outline" />
@@ -489,8 +524,25 @@ const styles = StyleSheet.create({
     alignItems:'space-evenly',
     paddingVertical:20,
   },
+  buttonContainer2:{
+    position: 'absolute',
+    right: 20,
+    top: 120,
+    color:'red',
+    borderWidth:2,
+    // flexDirection:'column',
+    // justifyContent:'space-between',
+    // alignItems:'space-evenly',
+    paddingVertical:20,
+  },
   buttonText: {
     color: 'white',
+    top: 2,
+    fontFamily: 'Poppins-Regular',
+  },
+  buttonText2: {
+    color: 'white',
+    position:'absolute',
     top: 2,
     fontFamily: 'Poppins-Regular',
   },
@@ -517,6 +569,18 @@ const styles = StyleSheet.create({
     justifyContent:'center',
     alignItems:'center',
     marginBottom:30,
+  },
+  scannedFeedback: {
+    // position: 'absolute',
+    // bottom:'20%',
+    transform: [{ translateX: -50 }, { translateY: -50 }],
+    position: 'absolute',
+    right: 120,
+    width:150,
+    top: 480,
+    fontSize: 24,
+    fontFamily: 'Poppins-Regular',
+    color: 'white',
   },
   buttonTextShow: {
     color: 'white',

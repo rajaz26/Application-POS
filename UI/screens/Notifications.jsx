@@ -116,7 +116,7 @@ return (
     <View style={styles.headerWrapper}>
       <TouchableOpacity
         style={styles.arrowBackIcon}
-        onPress={() => navigation.navigate('Home')}
+        onPress={() => navigation.goBack()}
       >
         <Ionic size={22} color="white" name="chevron-back-outline" />
       </TouchableOpacity>

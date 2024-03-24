@@ -30,6 +30,41 @@ const client = generateClient();
  const [selectedImage, setSelectedImage] = useState(null);
  useEffect(() => {
 }, [selectedImage]); 
+const [originalBarcode, setOriginalBarcode] = useState(product.barcode);
+
+const ProductByBarcode = /* GraphQL */ `
+query ProductByBarcode($barcode: String!) {
+  productByBarcode(barcode: $barcode) {
+    items {
+      id
+      name
+      barcode
+      price
+      manufacturer
+      category
+      warehouseQuantity
+      shelfQuantity
+    }
+  }
+}
+
+`;
+
+const checkBarcodeExists = async (barcode) => {
+  try {
+    const graphqlResult = await client.graphql({
+      query: ProductByBarcode,
+      variables: { barcode: barcode },
+      authMode: 'apiKey',
+    });
+
+    const products = graphqlResult.data.productByBarcode.items;
+    return products.length > 0;
+  } catch (error) {
+    console.error('Error querying product by barcode:', error);
+    throw new Error('Failed to check barcode uniqueness');
+  }
+};
 
 const [productInput, setProductInput] = useState({
   id:product.id,
@@ -41,7 +76,10 @@ const [productInput, setProductInput] = useState({
   warehouseQuantity: product.warehouseQuantity,
   shelfQuantity: product.shelfQuantity,
   image: product.image,
+  shelfInventoryLimit:product.shelfInventoryLimit,
+  warehouseInventoryLimit:product.warehouseInventoryLimit,
   _version:product._version,
+  
 });
 useEffect(() => {
   setProductInput({
@@ -53,6 +91,8 @@ useEffect(() => {
     category: product.category,
     warehouseQuantity: product.warehouseQuantity,
     shelfQuantity: product.shelfQuantity,
+    shelfInventoryLimit:product.shelfInventoryLimit,
+    warehouseInventoryLimit:product.warehouseInventoryLimit,
     image: product.image,
     _version: product._version,
   });
@@ -88,7 +128,7 @@ useEffect(() => {
           text: 'Cancel',
           style: 'cancel',
         },
-        { text: 'Delete', onPress: () => confirmDelete() }, // Wrap the call in an arrow function
+        { text: 'Delete', onPress: () => confirmDelete() },
       ],
       { cancelable: false }
     );
@@ -204,6 +244,16 @@ const UploadNewImage=async()=>{
 }
 const handleUpdateData = async () => {
   setLoading(true);
+  
+  const barcodeChanged = productInput.barcode !== originalBarcode;
+  const barcodeExists = barcodeChanged && await checkBarcodeExists(productInput.barcode);
+
+  if (barcodeExists) {
+    Alert.alert('Barcode already exists', 'The entered barcode is already in use by another product. Please use a different barcode.');
+    setLoading(false);
+    return;
+  }
+
   if (startingProductImageUrl !== productInput.image) {
     try {
       const fileName=extractFilename(startingProductImageUrl);
@@ -229,13 +279,25 @@ const handleUpdateData = async () => {
   try {
     console.log('Updating product with input:', productInput);
     const updatedProduct = await client.graphql({
-
       query: updateProduct,
-      variables: { input: productInput },
+      variables: { input: {
+        id:productInput.id,
+        name:productInput.name,
+        barcode:productInput.barcode,
+        price:productInput.price,
+        manufacturer:productInput.manufacturer,
+        category:productInput.category,
+        warehouseQuantity:productInput.warehouseQuantity,
+        shelfQuantity:productInput.shelfQuantity,
+        image:productInput.image,
+        _version:productInput._version,
+        shelfInventoryLimit:productInput.shelfInventoryLimit,
+        warehouseInventoryLimit:productInput.warehouseInventoryLimit,
+      }},
       authMode: 'apiKey',
     });
     const up=updatedProduct.data.updateProduct;
-    if (up && up.shelfQuantity <= 10) {
+    if (up && up.shelfQuantity <= up.shelfInventoryLimit) {
       const notificationInput = {
         input: {
           warehousequanity: up.warehouseQuantity,
@@ -259,7 +321,7 @@ const handleUpdateData = async () => {
         console.error('Error creating notification:', error);
       }
     }
-    if (up && up.warehouseQuantity <= 10) {
+    if (up && up.warehouseQuantity <= up.warehouseInventoryLimit) {
       const notificationInput = {
         input: {
           warehousequanity: up.warehouseQuantity,
@@ -283,6 +345,7 @@ const handleUpdateData = async () => {
         console.error('Error creating notification:', error);
       }
     }
+    setOriginalBarcode(productInput.barcode);
     setLoading(false);
     console.log('Updated Product:', updatedProduct);
   } catch (error) {
@@ -326,7 +389,7 @@ const handleUpdateData = async () => {
      )}
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.headerContainer}>
-                <TouchableOpacity style={styles.arrowBack}  onPress={()=> navigation.goBack()}>
+                <TouchableOpacity style={styles.arrowBack}  onPress={()=> navigation.navigate('ProductsList')}>
                     <Ionic size={25} color='white' name ='chevron-back-outline'/>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.imageContainer} onPress={()=>handleLoading()}>
@@ -338,12 +401,12 @@ const handleUpdateData = async () => {
             <ScrollView >
             <View style={styles.cameraContainer}>
     {!isEditing && product.image && (
-        <Image source={{ uri: productInput.image }} onError={(error) => console.log("Image loading error:", error)} style={styles.productImage} />
+        <Image source={{ uri: productInput.image }} onError={(error) => console.log("Image loading error:")} style={styles.productImage} />
     )}
     {isEditing && (
       
         <TouchableOpacity style={styles.imageContainer} onPress={handleChoosePhoto}>
-            <Image source={{ uri: productInput.image }} onError={(error) => console.log("Image loading error:", error)} style={styles.productImage} />
+            <Image source={{ uri: productInput.image }} onError={(error) => console.log("Image loading error:")} style={styles.productImage} />
             <Ionic style={styles.plusImage} size={38} color={COLORS.primary} name='add-circle' />
         </TouchableOpacity>
     )}
@@ -357,7 +420,7 @@ const handleUpdateData = async () => {
                 <View style={styles.formInputContainer}>
                     <View style={styles.formInputWrapper}>
                         <View style={styles.imageContainer}>
-                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='pricetags-outline'/>
+                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='document-outline'/>
                         </View>
                         <View style={styles.inputContainer}>
                          <Controller
@@ -409,7 +472,7 @@ const handleUpdateData = async () => {
                 <View style={styles.formInputContainer}>
                     <View style={styles.formInputWrapper}>
                         <View style={styles.imageContainer}>
-                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='bag-outline'/>
+                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='hammer-outline'/>
                         </View>
                         <View style={styles.inputContainer}>
                             <Controller
@@ -498,7 +561,7 @@ const handleUpdateData = async () => {
                 <View style={styles.formInputContainer}>
                     <View style={styles.formInputWrapper}>
                         <View style={styles.imageContainer}>
-                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='cash-outline'/>
+                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='albums-outline'/>
                         </View>
                         <View style={styles.inputContainer}>
                     <Controller
@@ -517,14 +580,14 @@ const handleUpdateData = async () => {
                     name="warehouseQuantity"
                     defaultValue=""
                     />
-                    {errors.price && <Text style={styles.errorText}>Price is required</Text>}
+                    {errors.warehouseQuantity && <Text style={styles.errorText}>Warehouse Quantity is required</Text>}
                         </View>
                     </View>
                 </View>
                 <View style={styles.formInputContainer}>
                     <View style={styles.formInputWrapper}>
                         <View style={styles.imageContainer}>
-                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='cash-outline'/>
+                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='albums-outline'/>
                         </View>
                         <View style={styles.inputContainer}>
                     <Controller
@@ -543,7 +606,61 @@ const handleUpdateData = async () => {
                     name="shelfQuantity"
                     defaultValue=""
                     />
-                    {errors.price && <Text style={styles.errorText}>Price is required</Text>}
+                    {errors.shelfQuantity && <Text style={styles.errorText}>Shelf Quantity is required</Text>}
+                        </View>
+                    </View>
+                </View>
+                <View style={styles.formInputContainer}>
+                    <View style={styles.formInputWrapper}>
+                        <View style={styles.imageContainer}>
+                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='stopwatch-outline'/>
+                        </View>
+                        <View style={styles.inputContainer}>
+                    <Controller
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                        <TextInput
+                        style={styles.formInput}
+                        placeholder='Shelf Min Quantity'
+                        placeholderTextColor='rgba(170, 170, 170,4)'
+                        onChangeText={(text) => setProductInput(prevState => ({ ...prevState, shelfInventoryLimit: text }))}
+                        value={(productInput.shelfInventoryLimit || "").toString()}
+                      
+                        editable={isEditing}
+                        />
+                    )}
+                    name="shelfInventoryLimit"
+                    defaultValue=""
+                    />
+                    {errors.shelfInventoryLimit && <Text style={styles.errorText}>Shelf Min Quantity is required</Text>}
+                        </View>
+                    </View>
+                </View>
+                <View style={styles.formInputContainer}>
+                    <View style={styles.formInputWrapper}>
+                        <View style={styles.imageContainer}>
+                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='stopwatch-outline'/>
+                        </View>
+                        <View style={styles.inputContainer}>
+                    <Controller
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field }) => (
+                        <TextInput
+                        style={styles.formInput}
+                        placeholder='Warehouse Min Quantity'
+                        placeholderTextColor='rgba(170, 170, 170,4)'
+                        onChangeText={(text) => setProductInput(prevState => ({ ...prevState, warehouseInventoryLimit: text }))}
+                        
+                        value={(productInput.warehouseInventoryLimit || "").toString()} 
+                        editable={isEditing}
+                        />
+                    )}
+                    name="warehouseInventoryLimit"
+                    defaultValue=""
+                    />
+                    {errors.warehouseInventoryLimit && <Text style={styles.errorText}>Warehouse Min Quantity is required</Text>}
                         </View>
                     </View>
                 </View>
@@ -554,9 +671,9 @@ const handleUpdateData = async () => {
                       onPress={() => {
                           if (isEditing) {
                               handleUpdateData();
-                              setIsEditing(false); // After updating data, set isEditing to false
+                              setIsEditing(false);
                           } else {
-                              setIsEditing(true); // If not editing, toggle editing mode
+                              setIsEditing(true); 
                           }
                       }}
                     >
@@ -566,6 +683,9 @@ const handleUpdateData = async () => {
                         <TouchableOpacity style={styles.saveButton} onPress={handleDelete}>
                          <Text style={styles.saveText}>Delete</Text>
                       </TouchableOpacity>
+                     {isEditing &&<TouchableOpacity style={styles.resetButton} onPress={()=>setIsEditing(false)}>
+                         <Text style={styles.resetText}>Cancel</Text>
+                      </TouchableOpacity> } 
                     </View>
                 </View>
             </ScrollView>
@@ -701,13 +821,13 @@ const styles = StyleSheet.create({
     },
     saveButton:{
         backgroundColor:COLORS.primary,
-        width:150,
+        width:110,
         paddingVertical:8,
         borderRadius:30,
     },
     resetButton:{
         backgroundColor:'white',
-        width:150,
+        width:110,
         paddingVertical:8,
         borderRadius:30,
         borderWidth:1,

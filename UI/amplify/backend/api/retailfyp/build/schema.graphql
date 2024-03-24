@@ -18,7 +18,7 @@ type Store {
   users(filter: ModelUserFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelUserConnection
   products(filter: ModelProductFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelProductConnection
   bills(filter: ModelBillFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelBillConnection
-  purchaseOrders(filter: ModelPurchaseOrderFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelPurchaseOrderConnection
+  purchaseOrder(filter: ModelPurchaseOrderFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelPurchaseOrderConnection
   warehouseScan(filter: ModelWarehouseScanFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelWarehouseScanConnection
   billItems(filter: ModelBillItemFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelBillItemConnection
   category(filter: ModelCategoryFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelCategoryConnection
@@ -92,8 +92,11 @@ type Product {
   category1: Category
   warehouseQuantity: Int!
   shelfQuantity: Int!
+  warehouseInventoryLimit: Int
+  shelfInventoryLimit: Int
   store: Store
   billItems(filter: ModelBillItemFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelBillItemConnection
+  purchaseItems(filter: ModelPurchaseItemFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelPurchaseItemConnection
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
   _version: Int!
@@ -127,6 +130,7 @@ type BillItem {
 type Bill {
   id: ID!
   cashier: String!
+  cashierName: String
   items(filter: ModelBillItemFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelBillItemConnection
   totalAmount: Float!
   status: BillStatus!
@@ -142,17 +146,37 @@ type Bill {
 type PurchaseOrder {
   id: ID!
   purchaser: ID!
-  image: [String!]
+  purchaserName: String
   vendor: String
-  amount: Float
-  date: String
   store: Store
+  items(filter: ModelPurchaseItemFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelPurchaseItemConnection
+  totalAmount: Float!
+  status: BillStatus
+  purchaseItems(filter: ModelPurchaseItemFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelPurchaseItemConnection
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
   _version: Int!
   _deleted: Boolean
   _lastChangedAt: AWSTimestamp!
-  storePurchaseOrdersId: ID
+  storePurchaseOrderId: ID
+}
+
+type PurchaseItem {
+  id: ID!
+  product: Product!
+  productName: String
+  productPrice: Float
+  quantityOrdered: Int!
+  quantityReceived: Int!
+  purchaseOrder: PurchaseOrder
+  createdAt: AWSDateTime!
+  updatedAt: AWSDateTime!
+  _version: Int!
+  _deleted: Boolean
+  _lastChangedAt: AWSTimestamp!
+  productPurchaseItemsId: ID
+  purchaseOrderItemsId: ID!
+  purchaseOrderPurchaseItemsId: ID
 }
 
 type WarehouseScan {
@@ -362,6 +386,9 @@ type Query {
   getPurchaseOrder(id: ID!): PurchaseOrder
   listPurchaseOrders(filter: ModelPurchaseOrderFilterInput, limit: Int, nextToken: String): ModelPurchaseOrderConnection
   syncPurchaseOrders(filter: ModelPurchaseOrderFilterInput, limit: Int, nextToken: String, lastSync: AWSTimestamp): ModelPurchaseOrderConnection
+  getPurchaseItem(id: ID!): PurchaseItem
+  listPurchaseItems(filter: ModelPurchaseItemFilterInput, limit: Int, nextToken: String): ModelPurchaseItemConnection
+  syncPurchaseItems(filter: ModelPurchaseItemFilterInput, limit: Int, nextToken: String, lastSync: AWSTimestamp): ModelPurchaseItemConnection
   getWarehouseScan(id: ID!): WarehouseScan
   listWarehouseScans(filter: ModelWarehouseScanFilterInput, limit: Int, nextToken: String): ModelWarehouseScanConnection
   syncWarehouseScans(filter: ModelWarehouseScanFilterInput, limit: Int, nextToken: String, lastSync: AWSTimestamp): ModelWarehouseScanConnection
@@ -425,6 +452,9 @@ type Mutation {
   createPurchaseOrder(input: CreatePurchaseOrderInput!, condition: ModelPurchaseOrderConditionInput): PurchaseOrder
   updatePurchaseOrder(input: UpdatePurchaseOrderInput!, condition: ModelPurchaseOrderConditionInput): PurchaseOrder
   deletePurchaseOrder(input: DeletePurchaseOrderInput!, condition: ModelPurchaseOrderConditionInput): PurchaseOrder
+  createPurchaseItem(input: CreatePurchaseItemInput!, condition: ModelPurchaseItemConditionInput): PurchaseItem
+  updatePurchaseItem(input: UpdatePurchaseItemInput!, condition: ModelPurchaseItemConditionInput): PurchaseItem
+  deletePurchaseItem(input: DeletePurchaseItemInput!, condition: ModelPurchaseItemConditionInput): PurchaseItem
   createWarehouseScan(input: CreateWarehouseScanInput!, condition: ModelWarehouseScanConditionInput): WarehouseScan
   updateWarehouseScan(input: UpdateWarehouseScanInput!, condition: ModelWarehouseScanConditionInput): WarehouseScan
   deleteWarehouseScan(input: DeleteWarehouseScanInput!, condition: ModelWarehouseScanConditionInput): WarehouseScan
@@ -464,6 +494,9 @@ type Subscription {
   onCreatePurchaseOrder(filter: ModelSubscriptionPurchaseOrderFilterInput): PurchaseOrder @aws_subscribe(mutations: ["createPurchaseOrder"])
   onUpdatePurchaseOrder(filter: ModelSubscriptionPurchaseOrderFilterInput): PurchaseOrder @aws_subscribe(mutations: ["updatePurchaseOrder"])
   onDeletePurchaseOrder(filter: ModelSubscriptionPurchaseOrderFilterInput): PurchaseOrder @aws_subscribe(mutations: ["deletePurchaseOrder"])
+  onCreatePurchaseItem(filter: ModelSubscriptionPurchaseItemFilterInput): PurchaseItem @aws_subscribe(mutations: ["createPurchaseItem"])
+  onUpdatePurchaseItem(filter: ModelSubscriptionPurchaseItemFilterInput): PurchaseItem @aws_subscribe(mutations: ["updatePurchaseItem"])
+  onDeletePurchaseItem(filter: ModelSubscriptionPurchaseItemFilterInput): PurchaseItem @aws_subscribe(mutations: ["deletePurchaseItem"])
   onCreateWarehouseScan(filter: ModelSubscriptionWarehouseScanFilterInput): WarehouseScan @aws_subscribe(mutations: ["createWarehouseScan"])
   onUpdateWarehouseScan(filter: ModelSubscriptionWarehouseScanFilterInput): WarehouseScan @aws_subscribe(mutations: ["updateWarehouseScan"])
   onDeleteWarehouseScan(filter: ModelSubscriptionWarehouseScanFilterInput): WarehouseScan @aws_subscribe(mutations: ["deleteWarehouseScan"])
@@ -716,6 +749,8 @@ input ModelProductFilterInput {
   category: ModelStringInput
   warehouseQuantity: ModelIntInput
   shelfQuantity: ModelIntInput
+  warehouseInventoryLimit: ModelIntInput
+  shelfInventoryLimit: ModelIntInput
   and: [ModelProductFilterInput]
   or: [ModelProductFilterInput]
   not: ModelProductFilterInput
@@ -733,6 +768,8 @@ input ModelProductConditionInput {
   category: ModelStringInput
   warehouseQuantity: ModelIntInput
   shelfQuantity: ModelIntInput
+  warehouseInventoryLimit: ModelIntInput
+  shelfInventoryLimit: ModelIntInput
   and: [ModelProductConditionInput]
   or: [ModelProductConditionInput]
   not: ModelProductConditionInput
@@ -751,6 +788,8 @@ input CreateProductInput {
   category: String
   warehouseQuantity: Int!
   shelfQuantity: Int!
+  warehouseInventoryLimit: Int
+  shelfInventoryLimit: Int
   _version: Int
   storeProductsId: ID
   categoryProductId: ID
@@ -766,6 +805,8 @@ input UpdateProductInput {
   category: String
   warehouseQuantity: Int
   shelfQuantity: Int
+  warehouseInventoryLimit: Int
+  shelfInventoryLimit: Int
   _version: Int
   storeProductsId: ID
   categoryProductId: ID
@@ -786,6 +827,8 @@ input ModelSubscriptionProductFilterInput {
   category: ModelSubscriptionStringInput
   warehouseQuantity: ModelSubscriptionIntInput
   shelfQuantity: ModelSubscriptionIntInput
+  warehouseInventoryLimit: ModelSubscriptionIntInput
+  shelfInventoryLimit: ModelSubscriptionIntInput
   and: [ModelSubscriptionProductFilterInput]
   or: [ModelSubscriptionProductFilterInput]
   _deleted: ModelBooleanInput
@@ -890,6 +933,7 @@ input ModelBillStatusInput {
 input ModelBillFilterInput {
   id: ModelIDInput
   cashier: ModelStringInput
+  cashierName: ModelStringInput
   totalAmount: ModelFloatInput
   status: ModelBillStatusInput
   and: [ModelBillFilterInput]
@@ -901,6 +945,7 @@ input ModelBillFilterInput {
 
 input ModelBillConditionInput {
   cashier: ModelStringInput
+  cashierName: ModelStringInput
   totalAmount: ModelFloatInput
   status: ModelBillStatusInput
   and: [ModelBillConditionInput]
@@ -913,6 +958,7 @@ input ModelBillConditionInput {
 input CreateBillInput {
   id: ID
   cashier: String!
+  cashierName: String
   totalAmount: Float!
   status: BillStatus!
   _version: Int
@@ -922,6 +968,7 @@ input CreateBillInput {
 input UpdateBillInput {
   id: ID!
   cashier: String
+  cashierName: String
   totalAmount: Float
   status: BillStatus
   _version: Int
@@ -936,6 +983,7 @@ input DeleteBillInput {
 input ModelSubscriptionBillFilterInput {
   id: ModelSubscriptionIDInput
   cashier: ModelSubscriptionStringInput
+  cashierName: ModelSubscriptionStringInput
   totalAmount: ModelSubscriptionFloatInput
   status: ModelSubscriptionStringInput
   and: [ModelSubscriptionBillFilterInput]
@@ -952,50 +1000,50 @@ type ModelPurchaseOrderConnection {
 input ModelPurchaseOrderFilterInput {
   id: ModelIDInput
   purchaser: ModelIDInput
-  image: ModelStringInput
+  purchaserName: ModelStringInput
   vendor: ModelStringInput
-  amount: ModelFloatInput
-  date: ModelStringInput
+  totalAmount: ModelFloatInput
+  status: ModelBillStatusInput
   and: [ModelPurchaseOrderFilterInput]
   or: [ModelPurchaseOrderFilterInput]
   not: ModelPurchaseOrderFilterInput
   _deleted: ModelBooleanInput
-  storePurchaseOrdersId: ModelIDInput
+  storePurchaseOrderId: ModelIDInput
 }
 
 input ModelPurchaseOrderConditionInput {
   purchaser: ModelIDInput
-  image: ModelStringInput
+  purchaserName: ModelStringInput
   vendor: ModelStringInput
-  amount: ModelFloatInput
-  date: ModelStringInput
+  totalAmount: ModelFloatInput
+  status: ModelBillStatusInput
   and: [ModelPurchaseOrderConditionInput]
   or: [ModelPurchaseOrderConditionInput]
   not: ModelPurchaseOrderConditionInput
   _deleted: ModelBooleanInput
-  storePurchaseOrdersId: ModelIDInput
+  storePurchaseOrderId: ModelIDInput
 }
 
 input CreatePurchaseOrderInput {
   id: ID
   purchaser: ID!
-  image: [String!]
+  purchaserName: String
   vendor: String
-  amount: Float
-  date: String
+  totalAmount: Float!
+  status: BillStatus
   _version: Int
-  storePurchaseOrdersId: ID
+  storePurchaseOrderId: ID
 }
 
 input UpdatePurchaseOrderInput {
   id: ID!
   purchaser: ID
-  image: [String!]
+  purchaserName: String
   vendor: String
-  amount: Float
-  date: String
+  totalAmount: Float
+  status: BillStatus
   _version: Int
-  storePurchaseOrdersId: ID
+  storePurchaseOrderId: ID
 }
 
 input DeletePurchaseOrderInput {
@@ -1006,12 +1054,87 @@ input DeletePurchaseOrderInput {
 input ModelSubscriptionPurchaseOrderFilterInput {
   id: ModelSubscriptionIDInput
   purchaser: ModelSubscriptionIDInput
-  image: ModelSubscriptionStringInput
+  purchaserName: ModelSubscriptionStringInput
   vendor: ModelSubscriptionStringInput
-  amount: ModelSubscriptionFloatInput
-  date: ModelSubscriptionStringInput
+  totalAmount: ModelSubscriptionFloatInput
+  status: ModelSubscriptionStringInput
   and: [ModelSubscriptionPurchaseOrderFilterInput]
   or: [ModelSubscriptionPurchaseOrderFilterInput]
+  _deleted: ModelBooleanInput
+}
+
+type ModelPurchaseItemConnection {
+  items: [PurchaseItem]!
+  nextToken: String
+  startedAt: AWSTimestamp
+}
+
+input ModelPurchaseItemFilterInput {
+  id: ModelIDInput
+  productName: ModelStringInput
+  productPrice: ModelFloatInput
+  quantityOrdered: ModelIntInput
+  quantityReceived: ModelIntInput
+  and: [ModelPurchaseItemFilterInput]
+  or: [ModelPurchaseItemFilterInput]
+  not: ModelPurchaseItemFilterInput
+  _deleted: ModelBooleanInput
+  productPurchaseItemsId: ModelIDInput
+  purchaseOrderItemsId: ModelIDInput
+  purchaseOrderPurchaseItemsId: ModelIDInput
+}
+
+input ModelPurchaseItemConditionInput {
+  productName: ModelStringInput
+  productPrice: ModelFloatInput
+  quantityOrdered: ModelIntInput
+  quantityReceived: ModelIntInput
+  and: [ModelPurchaseItemConditionInput]
+  or: [ModelPurchaseItemConditionInput]
+  not: ModelPurchaseItemConditionInput
+  _deleted: ModelBooleanInput
+  productPurchaseItemsId: ModelIDInput
+  purchaseOrderItemsId: ModelIDInput
+  purchaseOrderPurchaseItemsId: ModelIDInput
+}
+
+input CreatePurchaseItemInput {
+  id: ID
+  productName: String
+  productPrice: Float
+  quantityOrdered: Int!
+  quantityReceived: Int!
+  _version: Int
+  productPurchaseItemsId: ID
+  purchaseOrderItemsId: ID!
+  purchaseOrderPurchaseItemsId: ID
+}
+
+input UpdatePurchaseItemInput {
+  id: ID!
+  productName: String
+  productPrice: Float
+  quantityOrdered: Int
+  quantityReceived: Int
+  _version: Int
+  productPurchaseItemsId: ID
+  purchaseOrderItemsId: ID
+  purchaseOrderPurchaseItemsId: ID
+}
+
+input DeletePurchaseItemInput {
+  id: ID!
+  _version: Int
+}
+
+input ModelSubscriptionPurchaseItemFilterInput {
+  id: ModelSubscriptionIDInput
+  productName: ModelSubscriptionStringInput
+  productPrice: ModelSubscriptionFloatInput
+  quantityOrdered: ModelSubscriptionIntInput
+  quantityReceived: ModelSubscriptionIntInput
+  and: [ModelSubscriptionPurchaseItemFilterInput]
+  or: [ModelSubscriptionPurchaseItemFilterInput]
   _deleted: ModelBooleanInput
 }
 

@@ -132,7 +132,7 @@
             "AttributeType": "S"
           },
           {
-            "AttributeName": "storePurchaseOrdersId",
+            "AttributeName": "storePurchaseOrderId",
             "AttributeType": "S"
           }
         ],
@@ -179,10 +179,10 @@
             }
           },
           {
-            "IndexName": "gsi-Store.purchaseOrders",
+            "IndexName": "gsi-Store.purchaseOrder",
             "KeySchema": [
               {
-                "AttributeName": "storePurchaseOrdersId",
+                "AttributeName": "storePurchaseOrderId",
                 "KeyType": "HASH"
               }
             ],

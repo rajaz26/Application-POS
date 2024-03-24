@@ -22,7 +22,7 @@ export const getStore = /* GraphQL */ `
         startedAt
         __typename
       }
-      purchaseOrders {
+      purchaseOrder {
         nextToken
         startedAt
         __typename
@@ -421,6 +421,8 @@ export const getProduct = /* GraphQL */ `
       }
       warehouseQuantity
       shelfQuantity
+      warehouseInventoryLimit
+      shelfInventoryLimit
       store {
         id
         name
@@ -433,6 +435,11 @@ export const getProduct = /* GraphQL */ `
         __typename
       }
       billItems {
+        nextToken
+        startedAt
+        __typename
+      }
+      purchaseItems {
         nextToken
         startedAt
         __typename
@@ -465,6 +472,8 @@ export const listProducts = /* GraphQL */ `
         category
         warehouseQuantity
         shelfQuantity
+        warehouseInventoryLimit
+        shelfInventoryLimit
         createdAt
         updatedAt
         _version
@@ -503,6 +512,8 @@ export const syncProducts = /* GraphQL */ `
         category
         warehouseQuantity
         shelfQuantity
+        warehouseInventoryLimit
+        shelfInventoryLimit
         createdAt
         updatedAt
         _version
@@ -532,6 +543,8 @@ export const getBillItem = /* GraphQL */ `
         category
         warehouseQuantity
         shelfQuantity
+        warehouseInventoryLimit
+        shelfInventoryLimit
         createdAt
         updatedAt
         _version
@@ -550,6 +563,7 @@ export const getBillItem = /* GraphQL */ `
       bill {
         id
         cashier
+        cashierName
         totalAmount
         status
         createdAt
@@ -656,6 +670,7 @@ export const getBill = /* GraphQL */ `
     getBill(id: $id) {
       id
       cashier
+      cashierName
       items {
         nextToken
         startedAt
@@ -694,6 +709,7 @@ export const listBills = /* GraphQL */ `
       items {
         id
         cashier
+        cashierName
         totalAmount
         status
         createdAt
@@ -726,6 +742,7 @@ export const syncBills = /* GraphQL */ `
       items {
         id
         cashier
+        cashierName
         totalAmount
         status
         createdAt
@@ -747,10 +764,8 @@ export const getPurchaseOrder = /* GraphQL */ `
     getPurchaseOrder(id: $id) {
       id
       purchaser
-      image
+      purchaserName
       vendor
-      amount
-      date
       store {
         id
         name
@@ -762,12 +777,24 @@ export const getPurchaseOrder = /* GraphQL */ `
         _lastChangedAt
         __typename
       }
+      items {
+        nextToken
+        startedAt
+        __typename
+      }
+      totalAmount
+      status
+      purchaseItems {
+        nextToken
+        startedAt
+        __typename
+      }
       createdAt
       updatedAt
       _version
       _deleted
       _lastChangedAt
-      storePurchaseOrdersId
+      storePurchaseOrderId
       __typename
     }
   }
@@ -782,16 +809,16 @@ export const listPurchaseOrders = /* GraphQL */ `
       items {
         id
         purchaser
-        image
+        purchaserName
         vendor
-        amount
-        date
+        totalAmount
+        status
         createdAt
         updatedAt
         _version
         _deleted
         _lastChangedAt
-        storePurchaseOrdersId
+        storePurchaseOrderId
         __typename
       }
       nextToken
@@ -816,16 +843,136 @@ export const syncPurchaseOrders = /* GraphQL */ `
       items {
         id
         purchaser
-        image
+        purchaserName
         vendor
-        amount
-        date
+        totalAmount
+        status
         createdAt
         updatedAt
         _version
         _deleted
         _lastChangedAt
-        storePurchaseOrdersId
+        storePurchaseOrderId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const getPurchaseItem = /* GraphQL */ `
+  query GetPurchaseItem($id: ID!) {
+    getPurchaseItem(id: $id) {
+      id
+      product {
+        id
+        name
+        barcode
+        image
+        price
+        manufacturer
+        category
+        warehouseQuantity
+        shelfQuantity
+        warehouseInventoryLimit
+        shelfInventoryLimit
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeProductsId
+        categoryProductId
+        __typename
+      }
+      productName
+      productPrice
+      quantityOrdered
+      quantityReceived
+      purchaseOrder {
+        id
+        purchaser
+        purchaserName
+        vendor
+        totalAmount
+        status
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storePurchaseOrderId
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      productPurchaseItemsId
+      purchaseOrderItemsId
+      purchaseOrderPurchaseItemsId
+      __typename
+    }
+  }
+`;
+export const listPurchaseItems = /* GraphQL */ `
+  query ListPurchaseItems(
+    $filter: ModelPurchaseItemFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    listPurchaseItems(filter: $filter, limit: $limit, nextToken: $nextToken) {
+      items {
+        id
+        productName
+        productPrice
+        quantityOrdered
+        quantityReceived
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productPurchaseItemsId
+        purchaseOrderItemsId
+        purchaseOrderPurchaseItemsId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const syncPurchaseItems = /* GraphQL */ `
+  query SyncPurchaseItems(
+    $filter: ModelPurchaseItemFilterInput
+    $limit: Int
+    $nextToken: String
+    $lastSync: AWSTimestamp
+  ) {
+    syncPurchaseItems(
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+      lastSync: $lastSync
+    ) {
+      items {
+        id
+        productName
+        productPrice
+        quantityOrdered
+        quantityReceived
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        productPurchaseItemsId
+        purchaseOrderItemsId
+        purchaseOrderPurchaseItemsId
         __typename
       }
       nextToken
@@ -994,6 +1141,8 @@ export const productByName = /* GraphQL */ `
         category
         warehouseQuantity
         shelfQuantity
+        warehouseInventoryLimit
+        shelfInventoryLimit
         createdAt
         updatedAt
         _version
@@ -1036,6 +1185,8 @@ export const productByBarcode = /* GraphQL */ `
         category
         warehouseQuantity
         shelfQuantity
+        warehouseInventoryLimit
+        shelfInventoryLimit
         createdAt
         updatedAt
         _version
@@ -1071,6 +1222,7 @@ export const billByCashierId = /* GraphQL */ `
       items {
         id
         cashier
+        cashierName
         totalAmount
         status
         createdAt
@@ -1107,16 +1259,16 @@ export const poByPurchaserId = /* GraphQL */ `
       items {
         id
         purchaser
-        image
+        purchaserName
         vendor
-        amount
-        date
+        totalAmount
+        status
         createdAt
         updatedAt
         _version
         _deleted
         _lastChangedAt
-        storePurchaseOrdersId
+        storePurchaseOrderId
         __typename
       }
       nextToken

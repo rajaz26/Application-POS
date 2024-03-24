@@ -26,6 +26,7 @@ const Profile = ({route}) => {
   
   const navigation = useNavigation();
   const client = generateClient();
+  const userRole = useSelector((state) => state.user.role);
   const [loading, setLoading] = useState(false);
   const defaultIdCardImage = require('../assets/images/profile.png');
   const [originalProfileImage, setOriginalProfileImage] = useState('');
@@ -452,10 +453,24 @@ const extractFileNameFromUrl = (url) => {
           source={require('../assets/images/profile.png')}
           style={styles.profileImage}
         /> */}
-        <TouchableOpacity onPress={() => selectImage('profile')} style={styles.profileImageHeader} >
-  <Image source={user.image ? { uri: user.image } : require("../assets/images/person.jpg")} style={styles.profileImage} />
-  {editing && <Ionic style={styles.iconStyle} name='camera' />}
-</TouchableOpacity>
+        {!editing && (
+    <View style={styles.profileImageHeader}>
+      <Image
+        source={user.image ? { uri: user.image } : require("../assets/images/person.jpg")}
+        style={styles.profileImage}
+      />
+    </View>
+  )}
+       {editing && (
+    <TouchableOpacity onPress={() => selectImage('profile')} style={styles.profileImageHeader}>
+      <Image
+        source={user.image ? { uri: user.image } : require("../assets/images/person.jpg")}
+        style={styles.profileImage}
+      />
+      <Ionic style={styles.iconStyle} name='camera' />
+    </TouchableOpacity>
+  )}
+
         <ScrollView style={styles.scrolledView}>
  
         <View style={styles.formInputContainer}>
@@ -668,6 +683,7 @@ headerData:{
     borderColor:'white',
     borderWidth:1,
   },
+
   name: {
     fontSize: 25,
     color: 'white',

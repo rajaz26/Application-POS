@@ -23,6 +23,7 @@ const ConfirmBill = ({route}) => {
     const [scannedProducts, setScannedProducts] = useState(scannedProductsList || []);
     const [totalBillAmount, setTotalBillAmount] = useState(totalBillAmountValue||0);
     const userName = useSelector((state) => state.user.username);
+    const storeName = useSelector((state) => state.user.storename);
     const client = generateClient();
     const handleAddProduct = () => {
         navigation.navigate('Scan', { scannedProductsList: scannedProducts });
@@ -74,20 +75,14 @@ const ConfirmBill = ({route}) => {
           await BluetoothEscposPrinter.printerLeftSpace(0);
           await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.CENTER);
           await BluetoothEscposPrinter.setBlob(0);
-          await BluetoothEscposPrinter.printText("Khattak Store\n", {
+          await BluetoothEscposPrinter.printText(`${storeName || 'Storename'}\n`, {
             encoding: 'GBK',
             codepage: 0,
             widthtimes: 3,
             heigthtimes: 3,
             fonttype: 1
-          });
-          await BluetoothEscposPrinter.printText("Yousuf Colony\n", {
-            encoding: 'GBK',
-            codepage: 0,
-            widthtimes: 1,
-            heigthtimes: 1,
-            fonttype: 1
-          });
+        });
+        
           await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.LEFT);
           await BluetoothEscposPrinter.printText(`Cashier: ${userName}\n`, {});
           await BluetoothEscposPrinter.printText("--------------------------------\n", {});
@@ -133,7 +128,7 @@ const ConfirmBill = ({route}) => {
               authMode: 'apiKey',
             });
             const up=updatedProduct.data.updateProduct;
-            if (up && up.shelfQuantity <= 10) {
+            if (up && up.shelfQuantity <= up.shelfInventoryLimit) {
               const notificationInput = {
                 input: {
                   warehousequanity: up.warehouseQuantity,

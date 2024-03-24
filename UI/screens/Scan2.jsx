@@ -36,8 +36,8 @@ export default function Scan2({route}) {
   const [manualBarcode, setManualBarcode] = React.useState('');
   const [billModalVisible, setBillModalVisible] = React.useState(false);
   const [cameraKey, setCameraKey] = useState(1);
-  const [quantity, setQuantity] = useState(''); // For the quantity input
-  const [quantityModalVisible, setQuantityModalVisible] = useState(false); // To control the visibility of the quantity modal
+  const [quantity, setQuantity] = useState(''); 
+  const [quantityModalVisible, setQuantityModalVisible] = useState(false); 
   const [currentProduct, setCurrentProduct] = useState(null);
   const devices = useCameraDevices();
   const device = devices.back;
@@ -341,7 +341,7 @@ const updateProductQuantityInBackend = async (productId, newQuantity,version) =>
       });
       
     const up=response.data.updateProduct;
-      if (up && up.warehouseQuantity <= 10) {
+      if (up && up.warehouseQuantity <= up.warehouseInventoryLimit) {
         const notificationInput = {
           input: {
             warehousequanity: up.warehouseQuantity,

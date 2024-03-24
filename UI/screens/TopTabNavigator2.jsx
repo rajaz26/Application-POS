@@ -12,12 +12,13 @@ import SettingsScreen from './SettingsScreen';
 import { useSelector } from 'react-redux'; 
 import CashierHome from './CashierHome';
 import WMHome from './WMHome';
+import WarehouseScanHistory from './WarehouseScanHistory';
 const Tab = createMaterialTopTabNavigator();
 
 
 const tabIcons = {
   Dashboard: 'home',
-  History: 'archive',
+  WarehouseScan: 'receipt',
   Scan2: 'scan',
   Settings: 'settings',
   Profile: 'person',
@@ -74,11 +75,9 @@ const TopTabNavigator2 = () => {
       tabBarPosition="bottom"
       screenOptions={{
         tabBarShowLabel: false,
-      }}
-      
-    >
+      }}>
       <Tab.Screen name="Dashboard" component={WMHome} />
-      <Tab.Screen name="History" component={History} />
+      <Tab.Screen name="WarehouseScan" component={WarehouseScanHistory} />
       <Tab.Screen name="Scan2" component={Scan2} />
       <Tab.Screen name="Settings" component={SettingsScreen} />
       <Tab.Screen name="Profile" component={Profile} />

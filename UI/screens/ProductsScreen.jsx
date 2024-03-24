@@ -1,4 +1,4 @@
-import React, {useState, useEffect,useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,51 +9,56 @@ import {
   Image,
   Keyboard,
   ScrollView,
-} from 'react-native'; 
-import {listProducts} from '../src/graphql/queries'
+} from 'react-native';
+import { listProducts } from '../src/graphql/queries';
 import { generateClient } from 'aws-amplify/api';
-import ImageResizeMode from 'react-native/Libraries/Image/ImageResizeMode'
+import ImageResizeMode from 'react-native/Libraries/Image/ImageResizeMode';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {COLORS} from '../assets/theme';
-import {useNavigation,useFocusEffect } from '@react-navigation/native';
+import { COLORS } from '../assets/theme';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { connect } from 'react-redux';
-const ProductsScreen = ({route}) => {
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+
+const ProductsScreen = ({ route }) => {
   const client = generateClient();
   const [productsObj, setProductsObj] = useState([]);
+  const [loading, setLoading] = useState(true); // Add loading state
+
   const fetchAllProducts = async () => {
     try {
       const { data } = await client.graphql({
         query: listProducts,
         variables: {
           filter: {
-              _deleted: {
-                  ne: true
-                        }
-                  }
-                },
-          authMode:'apiKey'
+            _deleted: {
+              ne: true,
+            },
+          },
+        },
+        authMode: 'apiKey',
       });
       const { items } = data.listProducts;
       setProductsObj(items);
+      setLoading(false); // Set loading to false when products are fetched
     } catch (error) {
       console.error('Error fetching products:', error);
+      setLoading(false); // Set loading to false even if there's an error
     }
   };
-  useFocusEffect(
-    useCallback(() => {
-      fetchAllProducts();
-      // The empty array as a dependency means this effect runs on mount and focus
-    }, [products])
-  );
+
   useEffect(() => {
-    console.log("skrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
-    productsObj.forEach(product => {
-      console.log(product);
-      console.log("\n"); // Add an empty line between each product
-    });
-    console.log("skrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr");
-    
-  },[productsObj]); // Log productsObj whenever it changes
+    fetchAllProducts();
+  }, []);
+
+  // useEffect(() => {
+  //   productsObj.forEach((product) => {
+  //     console.log(product);
+  //     console.log('\n'); // Add an empty line between each product
+  //   });
+  //   console.log(
+  //     'skrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr'
+  //   );
+  // }, [productsObj]); // Log productsObj whenever it changes
 
   const navigation = useNavigation();
   // const products = route.params.productsObj;
@@ -67,25 +72,27 @@ const ProductsScreen = ({route}) => {
   useEffect(() => {
     setFilteredProducts(products);
     const allCategories = Array.from(
-      new Set(products.map(product => product.category)),
+      new Set(products.map((product) => product.category))
     );
     setFilteredCategories(allCategories);
   }, [products]);
+
   const handleAddProduct = () => {
     navigation.navigate('AddProduct');
   };
-  const handleSearch = query => {
+
+  const handleSearch = (query) => {
     setSearchQuery(query);
     const filtered = products.filter(
-      product =>
+      (product) =>
         product.name?.toLowerCase().includes(query.toLowerCase()) ||
-        product.brand?.toLowerCase().includes(query.toLowerCase()),
+        product.brand?.toLowerCase().includes(query.toLowerCase())
     );
     setFilteredProducts(filtered);
 
     // Filter categories that have matching products
     const matchingCategories = Array.from(
-      new Set(filtered.map(product => product.category)),
+      new Set(filtered.map((product) => product.category))
     );
     setFilteredCategories(matchingCategories);
 
@@ -97,28 +104,28 @@ const ProductsScreen = ({route}) => {
     Keyboard.dismiss();
     setFilteredProducts(products);
     setFilteredCategories(
-      Array.from(new Set(products.map(product => product.category))),
+      Array.from(new Set(products.map((product) => product.category)))
     );
-    setSelectedCategory('All'); // Reset selected category
+    setSelectedCategory('All');
     setIsSearchActive(false);
   };
 
-  const renderProductCard = ({item}) => (
- 
+  const renderProductCard = ({ item }) => (
     <TouchableOpacity
       style={styles.productCard}
       onPress={() =>
         navigation.navigate('Product', {
           item: item,
         })
-      }>
+      }
+    >
       <View style={styles.productImageContainer}>
         {/* Image */}
         <Image
-        source={{ uri:item.image}}
-        style={styles.productImage}
-        onError={(error) => console.log("Image loading error:", error)}
-      />
+          source={{ uri: item.image }}
+          style={styles.productImage}
+          // onError={(error) => console.log('Image loading error:', error)}
+        />
       </View>
       <View style={styles.productDetails}>
         {/* Product Name */}
@@ -131,65 +138,143 @@ const ProductsScreen = ({route}) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.searchBar}>
-        <Ionicons
-          name="search-outline"
-          size={24}
-          color={COLORS.primary}
-          style={styles.searchIcon}
-        />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search here"
-          placeholderTextColor={COLORS.primary}
-          value={isSearchActive ? searchQuery : ''}
-          onChangeText={query => {
-            handleSearch(query);
-            setIsSearchActive(query !== '');
-          }}
-        />
-        {isSearchActive && (
-          <TouchableOpacity onPress={handleCancel}>
-            <Text style={styles.cancelButton}>Cancel</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-      <ScrollView style={styles.containerScrollView}>
-        {filteredCategories.map(category => (
-          <View key={category}>
-            <View style={styles.categoryTitleContainer}>
-              <Text style={styles.categoryTitle}>{category}</Text>
-              {filteredProducts.filter(product => product.category === category)
-                .length > 2 && (
-                <Ionicons
-                  name="chevron-forward"
-                  size={24}
-                  color={COLORS.primary}
-                />
-              )}
-            </View>
-            <View style={styles.categoryRow}>
-              <FlatList
-                data={filteredProducts.filter(
-                  product => product.category === category,
-                )}
-                renderItem={renderProductCard}
-                keyExtractor={item => item.id}
-                horizontal
-                contentContainerStyle={styles.categoryCardList}
-                showsHorizontalScrollIndicator={false}
-              />
-            </View>
-          </View>
-        ))}
+      {loading ? (
+         <View style={{flex:1,backgroundColor:'white',borderWidth:1,justifyContent:'center',paddingHorizontal:25}}>
+         <SkeletonPlaceholder borderRadius={4}>
+         <SkeletonPlaceholder.Item width={100} height={20} />
+          <View style={{paddingVertical:20}}>
+          <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+          <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+          <SkeletonPlaceholder.Item marginLeft={20}>
+            <SkeletonPlaceholder.Item width={200} height={20} />
+            <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+          </SkeletonPlaceholder.Item>
+        </SkeletonPlaceholder.Item>
+          </View>      
+      </SkeletonPlaceholder>
+      <SkeletonPlaceholder borderRadius={4}>
       
-      </ScrollView>
-      <View style={styles.containerButton}>
-      <TouchableOpacity style={styles.floatingButton} onPress={handleAddProduct}>
-      <Text style={styles.buttonText}>Add Product</Text>
-    </TouchableOpacity>
+          <View style={{paddingVertical:20}}>
+          <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+          <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+          <SkeletonPlaceholder.Item marginLeft={20}>
+            <SkeletonPlaceholder.Item width={200} height={20} />
+            <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+          </SkeletonPlaceholder.Item>
+        </SkeletonPlaceholder.Item>
+          </View>
+       
+        
+      </SkeletonPlaceholder>
+      <SkeletonPlaceholder borderRadius={4}>
+      <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+          <View style={{paddingVertical:20}}>
+          <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+          <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+          <SkeletonPlaceholder.Item marginLeft={20}>
+            <SkeletonPlaceholder.Item width={200} height={20} />
+            <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+          </SkeletonPlaceholder.Item>
+        </SkeletonPlaceholder.Item>
+          </View>
+       
+        
+      </SkeletonPlaceholder>
+      <SkeletonPlaceholder borderRadius={4}>
+      <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+          <View style={{paddingVertical:20}}>
+          <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+          <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+          <SkeletonPlaceholder.Item marginLeft={20}>
+            <SkeletonPlaceholder.Item width={200} height={20} />
+            <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+          </SkeletonPlaceholder.Item>
+        </SkeletonPlaceholder.Item>
+          </View>
+       
+        
+      </SkeletonPlaceholder>
+      <SkeletonPlaceholder borderRadius={4}>
+      <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+          <View style={{paddingVertical:20}}>
+          <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+          <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+          <SkeletonPlaceholder.Item marginLeft={20}>
+            <SkeletonPlaceholder.Item width={200} height={20} />
+            <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+          </SkeletonPlaceholder.Item>
+        </SkeletonPlaceholder.Item>
+          </View>
+       
+        
+      </SkeletonPlaceholder>
+  
       </View>
-    
+      ) : (
+        <>
+          <View style={styles.searchBar}>
+            <Ionicons
+              name="search-outline"
+              size={24}
+              color={COLORS.primary}
+              style={styles.searchIcon}
+            />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search here"
+              placeholderTextColor={COLORS.primary}
+              value={isSearchActive ? searchQuery : ''}
+              onChangeText={(query) => {
+                handleSearch(query);
+                setIsSearchActive(query !== '');
+              }}
+            />
+            {isSearchActive && (
+              <TouchableOpacity onPress={handleCancel}>
+                <Text style={styles.cancelButton}>Cancel</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+          <ScrollView style={styles.containerScrollView}>
+            {filteredCategories.map((category) => (
+              <View key={category}>
+                <View style={styles.categoryTitleContainer}>
+                  <Text style={styles.categoryTitle}>{category}</Text>
+                  {filteredProducts.filter(
+                    (product) => product.category === category
+                  ).length > 2 && (
+                    <Ionicons
+                      name="chevron-forward"
+                      size={24}
+                      color={COLORS.primary}
+                    />
+                  )}
+                </View>
+                <View style={styles.categoryRow}>
+                  <FlatList
+                    data={filteredProducts.filter(
+                      (product) => product.category === category
+                    )}
+                    renderItem={renderProductCard}
+                    keyExtractor={(item) => item.id}
+                    horizontal
+                    contentContainerStyle={styles.categoryCardList}
+                    showsHorizontalScrollIndicator={false}
+                  />
+                </View>
+              </View>
+            ))}
+          </ScrollView>
+          <View style={styles.containerButton}>
+            <TouchableOpacity
+              style={styles.floatingButton}
+              onPress={handleAddProduct}
+            >
+              <Text style={styles.buttonText}>Add Product</Text>
+            </TouchableOpacity>
+          </View>
+        </>
+      )}
     </View>
   );
 };
@@ -198,22 +283,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    
   },
 
-  containerScrollView:{
-
+  containerScrollView: {
     // marginBottom:50,
   },
   categoryRow: {
-    backgroundColor: '#F6F6F6', // Background color for the entire row
+    backgroundColor: '#F6F6F6', 
     paddingTop: 15, // Vertical padding for the row
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 10, // Vertical margin for the row
     marginHorizontal: 13,
-    width:'100%'
+    width: '100%',
   },
   categoryTitleContainer: {
     flexDirection: 'row',
@@ -221,7 +304,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 10,
     marginBottom: 5,
-    
   },
 
   categoryCardList: {
@@ -234,7 +316,7 @@ const styles = StyleSheet.create({
     fontSize: 19,
     color: COLORS.primary,
     marginVertical: 10,
-    fontFamily:'Poppins-SemiBold',
+    fontFamily: 'Poppins-SemiBold',
   },
   searchBar: {
     flexDirection: 'row',
@@ -251,14 +333,14 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     color: COLORS.primary,
-    fontFamily:'Poppins-Regular',
-    top:2,
+    fontFamily: 'Poppins-Regular',
+    top: 2,
   },
   cancelButton: {
     color: COLORS.primary,
-    fontFamily:'Poppins-SemiBold',
-    right:2,
-    top:1.5,
+    fontFamily: 'Poppins-SemiBold',
+    right: 2,
+    top: 1.5,
   },
   productCard: {
     width: 150,
@@ -268,17 +350,17 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     marginHorizontal: 10,
     justifyContent: 'space-between',
-    borderWidth:0.5,
-    borderColor:'lightgray',
-    elevation: 6, 
-        shadowColor: 'black', 
-        shadowOffset: {
-            width: 0,
-            height: 2, 
-        },
-    shadowOpacity: 1, 
-    shadowRadius: 15, 
-    marginBottom:15,
+    borderWidth: 0.5,
+    borderColor: 'lightgray',
+    elevation: 6,
+    shadowColor: 'black',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 1,
+    shadowRadius: 15,
+    marginBottom: 15,
   },
   swipeIcon: {
     position: 'absolute',
@@ -299,43 +381,49 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 10,
   },
   productDetails: {
-    alignItems: 'center', 
-    flex:1,
-    justifyContent:'center'
+    alignItems: 'center',
+    flex: 1,
+    justifyContent: 'center',
   },
   productName: {
     color: COLORS.primary,
     textAlign: 'center',
-    fontFamily:'Poppins-SemiBold',
-    fontSize:13,
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 13,
   },
   productPrice: {
     color: COLORS.primary,
     textAlign: 'center',
-    fontFamily:'Poppins-SemiBold',
-    fontSize:10,
+    fontFamily: 'Poppins-SemiBold',
+    fontSize: 10,
   },
   floatingButton: {
     position: 'absolute',
     bottom: 20,
-    backgroundColor: COLORS.secondary, 
+    backgroundColor: COLORS.secondary,
     borderRadius: 30,
     paddingVertical: 15,
     paddingHorizontal: 40,
     elevation: 5,
-    zIndex:3,
+    zIndex: 3,
   },
   buttonText: {
     color: COLORS.primary,
     fontSize: 17,
-    top:1.5,
-    fontFamily:'Poppins-SemiBold',
+    top: 1.5,
+    fontFamily: 'Poppins-SemiBold',
   },
-  containerButton:{
-    flex:1,
-    justifyContent:'center',
-    alignItems:'center',
-  }
+  containerButton: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    textAlign: 'center',
+    marginTop: 20,
+    fontSize: 18,
+    fontFamily: 'Poppins-Regular',
+  },
 });
 
 export default ProductsScreen;

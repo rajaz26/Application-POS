@@ -13,30 +13,9 @@ const PurchaseHistory = () => {
   const navigation=useNavigation();
   const client= generateClient();
   const [purchaseOrders, setPurchaseOrders] = useState([]);
-  const listPurchaseOrders = /* GraphQL */ `
-  query ListPurchaseOrders(
-    $filter: ModelPurchaseOrderFilterInput
-    $limit: Int
-    $nextToken: String
-  ) {
-    listPurchaseOrders(filter: $filter, limit: $limit, nextToken: $nextToken) {
-      items {
-        id
-        purchaser
-        vendor
-        amount
-        date
-        createdAt
-        _version
-        _deleted
-      }
-    }
-  }
-`;
+
   const  fetchAllPOs=async()=>{
     try{
-
-    
     const {data}= await client.graphql({
       query:listPurchaseOrders,
       variables: {
@@ -64,6 +43,7 @@ const PurchaseHistory = () => {
   useEffect(()=>{
     fetchAllPOs();
   },[])
+  
   
   const handleRefresh = () => {
     fetchAllPOs();
@@ -141,33 +121,32 @@ const PurchaseHistory = () => {
     
   </SkeletonPlaceholder>
 
-  </View>):(       <
-    SafeAreaView style={styles.headContainer}>
-    <View style={styles.header}>
-        <TouchableOpacity style={styles.arrowBackIcon}  onPress={()=> navigation.goBack()}>
-            <Ionic size={22} color={COLORS.primary} name ='chevron-back-outline'/>
-        </TouchableOpacity>
-        <Text style={styles.settingsText}>Purchase History</Text>
-    </View>
-        <ScrollView style={styles.scrollviewContainer}>
-          {purchaseOrders.map((po, index) => (
-            <View key={index} style={styles.dateHistoryContainer}>
-           <View style={styles.dateContainer}>
-  <Text style={styles.dateText}>{formatDate(po.createdAt)}</Text>
-</View>
-
+  </View>
+  ):(       
+    <SafeAreaView style={styles.headContainer}>
+      <View style={styles.header}>
+          <TouchableOpacity style={styles.arrowBackIcon}  onPress={()=> navigation.goBack()}>
+              <Ionic size={22} color={COLORS.primary} name ='chevron-back-outline'/>
+          </TouchableOpacity>
+          <Text style={styles.settingsText}>Purchase History</Text>
+      </View>
+          <ScrollView style={styles.scrollviewContainer}>
+            {purchaseOrders.map((po, index) => (
+              <View key={index} style={styles.dateHistoryContainer}>
+            <View style={styles.dateContainer}>
+              <Text style={styles.dateText}>{formatDate(po.createdAt)}</Text>
+            </View>
               <View style={styles.billSection}>
                 <View style={styles.billContainer}>
                   <Image style={styles.logoStyles} source={require("../assets/images/logo7.png")} />
                   <View style={styles.billText}>
                     <View style={styles.cashierName}>
                       <Text style={styles.cashierText}>Vendor: {po.vendor}</Text>
-                      <Text style={styles.billTotal}>Rs. {po.amount}</Text>
+                      <Text style={styles.billTotal}>Rs. {po.totalAmount}</Text>
                     </View>
                     <View style={styles.billBottomText}>
-                      <Text style={styles.billTime}>{po.date}</Text> 
-                      <TouchableOpacity style={styles.billViewButton} onPress={()=>navigation.navigate('PurchaseOrder',{purchaseOrderId:po.id,purchaseOrderAmount:po.amount,purchaseOrderVendor:po.vendor,purchaseOrderDate:po.date,purchaseOrderImageUri:po.image,purchaseOrderVersion:po._version})} >
-                        
+                    <Text style={[styles.billTime, { color: po.status === 'PENDING' ? 'orange' : 'green' }]}>{po.status}</Text>
+                      <TouchableOpacity style={styles.billViewButton} onPress={()=>navigation.navigate('PurchaseOrder',{purchaseOrderId:po.id,purchaseOrderAmount:po.totalAmount,purchaseOrderVendor:po.vendor,purchaseOrderVersion:po._version,purchaserName:po.purchaserName,purchaseStatus:po.status})} >
                         <Text style={styles.billViewText}>View</Text>
                       </TouchableOpacity>
                     </View>

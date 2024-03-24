@@ -1,128 +1,189 @@
-import { StyleSheet, Text, View,ScrollView,SafeAreaView,TouchableOpacity,Image} from 'react-native'
 import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, ScrollView, SafeAreaView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import Ionic from 'react-native-vector-icons/Ionicons';
 import { COLORS } from '../assets/theme/index.js';
-import { useNavigation } from '@react-navigation/native'; 
+import { useNavigation } from '@react-navigation/native';
 import { generateClient } from 'aws-amplify/api';
 import { listUsers } from '../src/graphql/queries.js';
 import { SelectList } from 'react-native-dropdown-select-list';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+
 const StaffListScreen = () => {
-    const data = [
-        {key:'1', value:'CASHIER'},
-        {key:'2', value:'PURCHASER'},
-        {key:'3', value:'WAREHOUSE_MANAGER'},
-        {key:'4', value:''}
-      ];
-    const [selected, setSelected] = React.useState('');
-    const [value, setValue] = React.useState('');
-    const [users, setUsers] = useState([]);
+  const [selected, setSelected] = useState('');
+  const [value, setValue] = useState('');
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true); // Added loading state
 
-    const client = generateClient();
-    useEffect(() => {
-        if (value === '1') {
-            setSelected('CASHIER');
-        } else if (value === '2') {
-            setSelected('PURCHASER');
-        } else if (value === '3') {
-            setSelected('WAREHOUSE_MANAGER');
-        } else if (value === '4') {
-            setSelected('');
-        }
-    }, [value]);
-    const fetchAllUsers = async () => {
-        try {
-            const { data } = await client.graphql({
-                query: listUsers,
-                variables: {
-                filter: {
-                    _deleted: {
-                        ne: true
-                    }
-                }
-            },
-                authMode: 'apiKey',
-            });
-            // console.log("Fetched users:", data.listUsers.items);
-            setUsers(data.listUsers.items);
-        } catch (error) {
-            console.error('Error fetching users:', error);
-        }
-    };
+  const client = generateClient();
 
-    useEffect(() => {
-        fetchAllUsers();
-        console.log("Set ",selected );
-    }, []);
+  useEffect(() => {
+    fetchAllUsers();
+  }, []);
 
- const navigation=useNavigation();
- const handleAddAccount = () => {
+  const fetchAllUsers = async () => {
+    try {
+      const { data } = await client.graphql({
+        query: listUsers,
+        variables: {
+          filter: {
+            _deleted: {
+              ne: true
+            }
+          }
+        },
+        authMode: 'apiKey',
+      });
+      setUsers(data.listUsers.items);
+      setLoading(false); // Set loading to false after users are fetched
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      setLoading(false); // Set loading to false even if there's an error
+    }
+  };
+
+  const navigation = useNavigation();
+  const handleAddAccount = () => {
     navigation.navigate('AddAccount');
-};
+  };
 
-return (
+  return (
     <View style={styles.container}>
-        <SafeAreaView style={styles.safeArea}>
-            <View style={styles.headerContainer}>
-                <TouchableOpacity style={styles.arrowBack} onPress={() => navigation.goBack()}>
-                    <Ionic size={25} color='white' name='chevron-back-outline'/>
-                </TouchableOpacity>
-                <Text style={styles.cashierHeading}>Staff List</Text>
-            </View>
-        </SafeAreaView>
-        <View style={styles.listContainer}>
-            <View style={styles.selectedContainer}>
-                <SelectList 
-                    setSelected={setSelected} 
-                    data={[
-                        {key:'1', value:'CASHIER'},
-                        {key:'2', value:'PURCHASER'},
-                        {key:'3', value:'WAREHOUSE_MANAGER'},
-                        {key:'4', value:''}
-                    ]}
-                    search={false}
-                    onSelect={() => setValue(selected)} 
-                    placeholder="Select Role"
-                    boxStyles={{borderWidth:2}} 
-                    arrowicon={<Ionic style={{position:'absolute',right:10,top:14}} size={26} color='rgba(180, 180, 180,4)' name='chevron-down-outline'/>}
-                    inputStyles={{fontSize:18.5,top:1,fontFamily:'Poppins-Regular',color:'rgba(140, 140, 140,4)'}}
-                    dropdownTextStyles={{color:'rgba(140, 140, 140,4)'}}
-                />
-            </View>
-            <ScrollView>
-  {users.map(user => (
-    // Check if no role is selected or if the selected role matches the user's role
-    !selected || selected === user.role ? (
-      <View key={user.id} style={styles.billContainer}>
-        <Image style={styles.logoStyles} source={user.image ? {uri: user.image} : require("../assets/images/person.jpg")}/>
-        <View style={styles.billText}>
-          <View style={styles.intro}>
-            <View style={styles.cashierName}>
-              <Text style={styles.cashierText}>{user.username}</Text>
-              <Text style={styles.billTime}>Joined: {new Date(user.createdAt).toLocaleDateString()}</Text>
-            </View>
-          </View>
-          <View>
-            <View style={styles.billBottomText}>
-              <TouchableOpacity style={styles.billViewButton} onPress={() => navigation.navigate('Profile', {userId: user.userId})}>
-                <Ionic size={26} color={COLORS.primary} name='chevron-forward-outline'/>
-              </TouchableOpacity>
-            </View>
-          </View>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.headerContainer}>
+          <TouchableOpacity style={styles.arrowBack} onPress={() => navigation.goBack()}>
+            <Ionic size={25} color='white' name='chevron-back-outline' />
+          </TouchableOpacity>
+          <Text style={styles.cashierHeading}>Staff List</Text>
         </View>
+      </SafeAreaView>
+      <View style={styles.listContainer}>
+        <View style={styles.selectedContainer}>
+          <SelectList
+            setSelected={setSelected}
+            data={[
+              { key: '1', value: 'CASHIER' },
+              { key: '2', value: 'PURCHASER' },
+              { key: '3', value: 'WAREHOUSE_MANAGER' },
+              { key: '4', value: '' }
+            ]}
+            search={false}
+            onSelect={() => setValue(selected)}
+            placeholder="Select Role"
+            boxStyles={{ borderWidth: 2 }}
+            arrowicon={<Ionic style={{ position: 'absolute', right: 10, top: 14 }} size={26} color='rgba(180, 180, 180,4)' name='chevron-down-outline' />}
+            inputStyles={{ fontSize: 18.5, top: 1, fontFamily: 'Poppins-Regular', color: 'rgba(140, 140, 140,4)' }}
+            dropdownTextStyles={{ color: 'rgba(140, 140, 140,4)' }}
+          />
+        </View>
+        {loading ? (
+          <View style={{flex:1,backgroundColor:'white',justifyContent:'center',paddingHorizontal:25}}>
+          <SkeletonPlaceholder borderRadius={4}>
+          <SkeletonPlaceholder.Item width={100} height={20} />
+           <View style={{paddingVertical:20}}>
+           <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+           <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+           <SkeletonPlaceholder.Item marginLeft={20}>
+             <SkeletonPlaceholder.Item width={200} height={20} />
+             <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+           </SkeletonPlaceholder.Item>
+         </SkeletonPlaceholder.Item>
+           </View>      
+       </SkeletonPlaceholder>
+       <SkeletonPlaceholder borderRadius={4}>
+       
+           <View style={{paddingVertical:20}}>
+           <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+           <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+           <SkeletonPlaceholder.Item marginLeft={20}>
+             <SkeletonPlaceholder.Item width={200} height={20} />
+             <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+           </SkeletonPlaceholder.Item>
+         </SkeletonPlaceholder.Item>
+           </View>
+        
+         
+       </SkeletonPlaceholder>
+       <SkeletonPlaceholder borderRadius={4}>
+       <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+           <View style={{paddingVertical:20}}>
+           <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+           <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+           <SkeletonPlaceholder.Item marginLeft={20}>
+             <SkeletonPlaceholder.Item width={200} height={20} />
+             <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+           </SkeletonPlaceholder.Item>
+         </SkeletonPlaceholder.Item>
+           </View>
+        
+         
+       </SkeletonPlaceholder>
+       <SkeletonPlaceholder borderRadius={4}>
+       <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+           <View style={{paddingVertical:20}}>
+           <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+           <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+           <SkeletonPlaceholder.Item marginLeft={20}>
+             <SkeletonPlaceholder.Item width={200} height={20} />
+             <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+           </SkeletonPlaceholder.Item>
+         </SkeletonPlaceholder.Item>
+           </View>
+        
+         
+       </SkeletonPlaceholder>
+       <SkeletonPlaceholder borderRadius={4}>
+       <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+           <View style={{paddingVertical:20}}>
+           <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+           <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+           <SkeletonPlaceholder.Item marginLeft={20}>
+             <SkeletonPlaceholder.Item width={200} height={20} />
+             <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+           </SkeletonPlaceholder.Item>
+         </SkeletonPlaceholder.Item>
+           </View>
+        
+         
+       </SkeletonPlaceholder>
+   
+       </View>
+        ) : (
+          <ScrollView>
+            {users.map(user => (
+              // Check if no role is selected or if the selected role matches the user's role
+              !selected || selected === user.role ? (
+                <View key={user.id} style={styles.billContainer}>
+                  <Image style={styles.logoStyles} source={user.image ? { uri: user.image } : require("../assets/images/person.jpg")} />
+                  <View style={styles.billText}>
+                    <View style={styles.intro}>
+                      <View style={styles.cashierName}>
+                        <Text style={styles.cashierText}>{user.username}</Text>
+                        <Text style={styles.billTime}>Joined: {new Date(user.createdAt).toLocaleDateString()}</Text>
+                      </View>
+                    </View>
+                    <View>
+                      <View style={styles.billBottomText}>
+                        <TouchableOpacity style={styles.billViewButton} onPress={() => navigation.navigate('Profile', { userId: user.userId })}>
+                          <Ionic size={26} color={COLORS.primary} name='chevron-forward-outline' />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                </View>
+              ) : null
+            ))}
+          </ScrollView>
+        )}
+        <TouchableOpacity style={styles.confirmButton} onPress={handleAddAccount}>
+          <Text style={styles.confirmText}>Add Account</Text>
+        </TouchableOpacity>
       </View>
-    ) : null
-  ))}
-</ScrollView>
-
-
-
-            <TouchableOpacity style={styles.confirmButton} onPress={handleAddAccount}>
-                <Text style={styles.confirmText}>Add Account</Text>
-            </TouchableOpacity>
-        </View>
     </View>
-);
+  );
 };
+
+
+
 const styles = StyleSheet.create({
     container:{
         flex:1,

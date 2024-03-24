@@ -50,6 +50,9 @@ import Categories from "../screens/Categories";
 import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 import Loading from "../screens/Loading";
 import ShowBill from "../screens/ShowBill";
+import ScanPurchaseOrder from "../screens/ScanPurchaseOrder";
+import ScanPurchaseOrder2 from "../screens/ScanPurchaseOrder2";
+import WarehouseScanHistory from "../screens/WarehouseScanHistory";
 const Drawer = createDrawerNavigator();
 
 const AppNavigation = () => {
@@ -213,6 +216,9 @@ useEffect(() => {
             <Drawer.Screen name="PurchaseOrder" component={PurchaseOrder} />
             <Drawer.Screen name="Categories" component={Categories} />
             <Drawer.Screen name="ShowBill" component={ShowBill} />
+            <Drawer.Screen name="ScanPurchaseOrder" component={ScanPurchaseOrder} />
+            <Drawer.Screen name="ScanPurchaseOrder2" component={ScanPurchaseOrder2} />
+            <Drawer.Screen name="WarehouseScan" component={WarehouseScanHistory} />
           </>
 
         ) : (

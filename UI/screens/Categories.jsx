@@ -131,6 +131,7 @@ const fetchCategories = async () => {
       });
       console.log('New category created:', newCategory.data.createCategory);
       fetchCategories(); 
+      setIsModalVisible(false);
     } catch (error) {
       console.error('Error creating category:', error);
     

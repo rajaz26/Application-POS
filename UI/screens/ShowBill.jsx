@@ -359,7 +359,51 @@ const getBillItemsByBillIdQuery = /* GraphQL */ `
     }
 };
 
-   
+const handlePrintBill = async () => {
+    try {
+        // Initialize the printer
+        await BluetoothEscposPrinter.printerInit();
+        await BluetoothEscposPrinter.printerLeftSpace(0);
+        
+        // Set printer alignment
+        await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.CENTER);
+        await BluetoothEscposPrinter.setBlob(0);
+        await BluetoothEscposPrinter.printText(`${storeName || 'Storename'}\n`, {
+            encoding: 'GBK',
+            codepage: 0,
+            widthtimes: 3,
+            heigthtimes: 3,
+            fonttype: 1
+        });
+        // Print bill details
+
+        // Print each bill item
+        await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.LEFT);
+        await BluetoothEscposPrinter.printText("--------------------------------\n", {});
+        
+        // Print column headers
+        await BluetoothEscposPrinter.printText("PRODUCT NAME        QTY      PRICE      SUBTOTAL\n", {});
+      
+        billItems.forEach(async (item) => {
+            console.log("Items",item)
+            let itemName = item.productName.padEnd(20); 
+            let itemLine = `${itemName} ${item.quantity.toString().padEnd(7)} ${item.productPrice.toString().padEnd(10)} ${item.subtotal.toFixed(2)}\n`;
+            await BluetoothEscposPrinter.printText(itemLine, {});
+           
+        });
+        
+        await BluetoothEscposPrinter.printText("--------------------------------\n", {});
+        await BluetoothEscposPrinter.printText(`Total: ${billtotal}\n`, {});
+        await BluetoothEscposPrinter.printText("--------------------------------\n", {});
+        
+        await BluetoothEscposPrinter.printText("Thank you for your purchase!\n\n\n", {});
+        
+    } catch (error) {
+        console.error("Failed to print receipt:", error);
+    }
+  
+};
+
 const handleDeleteBill = async () => {
     Alert.alert(
       "Delete Bill",
@@ -508,6 +552,10 @@ return (
             {isEditing && <TouchableOpacity style={styles.confirmButton} onPress={handleShowAdd}>
                         <Text style={styles.confirmText}>Add Product</Text>
                     </TouchableOpacity>}
+
+                    {isEditing &&  <TouchableOpacity style={styles.addButton} onPress={handlePrintBill}>
+                <Text style={styles.addText}>Print Bill</Text>
+            </TouchableOpacity>}
                 {isEditing ? (
                     <TouchableOpacity style={styles.confirmButton} onPress={handleAddProduct}>
                         <Text style={styles.confirmText}>Confirm Bill</Text>
