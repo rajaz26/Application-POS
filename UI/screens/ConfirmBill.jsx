@@ -10,7 +10,7 @@ import { BluetoothEscposPrinter } from 'react-native-bluetooth-escpos-printer';
 import { generateClient } from 'aws-amplify/api';
 import { deleteBill, deleteBillItem, updateBill, updateProduct,createNotifications } from '../src/graphql/mutations';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
-import { getProduct } from '../src/graphql/queries.js';
+import { getProduct, getStore } from '../src/graphql/queries.js';
 import { useSelector } from 'react-redux';
 
 const { width, height } = Dimensions.get('window');
@@ -18,6 +18,7 @@ const { width, height } = Dimensions.get('window');
 
 const ConfirmBill = ({route}) => {
     const navigation=useNavigation();
+    const storeID = useSelector((state) => state.user.storeId);
     const { scannedProductsList, totalBillAmountValue, currentBillId, version } = route.params;
     const [loading, setLoading] = useState(false);
     const [scannedProducts, setScannedProducts] = useState(scannedProductsList || []);
@@ -29,8 +30,29 @@ const ConfirmBill = ({route}) => {
         navigation.navigate('Scan', { scannedProductsList: scannedProducts });
     };
     const [billStatus, setBillStatus] = useState('UNPAID'); 
-
+    const storeCurrency = useSelector(state => state.currency.value); 
     const fadeAnim = useRef(new Animated.Value(0)).current;
+    const [storeDetails, setStoreDetails] = useState({address: ''});
+    useEffect(() => {
+      const fetchStoreDetails = async () => {
+          try {
+              const response = await client.graphql({
+                  query: getStore,
+                  variables: { id: storeID },
+                  authMode: 'apiKey',
+              });
+              if (response.data.getStore) {
+                  setStoreDetails({
+                      address: response.data.getStore.address,
+                  });
+              }
+          } catch (error) {
+              console.error('Error fetching store details:', error);
+          }
+      };
+
+      fetchStoreDetails();
+  }, [storeID, client]);
 
     useEffect(() => {
       if (billStatus === 'PAID') {
@@ -51,6 +73,8 @@ const ConfirmBill = ({route}) => {
               totalAmount: totalBillAmount,
               status: "PAID",
               _version: version,
+              cashierName: userName,
+              storeBillsId: storeID
             };
       
             await client.graphql({
@@ -82,15 +106,21 @@ const ConfirmBill = ({route}) => {
             heigthtimes: 3,
             fonttype: 1
         });
-        
+      
+        await BluetoothEscposPrinter.printText(`${storeDetails.address || 'Store Address'}\n\n`, {
+          encoding: 'GBK',
+          codepage: 0,
+          widthtimes: 2,
+          heigthtimes: 2,
+          fonttype: 1
+        });
+      
           await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.LEFT);
           await BluetoothEscposPrinter.printText(`Cashier: ${userName}\n`, {});
           await BluetoothEscposPrinter.printText("--------------------------------\n", {});
-        
-          // Print column headers
+
           await BluetoothEscposPrinter.printText("PRODUCT NAME        QTY      PRICE      SUBTOTAL\n", {});
-        
-          // Print each product with columns
+
           scannedProducts.forEach(async (item) => {
             let itemName = item.name.padEnd(20); 
             let itemLine = `${itemName} ${item.quantity.toString().padEnd(7)} ${item.price.toString().padEnd(10)} ${item.subtotal.toFixed(2)}\n`;
@@ -98,7 +128,7 @@ const ConfirmBill = ({route}) => {
           });
         
           await BluetoothEscposPrinter.printText("--------------------------------\n", {});
-          await BluetoothEscposPrinter.printText(`Total: ${totalBillAmount.toFixed(2)}\n`, {});
+          await BluetoothEscposPrinter.printText(`Total: ${storeCurrency || '$'}${totalBillAmount.toFixed(2)}\n`, {});
           await BluetoothEscposPrinter.printText("Thank you for your purchase!\n\n\n", {});
         } catch (error) {
           console.error("Failed to print receipt:", error);
@@ -113,10 +143,10 @@ const ConfirmBill = ({route}) => {
               variables: { id: product.productId },
               authMode: 'apiKey',
             });
-            console.log("Product Fetched",currentProductDetails);
-            const currentShelfQuantity = currentProductDetails.data.getProduct.shelfQuantity;
-            const newShelfQuantity = currentShelfQuantity - product.quantity;
-           const updatedProduct= await client.graphql({
+            console.log("Product Fetched");
+          const currentShelfQuantity = currentProductDetails.data.getProduct.shelfQuantity;
+          const newShelfQuantity = currentShelfQuantity - product.quantity;
+          const updatedProduct= await client.graphql({
               query: updateProduct,
               variables: {
                 input: {
@@ -220,7 +250,8 @@ const ConfirmBill = ({route}) => {
             <Ionic style={styles.logo}  size={90} color={'black'} name ='logo-behance'/>
         </View>
         <View style={styles.mainLogo}>
-    <Text style={styles.totalBill}>PKR {totalBillAmount.toFixed(2)}</Text>
+    <Text style={styles.totalBill}>{`${storeCurrency || '$'}${totalBillAmount.toFixed(2)}`}</Text>
+   
 </View>
 
         <View style={styles.columnHeadingContainer}>

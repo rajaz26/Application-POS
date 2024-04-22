@@ -10,6 +10,7 @@ import { uploadData, getUrl } from 'aws-amplify/storage';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { generateClient } from 'aws-amplify/api';
 import { createUser } from '../src/graphql/mutations';
+import { useSelector } from 'react-redux';
 const ConfirmSignUp2 = () => {
   const navigation = useNavigation();
   const route = useRoute();
@@ -22,7 +23,8 @@ const ConfirmSignUp2 = () => {
   const [resendCode, setResendCode] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState('');
-
+  const storeID = useSelector((state) => state.user.storeId);
+  const storeName = useSelector((state) => state.user.storeName);
   const { handleSubmit, control, formState: { errors }, reset } = useForm(); 
 
   const uploadImageToS3 = async (imageUri, fileName) => {
@@ -82,22 +84,21 @@ const onConfirmPressed = async (userName, code) => {
     await confirmSignUp({ username: userName, confirmationCode: code });
     console.log('User confirmed successfully');
 
-    // Step 1: Upload Images to S3 and Step 2: Get URLs from S3
-    const profileImageFileName = `profile-${Date.now()}`;
-    const idCardImageFileName = `idcard-${Date.now()}`;
-    const profileImageKey = await uploadImageToS3(userData.profileImageUri, profileImageFileName);
-    const idCardImageKey = await uploadImageToS3(userData.selectedIdCardImageUri, idCardImageFileName);
-    const profileImageUrl = await getImageUrlFromS3(profileImageKey);
-    const idCardImageUrl = await getImageUrlFromS3(idCardImageKey);
-
-    // Step 3: Create User in Database
+    let profileImageUrl = userData.profileImageUri ? 
+      await getImageUrlFromS3(await uploadImageToS3(userData.profileImageUri, `profile-${Date.now()}`)) : 
+      'https://img.freepik.com/free-vector/businessman-character-avatar-isolated_24877-60111.jpg'; 
+    let idCardImageUrl = userData.selectedIdCardImageUri ? 
+      await getImageUrlFromS3(await uploadImageToS3(userData.selectedIdCardImageUri, `idcard-${Date.now()}`)) : 
+      'https://img.freepik.com/free-vector/businessman-character-avatar-isolated_24877-60111.jpg';
+  
     const userInput = {
       userId: userData.cognitoUserId,
       username: userData.username,
       phonenumber: userData.phonenumber,
       role: userData.role,
-      image:profileImageUrl, // Include profile image URL
-      idcardimage: [idCardImageUrl],  // Include ID card image URL
+      image: profileImageUrl,
+      idcardimage: [idCardImageUrl],
+      storeUsersId: storeID,
     };
 
     console.log("Creating user with image URLs in DB", userInput);

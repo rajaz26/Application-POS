@@ -34,6 +34,7 @@ const AddAccount = () => {
     const [errorMessage, setErrorMessage] = useState('');
     const [phonenumber, setPhoneNumber] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [idCardNumber, setIdCardNumber] = useState('');
     const [selectedIdCardImage, setSelectedIdCardImage] = useState(null); 
     const [loggedInUserEmail, setLoggedInUserEmail] = useState('');
@@ -51,7 +52,6 @@ const AddAccount = () => {
   
   const handleChoosePhoto = () => {
     launchImageLibrary({}, (response) => {
-      console.log(response);
       if (response.assets && response.assets.length > 0) {
         const imageUri = response.assets[0].uri;
         setSelectedImage(imageUri); 
@@ -60,7 +60,7 @@ const AddAccount = () => {
       }
     });
   };
-
+  
   
 
   const handleSuccessButtonPress= () => {
@@ -197,13 +197,13 @@ const AddAccount = () => {
       <View style={styles.lowerView}>
       <TouchableOpacity style={styles.profileImageContainer} onPress={handleChoosePhoto}>
   {selectedImage ? (
-  
-    <Image source={{ uri: selectedImage.uri }} style={styles.profileImage} />
+    <Image source={{ uri: selectedImage }} style={styles.profileImage} />
   ) : (
     <Image source={require('../assets/images/profile1.png')} style={styles.profileImage} />
   )}
   <Ionic style={styles.plusImage} size={38} color={'white'} name='add-circle' />
 </TouchableOpacity>
+
    
         <ScrollView style={styles.scrolledView}>
  
@@ -279,15 +279,15 @@ const AddAccount = () => {
 
                 <View style={styles.formInputContainer}>
             <View style={styles.formInputWrapper}>
-               <View style={styles.imageContainer}>
-               <Ionic size={30} color={COLORS.primary} name ='eye-outline'/>
-                </View>
+               <TouchableOpacity style={styles.imageContainer}>
+               <Ionic size={30} color={COLORS.primary} name={showPassword ? 'eye-off-outline' : 'eye-outline'} onPress={() => setShowPassword(!showPassword)}/>
+                </TouchableOpacity>
                 <View style={styles.inputContainer}>
                 <TextInput
         style={styles.formInput}
         placeholder='Password'
         placeholderTextColor='rgba(170, 170, 170,4)'
-        secureTextEntry={true}
+        secureTextEntry={!showPassword}
         onChangeText={(value) => setPassword(value)} 
         value={password} 
       />
@@ -356,6 +356,7 @@ const styles = StyleSheet.create({
     borderRadius:100,
     width: 130,
     height: 130,
+    
   },
   profileImageContainer:{
     flex:1,

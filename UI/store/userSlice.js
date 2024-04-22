@@ -1,4 +1,3 @@
-// store/userSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
@@ -27,6 +26,7 @@ const userSlice = createSlice({
       state.role = '';
       state.storeId = ''; 
       state.storeName = ''; 
+      
     },
   },
 });

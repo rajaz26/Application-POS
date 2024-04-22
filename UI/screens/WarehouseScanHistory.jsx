@@ -7,40 +7,97 @@ import { generateClient } from 'aws-amplify/api';
 import { listUsers, listWarehouseScans } from '../src/graphql/queries.js';
 import { SelectList } from 'react-native-dropdown-select-list';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import { useSelector } from 'react-redux';
 
 const WarehouseScanHistory = () => {
   const [selected, setSelected] = useState('');
   const [value, setValue] = useState('');
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true); // Added loading state
-
+  const [loading, setLoading] = useState(true);
   const client = generateClient();
+  const storeID = useSelector((state) => state.user.storeId);
+  const formatDate = (dateString) => {
+    const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
 
-  useEffect(() => {
-    fetchAllScans();
-  }, []);
+  const groupScansByDate = (scans) => {
+    return scans.reduce((groups, scan) => {
+      const date = formatDate(scan.createdAt);
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(scan);
+      return groups;
+    }, {});
+  };
+
+  const getWarehouseScansByStoreId = /* GraphQL */ `
+  query GetWarehouseScansByStoreId($storeId: ID!) {
+    listWarehouseScans(filter: { 
+      storeWarehouseScanId: { eq: $storeId },
+      _deleted: { ne: true } 
+    }) {
+      items {
+        id
+        scannedBy
+        scannedByName
+        productId
+        productName
+        productQuantity
+        store {
+          id
+          name
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeWarehouseScanId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+
 
   const fetchAllScans = async () => {
+    setLoading(true);
     try {
+      console.log("WARE");
       const { data } = await client.graphql({
-        query: listWarehouseScans,
-        variables: {
-          filter: {
+        query: getWarehouseScansByStoreId,
+        variables: {  storeId: storeID },
+        filter: {
             _deleted: {
-              ne: true
+                ne: true
             }
-          }
         },
         authMode: 'apiKey',
       });
-      setUsers(data.listWarehouseScans.items);
-      console.log(data.listWarehouseScans.items);
-      setLoading(false);
+      console.log("WARE",data);
+      const { items } = data.listWarehouseScans
+      console.log("WAS",items);
+      const groupedScans = groupScansByDate(data.listWarehouseScans.items);
+      const sortedGroupedScans = Object.entries(groupedScans).sort(
+        (a, b) => new Date(a[0]) - new Date(b[0])
+      ).reduce((acc, [date, scans]) => ({ ...acc, [date]: scans }), {});
+      setUsers(sortedGroupedScans);
     } catch (error) {
-      console.error('Error fetching users:', error);
+      console.log('Error fetching scans:', error);
+    } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchAllScans();
+  }, [storeID]);
+
 
   const navigation = useNavigation();
   const handleAddAccount = () => {
@@ -59,24 +116,14 @@ const WarehouseScanHistory = () => {
       </SafeAreaView>
       <View style={styles.listContainer}>
         {loading ? (
-          <View style={{flex:1,backgroundColor:'white',justifyContent:'center',paddingHorizontal:25}}>
-          <SkeletonPlaceholder borderRadius={4}>
-          <SkeletonPlaceholder.Item width={100} height={20} />
-           <View style={{paddingVertical:20}}>
-           <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
-           <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
-           <SkeletonPlaceholder.Item marginLeft={20}>
-             <SkeletonPlaceholder.Item width={200} height={20} />
-             <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
-           </SkeletonPlaceholder.Item>
-         </SkeletonPlaceholder.Item>
-           </View>      
-       </SkeletonPlaceholder>
+          <View style={{flex:1,justifyContent:'center',paddingHorizontal:25,  borderTopRightRadius:50,
+        borderTopLeftRadius:50,width:'100%'}}>
+        
        <SkeletonPlaceholder borderRadius={4}>
        
            <View style={{paddingVertical:20}}>
            <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
-           <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+           <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50}/>
            <SkeletonPlaceholder.Item marginLeft={20}>
              <SkeletonPlaceholder.Item width={200} height={20} />
              <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
@@ -134,29 +181,40 @@ const WarehouseScanHistory = () => {
           <ScrollView contentContainerStyle={{
             alignItems: 'center', 
             justifyContent: 'center', 
+     
           }}>
-            {users.map(user => (
-                <TouchableOpacity key={user.id} style={styles.billContainer}>
-                  {/* <Image style={styles.logoStyles} source={user.image ? { uri: user.image } : require("../assets/images/person.jpg")} /> */}
-               
-                  <View style={styles.billText}>
-                
-                    <View style={styles.intro}>
-                        <Ionic size={26} color={COLORS.primary} name='checkmark-done-outline' style={{right:5}} />
-                        
-                        <View style={styles.cashierName}>
-                            <Text style={styles.cashierText}>{user.productName}</Text>
-                            <Text style={styles.billTime}>{user.scannedByName}</Text>
-                        </View>
-                    </View>
-                    <View style={{borderWidth:0,right:10}}>
-                    <Text style={styles.quantity}>{user.productQuantity}</Text>
-                    </View>
-                  
-                  </View>
-                </TouchableOpacity>
-            ))}
+              {Object.entries(users).map(([date, scans]) => {
+  return (
+    <View key={date}>
+            <View style={styles.dateContainer}>
+                <Text style={styles.dateText}>{date}</Text>
+              </View>
+      {scans.map(scan => (
+        <TouchableOpacity key={scan.id} style={styles.billContainer}>
+          <View style={styles.billText}>
+            <View style={styles.intro}>
+              <Ionic size={26} color={COLORS.primary} name='checkmark-done-outline' style={{right:5}} />
+              <View style={styles.cashierName}>
+                <Text style={styles.cashierText}>{scan.productName}</Text>
+                <Text style={styles.billTime}>{scan.scannedByName}</Text>
+              </View>
+            </View>
+            <View style={{borderWidth:0,right:10,alignItems:'center'}}>
+              <Text style={styles.quantity}>{scan.productQuantity}</Text>
+              <Text style={styles.billTime}>
+                {new Date(scan.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+})}
+
+
           </ScrollView>
+          
         )}
         {/* <TouchableOpacity style={styles.confirmButton} onPress={handleAddAccount}>
           <Text style={styles.confirmText}>Add Account</Text>
@@ -204,6 +262,7 @@ const styles = StyleSheet.create({
         borderTopLeftRadius:50,
         backgroundColor:'rgba(240, 240, 240,4)',
         paddingHorizontal:20,
+        paddingBottom:20,
     },
     selectedContainer:{
         flex:0,
@@ -222,7 +281,7 @@ const styles = StyleSheet.create({
         // marginHorizontal:25,
         paddingVertical:15,
         paddingHorizontal:10,
-        width:'80%',
+        width:'100%',
         backgroundColor:'white',
         elevation: 5, 
         shadowColor: 'black', 
@@ -250,12 +309,23 @@ const styles = StyleSheet.create({
         flexDirection:'column',
         justifyContent:'space-around',
       },
+
       cashierText:{
         fontWeight:'400',
         color:'black',
         fontSize:17,
         fontFamily:'Roboto-Medium',
       },
+      dateContainer: {
+        marginTop:30,
+        left: 8,
+
+    },
+    dateText: {
+        fontSize: 13,
+        color: COLORS.primary,
+        fontFamily: 'Poppins-SemiBold',
+    },
       billTotal:{
         color:'hsl(0, 100%, 46%)',
         fontWeight:'700',

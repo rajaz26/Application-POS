@@ -14,14 +14,20 @@ import { useSelector } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { DataTable } from 'react-native-paper';
 import { SelectList } from 'react-native-dropdown-select-list';
+import Share from 'react-native-share';
+import RNFS from 'react-native-fs';
+import ViewShot from 'react-native-view-shot';
 
 const PurchaseOrder = ({route}) => {
+    const viewShotRef = useRef(null);
+    const [capturedImageURI, setCapturedImageURI] = useState('');
     const purchaseOrderId = route.params.purchaseOrderId;
     const purchaseStatus = route.params.purchaseStatus;
     const [status, setStatus] = useState(route.params.purchaseStatus);
     const [purchaseOrderItems, setPurchaseOrderItems] = useState([]);
     const purchaseOrderVendor = route.params.purchaseOrderVendor;
     const purchaseOrderAmount = route.params.purchaseOrderAmount;
+    const purchaserName = route.params.purchaserName;
     const purchaseOrderVersion = route.params.purchaseOrderVersion;
     const [vendorName, setVendorName] = useState(route.params.purchaseOrderVendor);
     // const [vendor, setVendor] = useState(route.params.purchaseOrderVendor);
@@ -33,7 +39,41 @@ const PurchaseOrder = ({route}) => {
     const [errorMessage, setErrorMessage] = useState('');
     const userId= useSelector((state) => state.user.userId);
     const userName = useSelector((state) => state.user.username);
+    const userRole = useSelector((state) => state.user.role);
     const [totalAmount, setTotalAmount] = useState(0);
+    const storeCurrency  = useSelector(state => state.currency.value); 
+
+
+  
+
+const captureView = async () => {
+    try {
+        const uri = await viewShotRef.current.capture();
+        setCapturedImageURI(uri);
+        shareImage(uri);
+    } catch (error) {
+        console.error('Error capturing view:', error);
+        Alert.alert('Error', 'Failed to capture content');
+    }
+};
+
+
+const shareImage = async (uri) => {
+    try {
+        let imagePath = null;
+        const fileName = 'purchase_order.jpg';
+        const newPath = `${RNFS.CachesDirectoryPath}/${fileName}`;
+        await RNFS.copyFile(uri, newPath);
+        imagePath = `file://${newPath}`;
+
+        const shareResponse = await Share.open({ url: imagePath });
+        console.log('Share Response:', shareResponse);
+    } catch (error) {
+        Alert.alert('Error', 'Failed to share the image');
+        console.error('Error sharing image:', error);
+    }
+};
+
     const getPurchaseItemsByPurchaseOrderIdQuery = /* GraphQL */ `
     query GetPurchaseItemsByPurchaseOrderId($purchaseOrderId: ID!) {
       listPurchaseItems(filter: { 
@@ -250,6 +290,7 @@ const confirmUpdateQuantityReceived = async () => {
     }
 };
     const [editing, setEditing] = useState(false);
+    
     const client = generateClient();
     const navigation = useNavigation();
 
@@ -457,6 +498,7 @@ const confirmUpdateQuantityReceived = async () => {
         setScannedProducts(updatedScannedProducts); // Update the state with the modified array
     };
 
+  
 const updateQuantityReceivedForPOItem = async (purchaseOrderId, itemId, quantityReceived) => {
     try {
         const response = await client.graphql({
@@ -549,12 +591,13 @@ const handleUpdatePO = async () => {
 
  </View>
 )}
-   
+   <ViewShot ref={viewShotRef} style={{ backgroundColor:'white',flex:1}} options={{ format: 'jpg', quality: 0.9, backgroundColor: 'white'}}>
+
    <View style={styles.headContainer2}>
    <View style={styles.headingText}> 
     <Text style={styles.totalBill}>PurchaseOrder</Text>
     <View style={styles.totalAmountContainer}>
-        <Text style={styles.totalAmountText}>Total Amount: ${purchaseOrderAmount}</Text>
+        <Text style={styles.totalAmountText}>Total Amount: {storeCurrency || '$'}{purchaseOrderAmount}</Text>
       </View>
     </View>
 
@@ -595,6 +638,9 @@ const handleUpdatePO = async () => {
                                  
 </View>
 </View>
+<View style={{ backgroundColor:'white'}}>
+
+
    <DataTable style={styles.columnHeadingContainer}>
                 <DataTable.Header >
                     <DataTable.Title textStyle={{color: 'white'}} style={{justifyContent:'flex-start',flex:1.2}} >ITEM</DataTable.Title>
@@ -606,7 +652,7 @@ const handleUpdatePO = async () => {
                 </DataTable.Header> 
                 </DataTable>
 
-               <ScrollView style={styles.scrollView}>
+               <ScrollView  style={{ backgroundColor:'white',flex:0}}>
     {purchaseOrderItems.map((item, index) => (
         <DataTable key={index}>
             <DataTable.Row key={index}>
@@ -639,7 +685,8 @@ const handleUpdatePO = async () => {
 
     
 </ScrollView>
-
+</View>
+  </ViewShot>
   
    <View style={styles.footerContainer}>
        <View style={styles.footerWrapper}>
@@ -654,9 +701,16 @@ const handleUpdatePO = async () => {
        </TouchableOpacity>
        
            }
-           {!editing && <TouchableOpacity style={styles.confirmButton} onPress={()=>setEditing(true)}>
-               <Text style={styles.confirmText}>Update Purchase Order</Text>
-           </TouchableOpacity>}
+           <TouchableOpacity style={styles.confirmButton} onPress={captureView}>
+            <Text style={styles.confirmText}>Share Purchase Order</Text>
+        </TouchableOpacity>
+
+           {!editing && (userRole === 'GENERAL_MANAGER' || userName === purchaserName) && (
+            <TouchableOpacity style={styles.confirmButton} onPress={()=>setEditing(true)}>
+                <Text style={styles.confirmText}>Update Purchase Order</Text>
+            </TouchableOpacity>
+            )
+        }
            {editing &&
            <TouchableOpacity style={styles.confirmButton} onPress={onSubmit}>
            <Text style={styles.confirmText}>Generate Purchaser Order</Text>
@@ -692,6 +746,7 @@ const styles = StyleSheet.create({
         borderBottomRightRadius:10,
         justifyContent:'center',
         alignItems:'center',
+        
     },
     vendorComponent:{
         paddingHorizontal:20,
@@ -787,6 +842,7 @@ formInputContainer2:{
     alignItems:'center',
     justifyContent:'center',
     marginVertical:2,
+    
 },
 formInputSize:{
     flex:0,
@@ -934,9 +990,11 @@ loadingContainer: {
   },
   headContainer:{ 
    flex:1,
+   backgroundColor:'white'
 },
 headContainer2:{ 
     minHeight:100,
+    backgroundColor:'white'
  },
 loadingContainer: {
     ...StyleSheet.absoluteFillObject,
@@ -986,6 +1044,7 @@ columnHeadingContainer:{
     backgroundColor:COLORS.primary,
     height:50,
     borderRadius:15,
+    
 },
 columnHeading:{
     flex:1,
@@ -1078,8 +1137,9 @@ footerWrapper:{
 
     justifyContent:'center',
     alignItems:'center',
-    paddingVertical:13,
+
 },
+
 confirmButton:{
     backgroundColor:COLORS.primary,
     flex:0,
@@ -1089,7 +1149,7 @@ confirmButton:{
     marginHorizontal:10,
     paddingVertical:8,
     borderRadius:25,
-    marginVertical:10,
+    marginBottom:10,
 },
 confirmText:{
     fontSize:18,
@@ -1108,6 +1168,7 @@ addButton:{
     borderRadius:25,
     borderWidth:1,
     borderColor:COLORS.primary,
+    marginVertical:10
 },
 addText:{
     fontSize:18,

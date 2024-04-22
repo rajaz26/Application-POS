@@ -12,6 +12,7 @@ import { generateClient } from 'aws-amplify/api';
 import { useForm, Controller } from 'react-hook-form';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { listCategories } from '../src/graphql/queries.js';
+import { useSelector } from 'react-redux';
 const { width, height } = Dimensions.get('window');
 const AddProduct = ({route}) => {
 const client = generateClient();
@@ -21,8 +22,8 @@ const client = generateClient();
  const [loading, setLoading] = useState(false);
  const [successMessage, setSuccessMessage] = useState(false);
  const { categoryId, categoryName } = route.params || { categoryId: '', categoryName: '' };
-const [category, setCategory] = useState(route.params?.categoryName || 'Choose Category');
-
+ const [category, setCategory] = useState(route.params?.categoryName || 'Choose Category');
+ const storeID = useSelector((state) => state.user.storeId);
 const ProductByBarcode = /* GraphQL */ `
 query ProductByBarcode($barcode: String!) {
   productByBarcode(barcode: $barcode) {
@@ -38,7 +39,6 @@ query ProductByBarcode($barcode: String!) {
     }
   }
 }
-
 `;
  const [productInput, setProductInput] = useState({
     name: '',
@@ -49,9 +49,31 @@ query ProductByBarcode($barcode: String!) {
     warehouseQuantity: '',
     shelfQuantity:'',
     warehouseInventoryLimit:'',
-    shelfInventoryLimit:''
+    shelfInventoryLimit:'',
+    storeProductsId: ''
   });
 
+  const ProductByBarcodeAndStoreId = /* GraphQL */ `
+  query ProductByBarcodeAndStoreId($barcode: String!, $storeId: ID!) {
+    productByBarcode(barcode: $barcode, filter: {storeProductsId: {eq: $storeId}}) {
+      items {
+        id
+        name
+        barcode
+        price
+        manufacturer
+        category
+        warehouseQuantity
+        shelfQuantity
+        store {
+          id
+          name
+        }
+        _version
+      }
+    }
+  }
+`;
   // const fetchCategories = async () => {
   //   try {
   //     const { data } = await client.graphql({
@@ -74,6 +96,7 @@ query ProductByBarcode($barcode: String!) {
   
   const [selectedImage, setSelectedImage] = useState(null);
   useEffect(() => {
+    console.log("STore",storeID)
   }, [selectedImage]); 
 
   // useEffect(() => {
@@ -82,7 +105,6 @@ query ProductByBarcode($barcode: String!) {
 
   const handleChoosePhoto = () => {
     launchImageLibrary({}, (response) => {
-      // console.log(response);
       if (response.assets && response.assets.length > 0) {
         const imageUri = response.assets[0].uri;
         setSelectedImage(imageUri); 
@@ -120,8 +142,8 @@ const getImageUrlFromS3 = async (fileKey) => {
       const getUrlResult = await getUrl({
           key: fileKey,
           options: {
-              accessLevel: 'guest',
-              expiresIn: 9000909,
+              // accessLevel: 'guest',
+              // expiresIn: 9000909,
               useAccelerateEndpoint: true, 
           },
       });
@@ -140,10 +162,12 @@ const resetForm = () => {
  setSelectedImage(null);
  setCategory('Choose Category');
 }
-  const handleLoading = () => {
+
+const handleLoading = () => {
     setLoading(true)
     setSuccessMessage(true);
   }
+  
   const handleSuccessButtonPress= () => {
     setLoading(false)
     setSuccessMessage(false);
@@ -153,8 +177,8 @@ const resetForm = () => {
   const checkBarcodeExists = async (barcode) => {
     try {
       const graphqlResult = await client.graphql({
-        query: ProductByBarcode,
-        variables: { barcode: barcode },
+        query: ProductByBarcodeAndStoreId,
+        variables: { barcode: barcode, storeId:storeID },
         authMode: 'apiKey',
       });
   
@@ -194,6 +218,7 @@ const resetForm = () => {
         ...data,
         category: categoryName,
         image: imageUrl,
+        storeProductsId: storeID
       };
       console.log("categorryyyyy checkkkk"+productWithImage.category);
       const newProduct = await client.graphql({
@@ -212,8 +237,8 @@ const resetForm = () => {
         warehouseQuantity: '',
         shelfQuantity:'',
         warehouseInventoryLimit:'',
-        shelfInventoryLimit:''
-
+        shelfInventoryLimit:'',
+        storeProductsId: ''
       });
       setCategory('Choose Category');
       reset(); 
@@ -263,7 +288,8 @@ const resetForm = () => {
      )}
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.headerContainer}>
-                <TouchableOpacity style={styles.arrowBack}  onPress={()=> navigation.navigate('ProductsList')}>
+                {/* <TouchableOpacity style={styles.arrowBack}  onPress={()=> navigation.navigate('ProductsList')}> */}
+                <TouchableOpacity style={styles.arrowBack}  onPress={()=> navigation.goBack(null)}>
                     <Ionic size={25} color='white' name ='chevron-back-outline'/>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.imageContainer} onPress={()=>handleLoading()}>
@@ -370,7 +396,7 @@ const resetForm = () => {
                              <Ionic size={33} color='rgba(180, 180, 180,4)' name ='list-circle-outline'/>
                         </View>
                         <View style={styles.categoryContainer}>
-                        <TouchableOpacity style={styles.categoryTextContainer} onPress={()=>navigation.navigate('Categories')}>
+                        <TouchableOpacity style={styles.categoryTextContainer} onPress={()=>navigation.navigate('Categories', { source: 'fromAddProduct' })}>
                         <Text style={[styles.categoryText, { top:1,color: categoryName ? 'black' : 'rgba(170, 170, 170,4)' }]}> {categoryName ? categoryName : 'Choose Category'} </Text>
 
                         </TouchableOpacity>

@@ -20,7 +20,7 @@ import Ionic from 'react-native-vector-icons/Ionicons';
 import {generateClient} from 'aws-amplify/api';
 import { fetchUserAttributes } from 'aws-amplify/auth';
 import { setUserDetails } from '../store/userSlice'; 
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Sound from 'react-native-sound';
 import { updateProduct,createWarehouseScan ,createNotifications, createPurchaseItem } from '../src/graphql/mutations';
 export default function ScanPurchaseOrder2({ route }) {
@@ -30,6 +30,7 @@ const [vendor, setVendor] = useState(route.params?.vendor || '');
 
   Sound.setCategory('Playback');
   const [hasPermission, setHasPermission] = React.useState(false);
+  const storeID = useSelector((state) => state.user.storeId);
   const  purchaseOrderItems=route.params.purchaseOrderItems;
   const purchaseOrderId=route.params.purchaseOrderId;
   const purchaseOrderVendor=route.params.purchaseOrderVendor;
@@ -84,9 +85,10 @@ const Playsound = ()=>{
       checkInverted: true,
     }
   );
-  const ProductByBarcode = /* GraphQL */ `
-  query ProductByBarcode($barcode: String!) {
-    productByBarcode(barcode: $barcode) {
+  
+  const ProductByBarcodeAndStoreId = /* GraphQL */ `
+  query ProductByBarcodeAndStoreId($barcode: String!, $storeId: ID!) {
+    productByBarcode(barcode: $barcode, filter: {storeProductsId: {eq: $storeId}}) {
       items {
         id
         name
@@ -97,11 +99,15 @@ const Playsound = ()=>{
         warehouseQuantity
         shelfQuantity
         _version
+        store {
+          id
+          name
+        }
       }
     }
   }
-  
 `;
+
 
   React.useEffect(() => {
     (async () => {
@@ -175,11 +181,11 @@ const handleBarcodeScanned = async (barcode) => {
         console.log("Scanned barcode:", barcodeValue);
   
         const productDetailsResponse = await client.graphql({
-            query: ProductByBarcode,
-            variables: { barcode: barcodeValue },
+            query: ProductByBarcodeAndStoreId,
+            variables: { barcode: barcodeValue, storeId: storeID  },
             authMode: 'apiKey',
         });
-  
+        console.log("Scans",productDetailsResponse);
         if (productDetailsResponse.data.productByBarcode.items.length > 0) {
             const productDetails = productDetailsResponse.data.productByBarcode.items[0];
             console.log("Reciieved product",productDetails);
@@ -212,14 +218,12 @@ const handleAddQuantity = async () => {
     const existingProductIndex = scannedProducts.findIndex(product => product.id === currentProduct.id);
 
     let updatedScannedProducts;
-    let updatedPurchaseOrderAmount = purchaseOrderAmount; // Initialize with the current amount
+    let updatedPurchaseOrderAmount = purchaseOrderAmount; 
 
     if (existingProductIndex !== -1) {
-        // If product already exists, update its quantity
         updatedScannedProducts = [...scannedProducts];
         updatedScannedProducts[existingProductIndex].quantity += parseInt(quantity, 10);
     } else {
-        // If it's a new product, create a new purchase item
         const updatedProductDetails = {
             ...currentProduct,
             quantity: parseInt(quantity, 10),
@@ -273,72 +277,72 @@ useEffect(() => {
   }, [route.params.purchaseOrderItems]);
   
 
-const userByIdQuery = /* GraphQL */ `
-query UserById($userId: ID!) {
-  userById(userId: $userId) {
-    items {
-      id
-      userId
-      username
-      phonenumber
-      image
-      role
-      idcardimage
-      store {
-        id
-        name
-        address
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        __typename
-      }
-      createdAt
-      updatedAt
-      _version
-      _deleted
-      _lastChangedAt
-      storeUsersId
-      __typename
-    }
-  }
-}
-`;
-const dispatch = useDispatch();
+// const userByIdQuery = /* GraphQL */ `
+// query UserById($userId: ID!) {
+//   userById(userId: $userId) {
+//     items {
+//       id
+//       userId
+//       username
+//       phonenumber
+//       image
+//       role
+//       idcardimage
+//       store {
+//         id
+//         name
+//         address
+//         createdAt
+//         updatedAt
+//         _version
+//         _deleted
+//         _lastChangedAt
+//         __typename
+//       }
+//       createdAt
+//       updatedAt
+//       _version
+//       _deleted
+//       _lastChangedAt
+//       storeUsersId
+//       __typename
+//     }
+//   }
+// }
+// `;
+// const dispatch = useDispatch();
 
-  useEffect(() => {
-    const fetchUserDetails = async () => {
-      try {
-        const currentUser = await fetchUserAttributes();
-        const userId = currentUser.sub;
+//   useEffect(() => {
+//     const fetchUserDetails = async () => {
+//       try {
+//         const currentUser = await fetchUserAttributes();
+//         const userId = currentUser.sub;
 
-        const { data } = await client.graphql({
-          query: userByIdQuery,
-          variables: { userId: userId },
-          authMode: 'apiKey',
-        });
+//         const { data } = await client.graphql({
+//           query: userByIdQuery,
+//           variables: { userId: userId },
+//           authMode: 'apiKey',
+//         });
 
-        const userDetails = data.userById.items[0];
-        if (userDetails) {
-          dispatch(
-            setUserDetails({
-              userId: userDetails.userId,
-              username: userDetails.username,
-              role: userDetails.role,
-            })
-          );
-          setUserIdW(userDetails.userId);
-          setUsernameW(userDetails.username);
-        }
-      } catch (error) {
-        console.error('Error fetching user details:', error);
-      }
-    };
+//         const userDetails = data.userById.items[0];
+//         if (userDetails) {
+//           dispatch(
+//             setUserDetails({
+//               userId: userDetails.userId,
+//               username: userDetails.username,
+//               role: userDetails.role,
+//             })
+//           );
+//           setUserIdW(userDetails.userId);
+//           setUsernameW(userDetails.username);
+//         }
+//       } catch (error) {
+//         console.error('Error fetching user details:', error);
+//       }
+//     };
 
-    fetchUserDetails();
-  }, [dispatch]);
+//     fetchUserDetails();
+//   }, [dispatch]);
 
 
 

@@ -17,19 +17,21 @@ const CashierHome = () => {
   const dispatch = useDispatch();
   const client = generateClient();
   const connectedDevice = useSelector(state => selectConnectedDevice(state)?.name);
- const userRole = useSelector((state) => state.user.role);
- const [loading, setLoading] = useState(false); 
- const [bills, setBills] = useState([]);
- const [latestBill, setLatestBill] = useState(null); 
+  const userRole = useSelector((state) => state.user.role);
+  const storeID = useSelector((state) => state.user.storeId);
+  const [loading, setLoading] = useState(false); 
+  const [bills, setBills] = useState([]);
+  const [latestBill, setLatestBill] = useState(null); 
   const navigation = useNavigation();
+  const storeCurrency  = useSelector(state => state.currency.value); 
   const openDrawer = () => {
     navigation.openDrawer();
   };
   
-  useEffect(() => {
-    console.log("User role from Redux store:", userRole);
-    console.log("Connected",connectedDevice);
-  }, [userRole]);
+  // useEffect(() => {
+  //   console.log("User role from Redux store:", userRole);
+  //   console.log("Connected",connectedDevice);
+  // }, [userRole]);
 
   
 const userByIdQuery = /* GraphQL */ `
@@ -68,32 +70,32 @@ query UserById($userId: ID!) {
 useEffect(() => {
   const fetchUserDetails = async () => {
     try {
-      const currentUser = await fetchUserAttributes();
-      const userId = currentUser.sub; 
-
+      const attributes = await fetchUserAttributes();
+      const userId = attributes.sub;
       const { data } = await client.graphql({
         query: userByIdQuery,
-        variables: { userId: userId },
+        variables: { userId },
         authMode: 'apiKey',
       });
 
       const userDetails = data.userById.items[0]; 
+      // console.log("User",userDetails);
       if (userDetails) {
         dispatch(setUserDetails({
           userId: userDetails.userId,
           username: userDetails.username,
           role: userDetails.role,
+          storeId: userDetails.storeUsersId,
+          storeName: userDetails.store.name,
         }));
-        setLoading(false); 
       }
     } catch (error) {
-      console.error("Error fetching user details:", error);
-      setLoading(false); 
+      console.log('Error fetching user details:', error);
     }
   };
 
   fetchUserDetails();
-}, [dispatch]);
+}, [dispatch, client]);
 
 const isFocused = useIsFocused();
 
@@ -101,27 +103,67 @@ useEffect(() => {
   if (isFocused) {
     fetchAllBills();
   }
-}, [isFocused]);
+}, [isFocused,storeID]);
 
+// useEffect(() => {
+//   fetchAllBills();
+// }, [storeID]);
 
+const listBillsByStoreAndStatus = /* GraphQL */ `
+  query ListBillsByStoreAndStatus($storeId: ID!, $status: BillStatus!, $limit: Int, $nextToken: String) {
+    listBills(
+      filter: { 
+        storeBillsId: { eq: $storeId },
+        _deleted: { ne: true },
+        status: { eq: $status } 
+      },
+      limit: $limit,
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        cashier
+        cashierName
+        totalAmount
+        status
+        store {
+          id
+          name
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeBillsId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
 
   const fetchAllBills = async () => {
     try {
       const { data } = await client.graphql({
-        query: listBills,
-        variables: {
-          filter: {
-            _deleted: {
-              ne: true
-            },  status: { eq: 'PAID' }  ,
-          }
+        query: listBillsByStoreAndStatus,
+        variables: { 
+          storeId: storeID, 
+          status: "PAID", 
         },
+        filter: {
+            _deleted: {
+                ne: true
+            },
+        },     
         authMode: 'apiKey'
       });
   
       const { items } = data.listBills;
       const billsWithDetails = await Promise.all(items.map(async (bill) => {
-        const billItems = await fetchBillItems(bill.id);
+        // const billItems = await fetchBillItems(bill.id);
         let cashierDetails = { cashierUsername: 'Unknown', cashierRole: 'Unknown' };
   
         // Fetch cashier details for each bill, if cashier ID is present
@@ -134,14 +176,12 @@ useEffect(() => {
             };
           }
         }
-  
-        // Combine bill details with cashier information and items
-        return { ...bill, items: billItems, ...cashierDetails };
+        return { ...bill, ...cashierDetails };
       }));
   
       setBills(billsWithDetails);
     } catch (error) {
-      console.error('Error fetching bills:', error);
+      console.log('Error fetching bills:', error);
     }
   };
   const fetchBillItems = async (billId) => {
@@ -168,7 +208,7 @@ useEffect(() => {
         return [];
       }
     } catch (error) {
-      console.error('Error fetching bill items for bill:', error);
+      console.log('Error fetching bill items for bill:', error);
       return [];
     }
   };
@@ -206,7 +246,7 @@ useEffect(() => {
   };  
   useEffect(() => {
     fetchAllBills();
-  }, []);
+  }, [storeID]);
   useEffect(() => {
     if (bills.length > 0) {
       const latestBill = findLatestUpdatedBill(bills);
@@ -214,20 +254,35 @@ useEffect(() => {
     }
   }, [bills]);
 
+  const handleViewPress = (bill) => {
+    // console.log("Passing", bill);
+    navigation.navigate('ShowBill', { 
+        billId: bill.id, 
+        billVersion: bill._version,
+        billcashier: bill.cashier,
+        billCashierUsername: bill.cashierUsername, 
+        billCreatedAt: bill.createdAt,
+        billdate:bill.date,billtime:bill.time,
+        billtotal:bill.totalAmount
+    });
+
+};
+
   return (
     <View style={{flex:1,backgroundColor:COLORS.primary}}>
       {loading && 
       <View style={styles.loadingContainer}>
        <AnimatedCircularProgress
-  size={120}
-  width={15}
-  fill={100}
-  prefill={0} 
-  delay={10}
-  duration={2200} 
-  tintColor={COLORS.secondary}
-  onAnimationComplete={() => console.log('onAnimationComplete')}
-  backgroundColor="white" />
+          size={120}
+          width={15}
+          fill={100}
+          prefill={0} 
+          delay={10}
+          duration={2200} 
+          tintColor={COLORS.secondary}
+          // onAnimationComplete={() => console.log('onAnimationComplete')}
+          backgroundColor="white" 
+  />
   </View>}
         <View style={styles.wrapper}>
         <View style={[
@@ -324,7 +379,7 @@ useEffect(() => {
             </Text>
             <TouchableOpacity style={styles.billViewButton} onPress={() => navigation.navigate('Bluetooth')}>
               <Text style={styles.billViewText}>
-                Change
+                Connect
               </Text>
             </TouchableOpacity>
           </View>
@@ -351,21 +406,25 @@ useEffect(() => {
                   {latestBill ? (
   <View style={styles.billSection}>
     <View style={styles.billContainer}>
-      <Image style={styles.logoStyles} source={require("../assets/images/logo7.png")} />
+    
+      
+      <Image style={styles.logoStyles} source={require("../assets/images/logo1.png")} />
+     
       <View style={styles.billText}>
         <View style={styles.cashierName}>
           <Text style={styles.cashierText}>
             {latestBill.cashierUsername}
           </Text>
           <Text style={styles.billTotal}>
-            Rs. {latestBill.totalAmount}
+          {`${storeCurrency || '$'} ${latestBill.totalAmount}`}
+         
           </Text>
         </View>
         <View style={styles.billBottomText}>
           <Text style={styles.billTime}>
             {latestBill && latestBill.updatedAt ? new Date(latestBill.updatedAt).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true }) : ''}
           </Text>
-          <TouchableOpacity style={styles.billViewButton} onPress={() => navigation.navigate('Receipt')}>
+          <TouchableOpacity style={styles.billViewButton} onPress={() => handleViewPress(latestBill)}>
             <Text style={styles.billViewText}>
               View
             </Text>
@@ -655,8 +714,8 @@ billViewText:{
   fontSize:13,
 },
 logoStyles:{
-  height:30,
-  width:30,
+  height:50,
+  width:35,
   marginRight:10,
 },
 })

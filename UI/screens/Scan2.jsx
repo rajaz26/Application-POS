@@ -20,7 +20,7 @@ import Ionic from 'react-native-vector-icons/Ionicons';
 import {generateClient} from 'aws-amplify/api';
 import { fetchUserAttributes } from 'aws-amplify/auth';
 import { setUserDetails } from '../store/userSlice'; 
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Sound from 'react-native-sound';
 import { updateProduct,createWarehouseScan ,createNotifications } from '../src/graphql/mutations';
 export default function Scan2({route}) {
@@ -45,6 +45,8 @@ export default function Scan2({route}) {
   const navigation = useNavigation();
   const [userIdW, setUserIdW] = useState(null);
 const [usernameW, setUsernameW] = useState('');
+const [zoom, setZoom] = useState(1); 
+const storeID = useSelector((state) => state.user.storeId);
 
 
 const Playsound = ()=>{
@@ -76,9 +78,10 @@ const Playsound = ()=>{
       checkInverted: true,
     }
   );
-  const ProductByBarcode = /* GraphQL */ `
-  query ProductByBarcode($barcode: String!) {
-    productByBarcode(barcode: $barcode) {
+
+  const ProductByBarcodeAndStoreId = /* GraphQL */ `
+  query ProductByBarcodeAndStoreId($barcode: String!, $storeId: ID!) {
+    productByBarcode(barcode: $barcode, filter: {storeProductsId: {eq: $storeId}}) {
       items {
         id
         name
@@ -88,11 +91,14 @@ const Playsound = ()=>{
         category
         warehouseQuantity
         shelfQuantity
+        store {
+          id
+          name
+        }
         _version
       }
     }
   }
-  
 `;
 
   React.useEffect(() => {
@@ -102,6 +108,13 @@ const Playsound = ()=>{
     })();
   }, []);
 
+  const zoomIn = () => {
+    setZoom((prevZoom) => Math.min(prevZoom + 0.1, device?.maxZoom ?? 1));
+  };
+
+  const zoomOut = () => {
+    setZoom((prevZoom) => Math.max(prevZoom - 0.1, 1));
+  };
 
   const toggleScanning = () => {
     setIsScanning((prevState) => !prevState);
@@ -141,7 +154,8 @@ const Playsound = ()=>{
 toggleBillModal();    
 };
 
-  const renderScannedBarcodes = () => {
+
+const renderScannedBarcodes = () => {
     return (
       <View style={styles.modalContainer}>
         <Text style={styles.modalTitle}>Scanned Products:</Text>
@@ -167,8 +181,8 @@ const handleBarcodeScanned = async (barcode) => {
         console.log("Scanned barcode:", barcodeValue);
   
         const productDetailsResponse = await client.graphql({
-            query: ProductByBarcode,
-            variables: { barcode: barcodeValue },
+            query: ProductByBarcodeAndStoreId,
+            variables: { barcode: barcodeValue,storeId:storeID },
             authMode: 'apiKey',
         });
   
@@ -233,13 +247,6 @@ query UserById($userId: ID!) {
       store {
         id
         name
-        address
-        createdAt
-        updatedAt
-        _version
-        _deleted
-        _lastChangedAt
-        __typename
       }
       createdAt
       updatedAt
@@ -268,13 +275,13 @@ const dispatch = useDispatch();
 
         const userDetails = data.userById.items[0];
         if (userDetails) {
-          dispatch(
-            setUserDetails({
-              userId: userDetails.userId,
-              username: userDetails.username,
-              role: userDetails.role,
-            })
-          );
+          // dispatch(
+          //   setUserDetails({
+          //     userId: userDetails.userId,
+          //     username: userDetails.username,
+          //     role: userDetails.role,
+          //   })
+          // );
           setUserIdW(userDetails.userId);
           setUsernameW(userDetails.username);
         }
@@ -377,6 +384,7 @@ const updateProductQuantityInBackend = async (productId, newQuantity,version) =>
 
   const createWarehouseScanF = async (scannedBy,scannedByName,productId, productName, productQuantity) => {
     try {
+      const storeWarehouseScanId=storeID;
       const response = await client.graphql({
         query: createWarehouseScan, 
         variables: {
@@ -386,6 +394,7 @@ const updateProductQuantityInBackend = async (productId, newQuantity,version) =>
             productId,
             productName,
             productQuantity,
+            storeWarehouseScanId,
           },
         },
         authMode: 'apiKey',
@@ -428,6 +437,7 @@ const handleGoBack = () => {
     isActive={true}
     frameProcessor={frameProcessor}
     frameProcessorFps={5}
+    zoom={zoom} 
   />
   {loading && (
         <View style={styles.loadingContainer}>
@@ -492,6 +502,15 @@ const handleGoBack = () => {
               <Text style={styles.buttonTextShow}>Clear</Text>
             </TouchableOpacity>
         )}
+  <TouchableOpacity onPress={() => zoomIn()} style={styles.zoomContainer}>
+        <Text style={styles.buttonTextShow}>+ </Text>
+          <Ionic size={25} color={'white'} name="search-outline" />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => zoomOut()}  style={styles.zoomContainer}>
+        <Text style={styles.buttonTextShow}>- </Text>
+          <Ionic size={25} color={'white'} name="search-outline" />
+ 
+        </TouchableOpacity>
 
 
 <TouchableOpacity onPress={refreshCamera} style={styles.confirmButton}>
@@ -665,6 +684,12 @@ const styles = StyleSheet.create({
     color: 'white',
     top: 2,
     fontFamily: 'Poppins-Regular',
+  },
+  zoomContainer: {
+    flexDirection:'row',
+    justifyContent:'center',
+    alignItems:'center',
+    marginBottom:30,
   },
   modalContainer: {
     flex: 1,

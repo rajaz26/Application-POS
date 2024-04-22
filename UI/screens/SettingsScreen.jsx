@@ -11,12 +11,17 @@ import { COLORS } from '../assets/theme/index.js';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import ThemeModal from '../components/ThemeModal.jsx';
+import { useSelector } from 'react-redux';
+import { Share } from 'react-native';
 
 const SettingsScreen = () => {
   const navigation = useNavigation();
   const [isThemeModalVisible, setThemeModalVisible] = useState(false);
   const [isCurrencyModalVisible, setCurrencyModalVisible] = useState(false);
   const [isNotificationModalVisible, setNotificationModalVisible] = useState(false);
+  const storeCurrency  = useSelector(state => state.currency.value); 
+    
+
   const toggleThemeModal = () => {
     setThemeModalVisible(!isThemeModalVisible);
   };
@@ -54,43 +59,43 @@ const SettingsScreen = () => {
             <Ionic style={styles.optionIcon} size={22} color={COLORS.primary} name="person-outline" />
             <Text style={styles.optionText}>Edit Profile</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.optionContainer} onPress={toggleThemeModal}>
+          {/* <TouchableOpacity style={styles.optionContainer} onPress={toggleThemeModal}>
             <Ionic style={styles.optionIcon} size={22} color={COLORS.primary} name="shield-half-outline" />
             <Text style={styles.optionText}>Theme</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity style={styles.optionContainer} onPress={toggleCurrencyModal}>
             <Ionic style={styles.optionIcon} size={22} color={COLORS.primary} name="card-outline" />
             <Text style={styles.optionText}>Currency</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.optionContainer}onPress={toggleNotificationModal}>
+          <TouchableOpacity style={styles.optionContainer}  onPress={() => navigation.navigate('Scan3')}>
             <Ionic style={styles.optionIcon} size={22} color={COLORS.primary} name="notifications-outline" />
             <Text style={styles.optionText}>Notifications</Text>
           </TouchableOpacity>
-          <View style={styles.optionContainer}>
+          {/* <View style={styles.optionContainer}>
             <Ionic style={styles.optionIcon} size={22} color={COLORS.primary} name="lock-closed-outline" />
             <Text style={styles.optionText}>Privacy</Text>
-          </View>
+          </View> */}
         </View>
         <View style={styles.settingsSection}>
         <View style={{marginBottom:10}}>
             <Text style={styles.accountText}>Customize</Text>
         </View>
-        <View style={styles.optionContainer}>
+        {/* <View style={styles.optionContainer}>
             <Ionic style={styles.optionIcon}  size={23} color={COLORS.primary} name ='card-outline'/>
             <Text style={styles.optionText}>Currency</Text>
-        </View>
-        <View style={styles.optionContainer}>
+        </View> */}
+        <TouchableOpacity style={styles.optionContainer}  onPress={() => navigation.navigate('Bluetooth')}>
             <Ionic style={styles.optionIcon}  size={22} color={COLORS.primary} name ='print'/>
             <Text style={styles.optionText}>Printer Settings</Text>
-        </View>
-        <View style={styles.optionContainer}>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.optionContainer}  onPress={() => navigation.navigate('Store')}>
             <Ionic style={styles.optionIcon}  size={22} color={COLORS.primary} name ='business-outline'/>
-            <Text style={styles.optionText}>Business Settings</Text>
-        </View>
-        <View style={styles.optionContainer}>
+            <Text style={styles.optionText}>Store Settings</Text>
+        </TouchableOpacity>
+        {/* <Touchable Opacity style={styles.optionContainer}>
             <Ionic style={styles.optionIcon}  size={22} color={COLORS.primary} name ='newspaper-outline'/>
             <Text style={styles.optionText}>Printed Bill</Text>
-        </View>
+        </Touchable Opacity> */}
         </View>
 
         <View style={styles.settingsSection}>
@@ -152,7 +157,7 @@ const SettingsScreen = () => {
         {/* Add other sections and options here as needed */}
 
         <ThemeModal visible={isThemeModalVisible} onClose={toggleThemeModal} type="theme" />
-        <ThemeModal visible={isCurrencyModalVisible} onClose={toggleCurrencyModal} type="currency" />
+        <ThemeModal visible={isCurrencyModalVisible} onClose={toggleCurrencyModal} type="currency"  currency={storeCurrency}/>
         <ThemeModal visible={isNotificationModalVisible} onClose={toggleNotificationModal} type="notifications" />
       </ScrollView>
     </SafeAreaView>

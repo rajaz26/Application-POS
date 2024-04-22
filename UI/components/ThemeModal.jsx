@@ -1,33 +1,91 @@
-import React, { useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet, Switch } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Modal, View, Text,TextInput, TouchableOpacity, StyleSheet, Switch } from 'react-native';
 import { COLORS } from '../assets/theme/index.js';
 import { SelectList } from 'react-native-dropdown-select-list';
 import Ionic from 'react-native-vector-icons/Ionicons';
+import { useDispatch, useSelector } from 'react-redux';
+import { getStore } from '../src/graphql/queries.js';
+import { updateCurrency } from '../store/currencySlice.js';
+import { generateClient } from 'aws-amplify/api';
+import { updateStore } from '../src/graphql/mutations.js';
 
-const ThemeModal = ({ visible, onClose, type }) => {
+const ThemeModal = ({ visible, onClose, type, currency  }) => {
+  const client = generateClient();
+  const dispatch = useDispatch();
+  const [saveStatus, setSaveStatus] = useState('idle'); 
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
   const [isNotificationsEnabled, setIsNotificationsEnabled] = useState(false);
   const [isBillCompletionNotificationEnabled, setIsBillCompletionNotificationEnabled] = useState(false);
-
+  const [storeVersion, setStoreVersion] = useState('');
+  const storeID = useSelector((state) => state.user.storeId);
+  const storeCurrency  = useSelector(state => state.currency.value); 
+  const [currencyInput, setCurrencyInput] = useState(currency);
+  
+  useEffect(() => {
+    const fetchStoreDetails = async () => {
+      try {
+          const response = await client.graphql({
+              query: getStore,
+              variables: { id: storeID },
+              authMode: 'apiKey',
+          });
+          setStoreVersion(response.data.getStore._version);
+          setCurrencyInput(response.data.getStore.currency);
+          console.log("Version",response.data.getStore._version);
+      } catch (error) {
+          // console.error('Error fetching store details:', error);
+          // Alert.alert('Error', 'Failed to fetch store details.');
+      }
+  };
+      fetchStoreDetails();
+    }, [storeID]);
+ 
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
-    // You can implement theme switching logic here
   };
 
   const handleCurrencyChange = (currency) => {
     setSelectedCurrency(currency);
-    // You can handle currency selection logic here
   };
 
   const toggleNotifications = () => {
     setIsNotificationsEnabled(!isNotificationsEnabled);
-    // You can handle enabling/disabling general notifications here
   };
 
   const toggleBillCompletionNotification = () => {
     setIsBillCompletionNotificationEnabled(!isBillCompletionNotificationEnabled);
-    // You can handle enabling/disabling bill completion notifications here
+  };
+  
+  const updateStoreCurrency = async (currencyInput, storeVersion) => {
+    try {
+      setSaveStatus('loading');
+      const updateResponse = await client.graphql({
+        query: updateStore,
+        variables: {
+          input: {
+            id: storeID,
+            currency: currencyInput,
+            _version: storeVersion,
+          },
+        },
+        authMode: 'apiKey',
+      });
+      console.log("Currency updated successfully", updateResponse);
+      dispatch(updateCurrency(currencyInput));
+      setSaveStatus('saved');
+      setTimeout(() => {
+        onClose(); 
+      }, 1500);
+
+    } catch (error) {
+      console.error("Error updating store currency:", error);
+      setSaveStatus('idle');
+    }
+  };
+
+  const handleSaveCurrency = () => {
+    updateStoreCurrency(currencyInput, storeVersion);
   };
 
   const renderContent = () => {
@@ -51,18 +109,18 @@ const ThemeModal = ({ visible, onClose, type }) => {
     } else if (type === 'currency') {
       return (
         <View>
-          <Text style={styles.modalTitle}>Select Currency</Text>
-          <SelectList
-            setSelected={(currency) => handleCurrencyChange(currency)}
-            data={['USD', 'EUR', 'GBP']} // Add more currency options here
-            search={false}
-            save="value"
-            placeholder={selectedCurrency}
-            boxStyles={{ borderWidth: 0, left: -16, top: -10 }}
-            arrowicon={<Ionic style={{ position: 'absolute', right: -15, top: 14 }} size={26} color='rgba(180, 180, 180,4)' name='chevron-down-outline' />}
-            inputStyles={{ fontSize: 18.5, top: 1, fontFamily: 'Poppins-Regular', color: 'rgba(140, 140, 140,4)' }}
-            dropdownTextStyles={{ fontFamily: 'Poppins-Regular', fontSize: 15, color: 'rgba(180, 180, 180,4)' }}
+          <Text style={styles.modalTitle}>Currency</Text>
+          <TextInput
+            style={styles.currencyInput}
+            value={currencyInput}
+            onChangeText={setCurrencyInput}
+            placeholder="Enter currency symbol"
           />
+          <TouchableOpacity style={styles.saveButton} onPress={handleSaveCurrency}>
+          <Text style={styles.saveButtonText}>
+              {saveStatus === 'idle' ? 'Save' : saveStatus === 'loading' ? 'Loading...' : 'Saved'}
+            </Text>
+          </TouchableOpacity>
         </View>
       );
     } else if (type === 'notifications') {
@@ -138,6 +196,26 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontFamily: 'Poppins-Regular',
   },
+  currencyInput: {
+    // Style for the currency input field
+    borderWidth: 1,
+    borderColor: 'gray',
+    padding: 10,
+    marginBottom: 20,
+    borderRadius: 5,
+  },
+  saveButton: {
+    // Style for the save button
+    backgroundColor: COLORS.primary,
+    padding: 10,
+    borderRadius: 5,
+  },
+  saveButtonText: {
+    textAlign: 'center',
+    top:1,
+    fontFamily: 'Poppins-Regular',
+    color: 'white',
+  },
   notificationOption: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -154,6 +232,7 @@ const styles = StyleSheet.create({
     height: 50,
   },
   closeButton: {
+    marginTop:13,
     alignSelf: 'flex-end',
   },
   closeButtonText: {

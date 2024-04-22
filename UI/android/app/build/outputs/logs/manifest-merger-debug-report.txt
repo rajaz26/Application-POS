@@ -20,13 +20,17 @@ MERGED from [:react-native-community_netinfo] D:\Application-POS\UI\node_modules
 MERGED from [:react-native-masked-view_masked-view] D:\Application-POS\UI\node_modules\@react-native-masked-view\masked-view\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-picker_picker] D:\Application-POS\UI\node_modules\@react-native-picker\picker\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-bluetooth-escpos-printer] D:\Application-POS\UI\node_modules\react-native-bluetooth-escpos-printer\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-12:12
+MERGED from [:react-native-camera] D:\Application-POS\UI\node_modules\react-native-camera\android\build\intermediates\merged_manifest\generalDebug\AndroidManifest.xml:2:1-16:12
+MERGED from [:react-native-fs] D:\Application-POS\UI\node_modules\react-native-fs\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-9:12
 MERGED from [:react-native-get-random-values] D:\Application-POS\UI\node_modules\react-native-get-random-values\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-haptic-feedback] D:\Application-POS\UI\node_modules\react-native-haptic-feedback\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-9:12
 MERGED from [:react-native-image-picker] D:\Application-POS\UI\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-19:12
 MERGED from [:react-native-linear-gradient] D:\Application-POS\UI\node_modules\react-native-linear-gradient\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-pager-view] D:\Application-POS\UI\node_modules\react-native-pager-view\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
+MERGED from [:react-native-permissions] D:\Application-POS\UI\node_modules\react-native-permissions\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-safe-area-context] D:\Application-POS\UI\node_modules\react-native-safe-area-context\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-screens] D:\Application-POS\UI\node_modules\react-native-screens\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
+MERGED from [:react-native-share] D:\Application-POS\UI\node_modules\react-native-share\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-19:12
 MERGED from [:react-native-sound] D:\Application-POS\UI\node_modules\react-native-sound\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-8:12
 MERGED from [:react-native-sound-player] D:\Application-POS\UI\node_modules\react-native-sound-player\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
 MERGED from [:react-native-svg] D:\Application-POS\UI\node_modules\react-native-svg\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:2:1-7:12
@@ -44,6 +48,8 @@ MERGED from [androidx.appcompat:appcompat-resources:1.5.0] C:\Users\PMLS\.gradle
 MERGED from [androidx.appcompat:appcompat:1.5.0] C:\Users\PMLS\.gradle\caches\transforms-3\8a4582fcf4777cd70591117a23078262\transformed\appcompat-1.5.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.legacy:legacy-support-v4:1.0.0] C:\Users\PMLS\.gradle\caches\transforms-3\16abcfa92b7820d3c8047cb44f610d80\transformed\legacy-support-v4-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.viewpager2:viewpager2:1.0.0] C:\Users\PMLS\.gradle\caches\transforms-3\378d88de2fde0e29d92543d12e33b34a\transformed\jetified-viewpager2-1.0.0\AndroidManifest.xml:17:1-24:12
+MERGED from [com.google.android.gms:play-services-mlkit-face-detection:16.2.0] C:\Users\PMLS\.gradle\caches\transforms-3\b9f3389d51c178b8d896d7baeb40c059\transformed\jetified-play-services-mlkit-face-detection-16.2.0\AndroidManifest.xml:2:1-18:12
+MERGED from [com.google.android.gms:play-services-mlkit-text-recognition:16.3.0] C:\Users\PMLS\.gradle\caches\transforms-3\b92474410cc7ebbd2fad55921816aa5f\transformed\jetified-play-services-mlkit-text-recognition-16.3.0\AndroidManifest.xml:2:1-18:12
 MERGED from [com.google.mlkit:barcode-scanning:17.0.0] C:\Users\PMLS\.gradle\caches\transforms-3\c055c253c72aaef0e170dd3c0f71d2e5\transformed\jetified-barcode-scanning-17.0.0\AndroidManifest.xml:2:1-7:12
 MERGED from [com.google.android.gms:play-services-mlkit-barcode-scanning:16.2.1] C:\Users\PMLS\.gradle\caches\transforms-3\78def8edeb7ffab681924257545b624a\transformed\jetified-play-services-mlkit-barcode-scanning-16.2.1\AndroidManifest.xml:2:1-18:12
 MERGED from [com.google.mlkit:vision-common:16.5.0] C:\Users\PMLS\.gradle\caches\transforms-3\b86801a92097a5dcc8fcd3577b45f061\transformed\jetified-vision-common-16.5.0\AndroidManifest.xml:2:1-18:12
@@ -99,6 +105,11 @@ MERGED from [androidx.lifecycle:lifecycle-process:2.5.1] C:\Users\PMLS\.gradle\c
 MERGED from [androidx.sqlite:sqlite:2.2.0] C:\Users\PMLS\.gradle\caches\transforms-3\dc58477293179deb391b12c4cba55b48\transformed\sqlite-2.2.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\PMLS\.gradle\caches\transforms-3\ce16fe979dbb8e21943e6d6fc151e0f0\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:17:1-33:12
 MERGED from [androidx.tracing:tracing:1.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\816103dcaf20cc3449d44e7aef228ddc\transformed\jetified-tracing-1.1.0\AndroidManifest.xml:17:1-24:12
+MERGED from [com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\PMLS\.gradle\caches\transforms-3\e39449332b16abbff71917ad5661bdd3\transformed\jetified-transport-backend-cct-2.3.3\AndroidManifest.xml:15:1-38:12
+MERGED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\PMLS\.gradle\caches\transforms-3\5b4aa339182f7c0c9798b03e5e65fdd0\transformed\jetified-transport-runtime-2.2.6\AndroidManifest.xml:15:1-41:12
+MERGED from [com.google.android.datatransport:transport-api:2.2.1] C:\Users\PMLS\.gradle\caches\transforms-3\8c01479cd398ae22eccbc8e3819a163b\transformed\jetified-transport-api-2.2.1\AndroidManifest.xml:15:1-22:12
+MERGED from [com.google.firebase:firebase-components:16.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\884291a09db559c4eadb165bdacc623c\transformed\jetified-firebase-components-16.1.0\AndroidManifest.xml:15:1-23:12
+MERGED from [com.google.firebase:firebase-encoders-json:17.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\4942d3bf37e2f8e197cb40c2278ffbb5\transformed\jetified-firebase-encoders-json-17.1.0\AndroidManifest.xml:15:1-23:12
 MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\PMLS\.gradle\caches\transforms-3\9eef969e6025718ac1fde2c52b3066d8\transformed\interpolator-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.cardview:cardview:1.0.0] C:\Users\PMLS\.gradle\caches\transforms-3\c785f2650a4ab9597610a42a5423b6e7\transformed\cardview-1.0.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.lifecycle:lifecycle-runtime:2.5.1] C:\Users\PMLS\.gradle\caches\transforms-3\9aac10571d1da2bf9b3f9b1ce16ec0f0\transformed\lifecycle-runtime-2.5.1\AndroidManifest.xml:17:1-24:12
@@ -118,11 +129,6 @@ MERGED from [androidx.savedstate:savedstate:1.2.0] C:\Users\PMLS\.gradle\caches\
 MERGED from [androidx.lifecycle:lifecycle-livedata:2.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\2efc0e3fcc5a7d654b5f7e93b13594df\transformed\lifecycle-livedata-2.1.0\AndroidManifest.xml:17:1-22:12
 MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.5.0] C:\Users\PMLS\.gradle\caches\transforms-3\b5a8f4cf7a5a1a22c362c296ecffd88b\transformed\lifecycle-livedata-core-2.5.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.arch.core:core-runtime:2.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\9e963b848f7749309ceb54174b3bfd88\transformed\core-runtime-2.1.0\AndroidManifest.xml:17:1-24:12
-MERGED from [com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\PMLS\.gradle\caches\transforms-3\e39449332b16abbff71917ad5661bdd3\transformed\jetified-transport-backend-cct-2.3.3\AndroidManifest.xml:15:1-38:12
-MERGED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\PMLS\.gradle\caches\transforms-3\5b4aa339182f7c0c9798b03e5e65fdd0\transformed\jetified-transport-runtime-2.2.6\AndroidManifest.xml:15:1-41:12
-MERGED from [com.google.android.datatransport:transport-api:2.2.1] C:\Users\PMLS\.gradle\caches\transforms-3\8c01479cd398ae22eccbc8e3819a163b\transformed\jetified-transport-api-2.2.1\AndroidManifest.xml:15:1-22:12
-MERGED from [com.google.firebase:firebase-components:16.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\884291a09db559c4eadb165bdacc623c\transformed\jetified-firebase-components-16.1.0\AndroidManifest.xml:15:1-23:12
-MERGED from [com.google.firebase:firebase-encoders-json:17.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\4942d3bf37e2f8e197cb40c2278ffbb5\transformed\jetified-firebase-encoders-json-17.1.0\AndroidManifest.xml:15:1-23:12
 MERGED from [androidx.test.services:storage:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\6c4f3a207d75a46c3bde1abb15be0883\transformed\jetified-storage-1.4.0\AndroidManifest.xml:17:1-24:12
 MERGED from [androidx.test:monitor:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\20326f6d3028b51f917ecbedaedc2ded\transformed\monitor-1.4.0\AndroidManifest.xml:17:1-24:12
 MERGED from [com.android.ndk.thirdparty:openssl:1.1.1l-beta-1] C:\Users\PMLS\.gradle\caches\transforms-3\9aee53ed1b97b29f8fa14a865487ca10\transformed\jetified-openssl-1.1.1l-beta-1\AndroidManifest.xml:1:1-3:12
@@ -144,8 +150,8 @@ MERGED from [com.facebook.fresco:imagepipeline-base:2.6.0] C:\Users\PMLS\.gradle
 MERGED from [com.facebook.fresco:middleware:2.6.0] C:\Users\PMLS\.gradle\caches\transforms-3\64b55a0ad447c9d7608986823ffb3a12\transformed\jetified-middleware-2.6.0\AndroidManifest.xml:2:1-9:12
 MERGED from [com.facebook.fresco:ui-common:2.6.0] C:\Users\PMLS\.gradle\caches\transforms-3\c15a7e0a99bb25483d068fddbb8c4f6a\transformed\jetified-ui-common-2.6.0\AndroidManifest.xml:2:1-9:12
 MERGED from [com.facebook.fresco:fbcore:2.6.0] C:\Users\PMLS\.gradle\caches\transforms-3\6b675b8779f5bce57b5bb10c07a431c5\transformed\jetified-fbcore-2.6.0\AndroidManifest.xml:2:1-9:12
-MERGED from [androidx.multidex:multidex:2.0.1] C:\Users\PMLS\.gradle\caches\transforms-3\b7461f7f7ab6c826a5a10710e8c43951\transformed\multidex-2.0.1\AndroidManifest.xml:17:1-22:12
 MERGED from [com.google.android.odml:image:1.0.0-beta1] C:\Users\PMLS\.gradle\caches\transforms-3\ac89d874c80b6a23779ca03abd9c6ce4\transformed\jetified-image-1.0.0-beta1\AndroidManifest.xml:2:1-9:12
+MERGED from [androidx.multidex:multidex:2.0.1] C:\Users\PMLS\.gradle\caches\transforms-3\b7461f7f7ab6c826a5a10710e8c43951\transformed\multidex-2.0.1\AndroidManifest.xml:17:1-22:12
 INJECTED from D:\Application-POS\UI\android\app\src\debug\AndroidManifest.xml:2:1-13:12
 INJECTED from D:\Application-POS\UI\android\app\src\debug\AndroidManifest.xml:2:1-13:12
 INJECTED from D:\Application-POS\UI\android\app\src\debug\AndroidManifest.xml:2:1-13:12
@@ -177,6 +183,8 @@ MERGED from [com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Us
 		ADDED from D:\Application-POS\UI\android\app\src\main\AndroidManifest.xml:3:22-64
 uses-permission#android.permission.CAMERA
 ADDED from D:\Application-POS\UI\android\app\src\main\AndroidManifest.xml:4:5-65
+MERGED from [:react-native-camera] D:\Application-POS\UI\node_modules\react-native-camera\android\build\intermediates\merged_manifest\generalDebug\AndroidManifest.xml:7:5-65
+MERGED from [:react-native-camera] D:\Application-POS\UI\node_modules\react-native-camera\android\build\intermediates\merged_manifest\generalDebug\AndroidManifest.xml:7:5-65
 MERGED from [:react-native-torch] D:\Application-POS\UI\node_modules\react-native-torch\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-65
 MERGED from [:react-native-torch] D:\Application-POS\UI\node_modules\react-native-torch\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-65
 	android:name
@@ -187,6 +195,8 @@ ADDED from D:\Application-POS\UI\android\app\src\main\AndroidManifest.xml:5:5-80
 		ADDED from D:\Application-POS\UI\android\app\src\main\AndroidManifest.xml:5:22-77
 uses-permission#android.permission.WRITE_EXTERNAL_STORAGE
 ADDED from D:\Application-POS\UI\android\app\src\main\AndroidManifest.xml:6:5-81
+MERGED from [:react-native-fs] D:\Application-POS\UI\node_modules\react-native-fs\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-81
+MERGED from [:react-native-fs] D:\Application-POS\UI\node_modules\react-native-fs\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-81
 MERGED from [:rn-fetch-blob] D:\Application-POS\UI\node_modules\rn-fetch-blob\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:29:5-81
 MERGED from [:rn-fetch-blob] D:\Application-POS\UI\node_modules\rn-fetch-blob\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:29:5-81
 	android:name
@@ -225,12 +235,18 @@ MERGED from D:\Application-POS\UI\android\app\src\main\AndroidManifest.xml:13:5-
 MERGED from D:\Application-POS\UI\android\app\src\main\AndroidManifest.xml:13:5-34:19
 MERGED from [:react-native-image-picker] D:\Application-POS\UI\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-17:19
 MERGED from [:react-native-image-picker] D:\Application-POS\UI\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-17:19
+MERGED from [:react-native-share] D:\Application-POS\UI\node_modules\react-native-share\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-17:19
+MERGED from [:react-native-share] D:\Application-POS\UI\node_modules\react-native-share\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-17:19
 MERGED from [:react-native-track-player] D:\Application-POS\UI\node_modules\react-native-track-player\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:11:5-23:19
 MERGED from [:react-native-track-player] D:\Application-POS\UI\node_modules\react-native-track-player\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:11:5-23:19
 MERGED from [:rn-fetch-blob] D:\Application-POS\UI\node_modules\rn-fetch-blob\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:31:5-41:19
 MERGED from [:rn-fetch-blob] D:\Application-POS\UI\node_modules\rn-fetch-blob\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:31:5-41:19
 MERGED from [com.google.android.material:material:1.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\9300c7fc5aff0974f1ee709fb212c45e\transformed\material-1.1.0\AndroidManifest.xml:22:5-20
 MERGED from [com.google.android.material:material:1.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\9300c7fc5aff0974f1ee709fb212c45e\transformed\material-1.1.0\AndroidManifest.xml:22:5-20
+MERGED from [com.google.android.gms:play-services-mlkit-face-detection:16.2.0] C:\Users\PMLS\.gradle\caches\transforms-3\b9f3389d51c178b8d896d7baeb40c059\transformed\jetified-play-services-mlkit-face-detection-16.2.0\AndroidManifest.xml:8:5-16:19
+MERGED from [com.google.android.gms:play-services-mlkit-face-detection:16.2.0] C:\Users\PMLS\.gradle\caches\transforms-3\b9f3389d51c178b8d896d7baeb40c059\transformed\jetified-play-services-mlkit-face-detection-16.2.0\AndroidManifest.xml:8:5-16:19
+MERGED from [com.google.android.gms:play-services-mlkit-text-recognition:16.3.0] C:\Users\PMLS\.gradle\caches\transforms-3\b92474410cc7ebbd2fad55921816aa5f\transformed\jetified-play-services-mlkit-text-recognition-16.3.0\AndroidManifest.xml:8:5-16:19
+MERGED from [com.google.android.gms:play-services-mlkit-text-recognition:16.3.0] C:\Users\PMLS\.gradle\caches\transforms-3\b92474410cc7ebbd2fad55921816aa5f\transformed\jetified-play-services-mlkit-text-recognition-16.3.0\AndroidManifest.xml:8:5-16:19
 MERGED from [com.google.android.gms:play-services-mlkit-barcode-scanning:16.2.1] C:\Users\PMLS\.gradle\caches\transforms-3\78def8edeb7ffab681924257545b624a\transformed\jetified-play-services-mlkit-barcode-scanning-16.2.1\AndroidManifest.xml:8:5-16:19
 MERGED from [com.google.android.gms:play-services-mlkit-barcode-scanning:16.2.1] C:\Users\PMLS\.gradle\caches\transforms-3\78def8edeb7ffab681924257545b624a\transformed\jetified-play-services-mlkit-barcode-scanning-16.2.1\AndroidManifest.xml:8:5-16:19
 MERGED from [com.google.mlkit:vision-common:16.5.0] C:\Users\PMLS\.gradle\caches\transforms-3\b86801a92097a5dcc8fcd3577b45f061\transformed\jetified-vision-common-16.5.0\AndroidManifest.xml:8:5-16:19
@@ -259,14 +275,14 @@ MERGED from [androidx.lifecycle:lifecycle-process:2.5.1] C:\Users\PMLS\.gradle\c
 MERGED from [androidx.lifecycle:lifecycle-process:2.5.1] C:\Users\PMLS\.gradle\caches\transforms-3\f1089588ad4797c18f238c2a8ce82dde\transformed\jetified-lifecycle-process-2.5.1\AndroidManifest.xml:25:5-35:19
 MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\PMLS\.gradle\caches\transforms-3\ce16fe979dbb8e21943e6d6fc151e0f0\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:25:5-31:19
 MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\PMLS\.gradle\caches\transforms-3\ce16fe979dbb8e21943e6d6fc151e0f0\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:25:5-31:19
-MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\PMLS\.gradle\caches\transforms-3\a1eec6f4e1f4253fcf428dd43a9fa3cd\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:24:5-25:19
-MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\PMLS\.gradle\caches\transforms-3\a1eec6f4e1f4253fcf428dd43a9fa3cd\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:24:5-25:19
-MERGED from [androidx.test:runner:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\e7f43592051571add194abf4324589b2\transformed\runner-1.4.0\AndroidManifest.xml:30:5-20
-MERGED from [androidx.test:runner:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\e7f43592051571add194abf4324589b2\transformed\runner-1.4.0\AndroidManifest.xml:30:5-20
 MERGED from [com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\PMLS\.gradle\caches\transforms-3\e39449332b16abbff71917ad5661bdd3\transformed\jetified-transport-backend-cct-2.3.3\AndroidManifest.xml:28:5-36:19
 MERGED from [com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\PMLS\.gradle\caches\transforms-3\e39449332b16abbff71917ad5661bdd3\transformed\jetified-transport-backend-cct-2.3.3\AndroidManifest.xml:28:5-36:19
 MERGED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\PMLS\.gradle\caches\transforms-3\5b4aa339182f7c0c9798b03e5e65fdd0\transformed\jetified-transport-runtime-2.2.6\AndroidManifest.xml:25:5-39:19
 MERGED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\PMLS\.gradle\caches\transforms-3\5b4aa339182f7c0c9798b03e5e65fdd0\transformed\jetified-transport-runtime-2.2.6\AndroidManifest.xml:25:5-39:19
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\PMLS\.gradle\caches\transforms-3\a1eec6f4e1f4253fcf428dd43a9fa3cd\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:24:5-25:19
+MERGED from [androidx.versionedparcelable:versionedparcelable:1.1.1] C:\Users\PMLS\.gradle\caches\transforms-3\a1eec6f4e1f4253fcf428dd43a9fa3cd\transformed\versionedparcelable-1.1.1\AndroidManifest.xml:24:5-25:19
+MERGED from [androidx.test:runner:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\e7f43592051571add194abf4324589b2\transformed\runner-1.4.0\AndroidManifest.xml:30:5-20
+MERGED from [androidx.test:runner:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\e7f43592051571add194abf4324589b2\transformed\runner-1.4.0\AndroidManifest.xml:30:5-20
 MERGED from [com.facebook.soloader:soloader:0.10.5] C:\Users\PMLS\.gradle\caches\transforms-3\ec3312a013bd7d8a70466a1977a1dba4\transformed\jetified-soloader-0.10.5\AndroidManifest.xml:11:5-15:19
 MERGED from [com.facebook.soloader:soloader:0.10.5] C:\Users\PMLS\.gradle\caches\transforms-3\ec3312a013bd7d8a70466a1977a1dba4\transformed\jetified-soloader-0.10.5\AndroidManifest.xml:11:5-15:19
 MERGED from [com.google.android.odml:image:1.0.0-beta1] C:\Users\PMLS\.gradle\caches\transforms-3\ac89d874c80b6a23779ca03abd9c6ce4\transformed\jetified-image-1.0.0-beta1\AndroidManifest.xml:7:5-20
@@ -360,6 +376,10 @@ MERGED from [:react-native-picker_picker] D:\Application-POS\UI\node_modules\@re
 MERGED from [:react-native-picker_picker] D:\Application-POS\UI\node_modules\@react-native-picker\picker\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-bluetooth-escpos-printer] D:\Application-POS\UI\node_modules\react-native-bluetooth-escpos-printer\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-bluetooth-escpos-printer] D:\Application-POS\UI\node_modules\react-native-bluetooth-escpos-printer\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-camera] D:\Application-POS\UI\node_modules\react-native-camera\android\build\intermediates\merged_manifest\generalDebug\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-camera] D:\Application-POS\UI\node_modules\react-native-camera\android\build\intermediates\merged_manifest\generalDebug\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-fs] D:\Application-POS\UI\node_modules\react-native-fs\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-fs] D:\Application-POS\UI\node_modules\react-native-fs\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-get-random-values] D:\Application-POS\UI\node_modules\react-native-get-random-values\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-get-random-values] D:\Application-POS\UI\node_modules\react-native-get-random-values\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-haptic-feedback] D:\Application-POS\UI\node_modules\react-native-haptic-feedback\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
@@ -370,10 +390,14 @@ MERGED from [:react-native-linear-gradient] D:\Application-POS\UI\node_modules\r
 MERGED from [:react-native-linear-gradient] D:\Application-POS\UI\node_modules\react-native-linear-gradient\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-pager-view] D:\Application-POS\UI\node_modules\react-native-pager-view\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-pager-view] D:\Application-POS\UI\node_modules\react-native-pager-view\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-permissions] D:\Application-POS\UI\node_modules\react-native-permissions\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-permissions] D:\Application-POS\UI\node_modules\react-native-permissions\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-safe-area-context] D:\Application-POS\UI\node_modules\react-native-safe-area-context\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-safe-area-context] D:\Application-POS\UI\node_modules\react-native-safe-area-context\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-screens] D:\Application-POS\UI\node_modules\react-native-screens\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-screens] D:\Application-POS\UI\node_modules\react-native-screens\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-share] D:\Application-POS\UI\node_modules\react-native-share\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
+MERGED from [:react-native-share] D:\Application-POS\UI\node_modules\react-native-share\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
 MERGED from [:react-native-sound] D:\Application-POS\UI\node_modules\react-native-sound\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:6:5-44
 MERGED from [:react-native-sound] D:\Application-POS\UI\node_modules\react-native-sound\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:6:5-44
 MERGED from [:react-native-sound-player] D:\Application-POS\UI\node_modules\react-native-sound-player\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:5:5-44
@@ -408,6 +432,10 @@ MERGED from [androidx.legacy:legacy-support-v4:1.0.0] C:\Users\PMLS\.gradle\cach
 MERGED from [androidx.legacy:legacy-support-v4:1.0.0] C:\Users\PMLS\.gradle\caches\transforms-3\16abcfa92b7820d3c8047cb44f610d80\transformed\legacy-support-v4-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.viewpager2:viewpager2:1.0.0] C:\Users\PMLS\.gradle\caches\transforms-3\378d88de2fde0e29d92543d12e33b34a\transformed\jetified-viewpager2-1.0.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.viewpager2:viewpager2:1.0.0] C:\Users\PMLS\.gradle\caches\transforms-3\378d88de2fde0e29d92543d12e33b34a\transformed\jetified-viewpager2-1.0.0\AndroidManifest.xml:20:5-22:41
+MERGED from [com.google.android.gms:play-services-mlkit-face-detection:16.2.0] C:\Users\PMLS\.gradle\caches\transforms-3\b9f3389d51c178b8d896d7baeb40c059\transformed\jetified-play-services-mlkit-face-detection-16.2.0\AndroidManifest.xml:6:5-44
+MERGED from [com.google.android.gms:play-services-mlkit-face-detection:16.2.0] C:\Users\PMLS\.gradle\caches\transforms-3\b9f3389d51c178b8d896d7baeb40c059\transformed\jetified-play-services-mlkit-face-detection-16.2.0\AndroidManifest.xml:6:5-44
+MERGED from [com.google.android.gms:play-services-mlkit-text-recognition:16.3.0] C:\Users\PMLS\.gradle\caches\transforms-3\b92474410cc7ebbd2fad55921816aa5f\transformed\jetified-play-services-mlkit-text-recognition-16.3.0\AndroidManifest.xml:6:5-44
+MERGED from [com.google.android.gms:play-services-mlkit-text-recognition:16.3.0] C:\Users\PMLS\.gradle\caches\transforms-3\b92474410cc7ebbd2fad55921816aa5f\transformed\jetified-play-services-mlkit-text-recognition-16.3.0\AndroidManifest.xml:6:5-44
 MERGED from [com.google.mlkit:barcode-scanning:17.0.0] C:\Users\PMLS\.gradle\caches\transforms-3\c055c253c72aaef0e170dd3c0f71d2e5\transformed\jetified-barcode-scanning-17.0.0\AndroidManifest.xml:5:5-44
 MERGED from [com.google.mlkit:barcode-scanning:17.0.0] C:\Users\PMLS\.gradle\caches\transforms-3\c055c253c72aaef0e170dd3c0f71d2e5\transformed\jetified-barcode-scanning-17.0.0\AndroidManifest.xml:5:5-44
 MERGED from [com.google.android.gms:play-services-mlkit-barcode-scanning:16.2.1] C:\Users\PMLS\.gradle\caches\transforms-3\78def8edeb7ffab681924257545b624a\transformed\jetified-play-services-mlkit-barcode-scanning-16.2.1\AndroidManifest.xml:6:5-44
@@ -518,6 +546,16 @@ MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\PMLS\.gradle\cache
 MERGED from [androidx.startup:startup-runtime:1.1.1] C:\Users\PMLS\.gradle\caches\transforms-3\ce16fe979dbb8e21943e6d6fc151e0f0\transformed\jetified-startup-runtime-1.1.1\AndroidManifest.xml:21:5-23:41
 MERGED from [androidx.tracing:tracing:1.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\816103dcaf20cc3449d44e7aef228ddc\transformed\jetified-tracing-1.1.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.tracing:tracing:1.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\816103dcaf20cc3449d44e7aef228ddc\transformed\jetified-tracing-1.1.0\AndroidManifest.xml:20:5-22:41
+MERGED from [com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\PMLS\.gradle\caches\transforms-3\e39449332b16abbff71917ad5661bdd3\transformed\jetified-transport-backend-cct-2.3.3\AndroidManifest.xml:19:5-21:41
+MERGED from [com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\PMLS\.gradle\caches\transforms-3\e39449332b16abbff71917ad5661bdd3\transformed\jetified-transport-backend-cct-2.3.3\AndroidManifest.xml:19:5-21:41
+MERGED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\PMLS\.gradle\caches\transforms-3\5b4aa339182f7c0c9798b03e5e65fdd0\transformed\jetified-transport-runtime-2.2.6\AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\PMLS\.gradle\caches\transforms-3\5b4aa339182f7c0c9798b03e5e65fdd0\transformed\jetified-transport-runtime-2.2.6\AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.android.datatransport:transport-api:2.2.1] C:\Users\PMLS\.gradle\caches\transforms-3\8c01479cd398ae22eccbc8e3819a163b\transformed\jetified-transport-api-2.2.1\AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.android.datatransport:transport-api:2.2.1] C:\Users\PMLS\.gradle\caches\transforms-3\8c01479cd398ae22eccbc8e3819a163b\transformed\jetified-transport-api-2.2.1\AndroidManifest.xml:18:5-20:41
+MERGED from [com.google.firebase:firebase-components:16.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\884291a09db559c4eadb165bdacc623c\transformed\jetified-firebase-components-16.1.0\AndroidManifest.xml:19:5-21:41
+MERGED from [com.google.firebase:firebase-components:16.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\884291a09db559c4eadb165bdacc623c\transformed\jetified-firebase-components-16.1.0\AndroidManifest.xml:19:5-21:41
+MERGED from [com.google.firebase:firebase-encoders-json:17.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\4942d3bf37e2f8e197cb40c2278ffbb5\transformed\jetified-firebase-encoders-json-17.1.0\AndroidManifest.xml:19:5-21:41
+MERGED from [com.google.firebase:firebase-encoders-json:17.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\4942d3bf37e2f8e197cb40c2278ffbb5\transformed\jetified-firebase-encoders-json-17.1.0\AndroidManifest.xml:19:5-21:41
 MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\PMLS\.gradle\caches\transforms-3\9eef969e6025718ac1fde2c52b3066d8\transformed\interpolator-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.interpolator:interpolator:1.0.0] C:\Users\PMLS\.gradle\caches\transforms-3\9eef969e6025718ac1fde2c52b3066d8\transformed\interpolator-1.0.0\AndroidManifest.xml:20:5-44
 MERGED from [androidx.cardview:cardview:1.0.0] C:\Users\PMLS\.gradle\caches\transforms-3\c785f2650a4ab9597610a42a5423b6e7\transformed\cardview-1.0.0\AndroidManifest.xml:20:5-44
@@ -556,16 +594,6 @@ MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.5.0] C:\Users\PMLS\.gr
 MERGED from [androidx.lifecycle:lifecycle-livedata-core:2.5.0] C:\Users\PMLS\.gradle\caches\transforms-3\b5a8f4cf7a5a1a22c362c296ecffd88b\transformed\lifecycle-livedata-core-2.5.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.arch.core:core-runtime:2.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\9e963b848f7749309ceb54174b3bfd88\transformed\core-runtime-2.1.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.arch.core:core-runtime:2.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\9e963b848f7749309ceb54174b3bfd88\transformed\core-runtime-2.1.0\AndroidManifest.xml:20:5-22:41
-MERGED from [com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\PMLS\.gradle\caches\transforms-3\e39449332b16abbff71917ad5661bdd3\transformed\jetified-transport-backend-cct-2.3.3\AndroidManifest.xml:19:5-21:41
-MERGED from [com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\PMLS\.gradle\caches\transforms-3\e39449332b16abbff71917ad5661bdd3\transformed\jetified-transport-backend-cct-2.3.3\AndroidManifest.xml:19:5-21:41
-MERGED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\PMLS\.gradle\caches\transforms-3\5b4aa339182f7c0c9798b03e5e65fdd0\transformed\jetified-transport-runtime-2.2.6\AndroidManifest.xml:18:5-20:41
-MERGED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\PMLS\.gradle\caches\transforms-3\5b4aa339182f7c0c9798b03e5e65fdd0\transformed\jetified-transport-runtime-2.2.6\AndroidManifest.xml:18:5-20:41
-MERGED from [com.google.android.datatransport:transport-api:2.2.1] C:\Users\PMLS\.gradle\caches\transforms-3\8c01479cd398ae22eccbc8e3819a163b\transformed\jetified-transport-api-2.2.1\AndroidManifest.xml:18:5-20:41
-MERGED from [com.google.android.datatransport:transport-api:2.2.1] C:\Users\PMLS\.gradle\caches\transforms-3\8c01479cd398ae22eccbc8e3819a163b\transformed\jetified-transport-api-2.2.1\AndroidManifest.xml:18:5-20:41
-MERGED from [com.google.firebase:firebase-components:16.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\884291a09db559c4eadb165bdacc623c\transformed\jetified-firebase-components-16.1.0\AndroidManifest.xml:19:5-21:41
-MERGED from [com.google.firebase:firebase-components:16.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\884291a09db559c4eadb165bdacc623c\transformed\jetified-firebase-components-16.1.0\AndroidManifest.xml:19:5-21:41
-MERGED from [com.google.firebase:firebase-encoders-json:17.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\4942d3bf37e2f8e197cb40c2278ffbb5\transformed\jetified-firebase-encoders-json-17.1.0\AndroidManifest.xml:19:5-21:41
-MERGED from [com.google.firebase:firebase-encoders-json:17.1.0] C:\Users\PMLS\.gradle\caches\transforms-3\4942d3bf37e2f8e197cb40c2278ffbb5\transformed\jetified-firebase-encoders-json-17.1.0\AndroidManifest.xml:19:5-21:41
 MERGED from [androidx.test.services:storage:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\6c4f3a207d75a46c3bde1abb15be0883\transformed\jetified-storage-1.4.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.test.services:storage:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\6c4f3a207d75a46c3bde1abb15be0883\transformed\jetified-storage-1.4.0\AndroidManifest.xml:20:5-22:41
 MERGED from [androidx.test:monitor:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\20326f6d3028b51f917ecbedaedc2ded\transformed\monitor-1.4.0\AndroidManifest.xml:20:5-22:41
@@ -608,10 +636,10 @@ MERGED from [com.facebook.fresco:ui-common:2.6.0] C:\Users\PMLS\.gradle\caches\t
 MERGED from [com.facebook.fresco:ui-common:2.6.0] C:\Users\PMLS\.gradle\caches\transforms-3\c15a7e0a99bb25483d068fddbb8c4f6a\transformed\jetified-ui-common-2.6.0\AndroidManifest.xml:5:5-7:41
 MERGED from [com.facebook.fresco:fbcore:2.6.0] C:\Users\PMLS\.gradle\caches\transforms-3\6b675b8779f5bce57b5bb10c07a431c5\transformed\jetified-fbcore-2.6.0\AndroidManifest.xml:5:5-7:41
 MERGED from [com.facebook.fresco:fbcore:2.6.0] C:\Users\PMLS\.gradle\caches\transforms-3\6b675b8779f5bce57b5bb10c07a431c5\transformed\jetified-fbcore-2.6.0\AndroidManifest.xml:5:5-7:41
-MERGED from [androidx.multidex:multidex:2.0.1] C:\Users\PMLS\.gradle\caches\transforms-3\b7461f7f7ab6c826a5a10710e8c43951\transformed\multidex-2.0.1\AndroidManifest.xml:20:5-43
-MERGED from [androidx.multidex:multidex:2.0.1] C:\Users\PMLS\.gradle\caches\transforms-3\b7461f7f7ab6c826a5a10710e8c43951\transformed\multidex-2.0.1\AndroidManifest.xml:20:5-43
 MERGED from [com.google.android.odml:image:1.0.0-beta1] C:\Users\PMLS\.gradle\caches\transforms-3\ac89d874c80b6a23779ca03abd9c6ce4\transformed\jetified-image-1.0.0-beta1\AndroidManifest.xml:5:5-44
 MERGED from [com.google.android.odml:image:1.0.0-beta1] C:\Users\PMLS\.gradle\caches\transforms-3\ac89d874c80b6a23779ca03abd9c6ce4\transformed\jetified-image-1.0.0-beta1\AndroidManifest.xml:5:5-44
+MERGED from [androidx.multidex:multidex:2.0.1] C:\Users\PMLS\.gradle\caches\transforms-3\b7461f7f7ab6c826a5a10710e8c43951\transformed\multidex-2.0.1\AndroidManifest.xml:20:5-43
+MERGED from [androidx.multidex:multidex:2.0.1] C:\Users\PMLS\.gradle\caches\transforms-3\b7461f7f7ab6c826a5a10710e8c43951\transformed\multidex-2.0.1\AndroidManifest.xml:20:5-43
 INJECTED from D:\Application-POS\UI\android\app\src\debug\AndroidManifest.xml
 INJECTED from D:\Application-POS\UI\android\app\src\debug\AndroidManifest.xml
 	android:targetSdkVersion
@@ -644,12 +672,12 @@ MERGED from [:rn-fetch-blob] D:\Application-POS\UI\node_modules\rn-fetch-blob\an
 MERGED from [:rn-fetch-blob] D:\Application-POS\UI\node_modules\rn-fetch-blob\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:23:5-79
 MERGED from [com.google.android.exoplayer:exoplayer-core:2.19.0] C:\Users\PMLS\.gradle\caches\transforms-3\55dcd46e4ec8045c49db1f6423ee9796\transformed\jetified-exoplayer-core-2.19.0\AndroidManifest.xml:24:5-79
 MERGED from [com.google.android.exoplayer:exoplayer-core:2.19.0] C:\Users\PMLS\.gradle\caches\transforms-3\55dcd46e4ec8045c49db1f6423ee9796\transformed\jetified-exoplayer-core-2.19.0\AndroidManifest.xml:24:5-79
-MERGED from [com.google.android.exoplayer:exoplayer-common:2.19.0] C:\Users\PMLS\.gradle\caches\transforms-3\a7b6b5638d52e75e5c869b2d2692afb0\transformed\jetified-exoplayer-common-2.19.0\AndroidManifest.xml:24:5-79
-MERGED from [com.google.android.exoplayer:exoplayer-common:2.19.0] C:\Users\PMLS\.gradle\caches\transforms-3\a7b6b5638d52e75e5c869b2d2692afb0\transformed\jetified-exoplayer-common-2.19.0\AndroidManifest.xml:24:5-79
 MERGED from [com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\PMLS\.gradle\caches\transforms-3\e39449332b16abbff71917ad5661bdd3\transformed\jetified-transport-backend-cct-2.3.3\AndroidManifest.xml:25:5-79
 MERGED from [com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\PMLS\.gradle\caches\transforms-3\e39449332b16abbff71917ad5661bdd3\transformed\jetified-transport-backend-cct-2.3.3\AndroidManifest.xml:25:5-79
 MERGED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\PMLS\.gradle\caches\transforms-3\5b4aa339182f7c0c9798b03e5e65fdd0\transformed\jetified-transport-runtime-2.2.6\AndroidManifest.xml:22:5-79
 MERGED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\PMLS\.gradle\caches\transforms-3\5b4aa339182f7c0c9798b03e5e65fdd0\transformed\jetified-transport-runtime-2.2.6\AndroidManifest.xml:22:5-79
+MERGED from [com.google.android.exoplayer:exoplayer-common:2.19.0] C:\Users\PMLS\.gradle\caches\transforms-3\a7b6b5638d52e75e5c869b2d2692afb0\transformed\jetified-exoplayer-common-2.19.0\AndroidManifest.xml:24:5-79
+MERGED from [com.google.android.exoplayer:exoplayer-common:2.19.0] C:\Users\PMLS\.gradle\caches\transforms-3\a7b6b5638d52e75e5c869b2d2692afb0\transformed\jetified-exoplayer-common-2.19.0\AndroidManifest.xml:24:5-79
 	android:name
 		ADDED from [:react-native-community_netinfo] D:\Application-POS\UI\node_modules\@react-native-community\netinfo\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:22-76
 uses-permission#android.permission.ACCESS_COARSE_LOCATION
@@ -660,6 +688,18 @@ uses-permission#android.permission.ACCESS_FINE_LOCATION
 ADDED from [:react-native-bluetooth-escpos-printer] D:\Application-POS\UI\node_modules\react-native-bluetooth-escpos-printer\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:10:5-79
 	android:name
 		ADDED from [:react-native-bluetooth-escpos-printer] D:\Application-POS\UI\node_modules\react-native-bluetooth-escpos-printer\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:10:22-76
+uses-feature#android.hardware.camera
+ADDED from [:react-native-camera] D:\Application-POS\UI\node_modules\react-native-camera\android\build\intermediates\merged_manifest\generalDebug\AndroidManifest.xml:9:5-11:36
+	android:required
+		ADDED from [:react-native-camera] D:\Application-POS\UI\node_modules\react-native-camera\android\build\intermediates\merged_manifest\generalDebug\AndroidManifest.xml:11:9-33
+	android:name
+		ADDED from [:react-native-camera] D:\Application-POS\UI\node_modules\react-native-camera\android\build\intermediates\merged_manifest\generalDebug\AndroidManifest.xml:10:9-47
+uses-feature#android.hardware.camera.autofocus
+ADDED from [:react-native-camera] D:\Application-POS\UI\node_modules\react-native-camera\android\build\intermediates\merged_manifest\generalDebug\AndroidManifest.xml:12:5-14:36
+	android:required
+		ADDED from [:react-native-camera] D:\Application-POS\UI\node_modules\react-native-camera\android\build\intermediates\merged_manifest\generalDebug\AndroidManifest.xml:14:9-33
+	android:name
+		ADDED from [:react-native-camera] D:\Application-POS\UI\node_modules\react-native-camera\android\build\intermediates\merged_manifest\generalDebug\AndroidManifest.xml:13:9-57
 uses-permission#android.permission.VIBRATE
 ADDED from [:react-native-haptic-feedback] D:\Application-POS\UI\node_modules\react-native-haptic-feedback\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:7:5-66
 	android:name
@@ -680,6 +720,16 @@ ADDED from [:react-native-image-picker] D:\Application-POS\UI\node_modules\react
 		ADDED from [:react-native-image-picker] D:\Application-POS\UI\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:15:17-67
 	android:name
 		ADDED from [:react-native-image-picker] D:\Application-POS\UI\node_modules\react-native-image-picker\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:14:17-67
+provider#cl.json.RNShareFileProvider
+ADDED from [:react-native-share] D:\Application-POS\UI\node_modules\react-native-share\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:8:9-16:20
+	android:grantUriPermissions
+		ADDED from [:react-native-share] D:\Application-POS\UI\node_modules\react-native-share\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:12:13-47
+	android:authorities
+		ADDED from [:react-native-share] D:\Application-POS\UI\node_modules\react-native-share\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:10:13-72
+	android:exported
+		ADDED from [:react-native-share] D:\Application-POS\UI\node_modules\react-native-share\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:11:13-37
+	android:name
+		ADDED from [:react-native-share] D:\Application-POS\UI\node_modules\react-native-share\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:9:13-55
 uses-permission#android.permission.FLASHLIGHT
 ADDED from [:react-native-torch] D:\Application-POS\UI\node_modules\react-native-torch\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:8:5-69
 	android:name
@@ -729,19 +779,35 @@ ADDED from [:rn-fetch-blob] D:\Application-POS\UI\node_modules\rn-fetch-blob\and
 	android:name
 		ADDED from [:rn-fetch-blob] D:\Application-POS\UI\node_modules\rn-fetch-blob\android\build\intermediates\merged_manifest\debug\AndroidManifest.xml:33:13-62
 service#com.google.mlkit.common.internal.MlKitComponentDiscoveryService
-ADDED from [com.google.android.gms:play-services-mlkit-barcode-scanning:16.2.1] C:\Users\PMLS\.gradle\caches\transforms-3\78def8edeb7ffab681924257545b624a\transformed\jetified-play-services-mlkit-barcode-scanning-16.2.1\AndroidManifest.xml:9:9-15:19
+ADDED from [com.google.android.gms:play-services-mlkit-face-detection:16.2.0] C:\Users\PMLS\.gradle\caches\transforms-3\b9f3389d51c178b8d896d7baeb40c059\transformed\jetified-play-services-mlkit-face-detection-16.2.0\AndroidManifest.xml:9:9-15:19
+MERGED from [com.google.android.gms:play-services-mlkit-text-recognition:16.3.0] C:\Users\PMLS\.gradle\caches\transforms-3\b92474410cc7ebbd2fad55921816aa5f\transformed\jetified-play-services-mlkit-text-recognition-16.3.0\AndroidManifest.xml:9:9-15:19
+MERGED from [com.google.android.gms:play-services-mlkit-text-recognition:16.3.0] C:\Users\PMLS\.gradle\caches\transforms-3\b92474410cc7ebbd2fad55921816aa5f\transformed\jetified-play-services-mlkit-text-recognition-16.3.0\AndroidManifest.xml:9:9-15:19
+MERGED from [com.google.android.gms:play-services-mlkit-barcode-scanning:16.2.1] C:\Users\PMLS\.gradle\caches\transforms-3\78def8edeb7ffab681924257545b624a\transformed\jetified-play-services-mlkit-barcode-scanning-16.2.1\AndroidManifest.xml:9:9-15:19
+MERGED from [com.google.android.gms:play-services-mlkit-barcode-scanning:16.2.1] C:\Users\PMLS\.gradle\caches\transforms-3\78def8edeb7ffab681924257545b624a\transformed\jetified-play-services-mlkit-barcode-scanning-16.2.1\AndroidManifest.xml:9:9-15:19
 MERGED from [com.google.mlkit:vision-common:16.5.0] C:\Users\PMLS\.gradle\caches\transforms-3\b86801a92097a5dcc8fcd3577b45f061\transformed\jetified-vision-common-16.5.0\AndroidManifest.xml:9:9-15:19
 MERGED from [com.google.mlkit:vision-common:16.5.0] C:\Users\PMLS\.gradle\caches\transforms-3\b86801a92097a5dcc8fcd3577b45f061\transformed\jetified-vision-common-16.5.0\AndroidManifest.xml:9:9-15:19
 MERGED from [com.google.mlkit:common:17.3.0] C:\Users\PMLS\.gradle\caches\transforms-3\36f1100b37c8f6902063af61b98753d6\transformed\jetified-common-17.3.0\AndroidManifest.xml:15:9-23:19
 MERGED from [com.google.mlkit:common:17.3.0] C:\Users\PMLS\.gradle\caches\transforms-3\36f1100b37c8f6902063af61b98753d6\transformed\jetified-common-17.3.0\AndroidManifest.xml:15:9-23:19
 	android:exported
-		ADDED from [com.google.android.gms:play-services-mlkit-barcode-scanning:16.2.1] C:\Users\PMLS\.gradle\caches\transforms-3\78def8edeb7ffab681924257545b624a\transformed\jetified-play-services-mlkit-barcode-scanning-16.2.1\AndroidManifest.xml:11:13-37
+		ADDED from [com.google.android.gms:play-services-mlkit-face-detection:16.2.0] C:\Users\PMLS\.gradle\caches\transforms-3\b9f3389d51c178b8d896d7baeb40c059\transformed\jetified-play-services-mlkit-face-detection-16.2.0\AndroidManifest.xml:11:13-37
 	tools:targetApi
 		ADDED from [com.google.mlkit:common:17.3.0] C:\Users\PMLS\.gradle\caches\transforms-3\36f1100b37c8f6902063af61b98753d6\transformed\jetified-common-17.3.0\AndroidManifest.xml:19:13-32
 	android:directBootAware
 		ADDED from [com.google.mlkit:common:17.3.0] C:\Users\PMLS\.gradle\caches\transforms-3\36f1100b37c8f6902063af61b98753d6\transformed\jetified-common-17.3.0\AndroidManifest.xml:17:13-43
 	android:name
-		ADDED from [com.google.android.gms:play-services-mlkit-barcode-scanning:16.2.1] C:\Users\PMLS\.gradle\caches\transforms-3\78def8edeb7ffab681924257545b624a\transformed\jetified-play-services-mlkit-barcode-scanning-16.2.1\AndroidManifest.xml:10:13-91
+		ADDED from [com.google.android.gms:play-services-mlkit-face-detection:16.2.0] C:\Users\PMLS\.gradle\caches\transforms-3\b9f3389d51c178b8d896d7baeb40c059\transformed\jetified-play-services-mlkit-face-detection-16.2.0\AndroidManifest.xml:10:13-91
+meta-data#com.google.firebase.components:com.google.mlkit.vision.face.internal.FaceRegistrar
+ADDED from [com.google.android.gms:play-services-mlkit-face-detection:16.2.0] C:\Users\PMLS\.gradle\caches\transforms-3\b9f3389d51c178b8d896d7baeb40c059\transformed\jetified-play-services-mlkit-face-detection-16.2.0\AndroidManifest.xml:12:13-14:85
+	android:value
+		ADDED from [com.google.android.gms:play-services-mlkit-face-detection:16.2.0] C:\Users\PMLS\.gradle\caches\transforms-3\b9f3389d51c178b8d896d7baeb40c059\transformed\jetified-play-services-mlkit-face-detection-16.2.0\AndroidManifest.xml:14:17-82
+	android:name
+		ADDED from [com.google.android.gms:play-services-mlkit-face-detection:16.2.0] C:\Users\PMLS\.gradle\caches\transforms-3\b9f3389d51c178b8d896d7baeb40c059\transformed\jetified-play-services-mlkit-face-detection-16.2.0\AndroidManifest.xml:13:17-114
+meta-data#com.google.firebase.components:com.google.mlkit.vision.text.internal.TextRegistrar
+ADDED from [com.google.android.gms:play-services-mlkit-text-recognition:16.3.0] C:\Users\PMLS\.gradle\caches\transforms-3\b92474410cc7ebbd2fad55921816aa5f\transformed\jetified-play-services-mlkit-text-recognition-16.3.0\AndroidManifest.xml:12:13-14:85
+	android:value
+		ADDED from [com.google.android.gms:play-services-mlkit-text-recognition:16.3.0] C:\Users\PMLS\.gradle\caches\transforms-3\b92474410cc7ebbd2fad55921816aa5f\transformed\jetified-play-services-mlkit-text-recognition-16.3.0\AndroidManifest.xml:14:17-82
+	android:name
+		ADDED from [com.google.android.gms:play-services-mlkit-text-recognition:16.3.0] C:\Users\PMLS\.gradle\caches\transforms-3\b92474410cc7ebbd2fad55921816aa5f\transformed\jetified-play-services-mlkit-text-recognition-16.3.0\AndroidManifest.xml:13:17-114
 meta-data#com.google.firebase.components:com.google.mlkit.vision.barcode.internal.BarcodeRegistrar
 ADDED from [com.google.android.gms:play-services-mlkit-barcode-scanning:16.2.1] C:\Users\PMLS\.gradle\caches\transforms-3\78def8edeb7ffab681924257545b624a\transformed\jetified-play-services-mlkit-barcode-scanning-16.2.1\AndroidManifest.xml:12:13-14:85
 	android:value
@@ -866,18 +932,6 @@ ADDED from [androidx.lifecycle:lifecycle-process:2.5.1] C:\Users\PMLS\.gradle\ca
 		ADDED from [androidx.lifecycle:lifecycle-process:2.5.1] C:\Users\PMLS\.gradle\caches\transforms-3\f1089588ad4797c18f238c2a8ce82dde\transformed\jetified-lifecycle-process-2.5.1\AndroidManifest.xml:33:17-49
 	android:name
 		ADDED from [androidx.lifecycle:lifecycle-process:2.5.1] C:\Users\PMLS\.gradle\caches\transforms-3\f1089588ad4797c18f238c2a8ce82dde\transformed\jetified-lifecycle-process-2.5.1\AndroidManifest.xml:32:17-78
-package#androidx.test.orchestrator
-ADDED from [androidx.test:runner:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\e7f43592051571add194abf4324589b2\transformed\runner-1.4.0\AndroidManifest.xml:25:9-62
-	android:name
-		ADDED from [androidx.test:runner:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\e7f43592051571add194abf4324589b2\transformed\runner-1.4.0\AndroidManifest.xml:25:18-59
-package#androidx.test.services
-ADDED from [androidx.test:runner:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\e7f43592051571add194abf4324589b2\transformed\runner-1.4.0\AndroidManifest.xml:26:9-58
-	android:name
-		ADDED from [androidx.test:runner:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\e7f43592051571add194abf4324589b2\transformed\runner-1.4.0\AndroidManifest.xml:26:18-55
-package#com.google.android.apps.common.testing.services
-ADDED from [androidx.test:runner:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\e7f43592051571add194abf4324589b2\transformed\runner-1.4.0\AndroidManifest.xml:27:9-83
-	android:name
-		ADDED from [androidx.test:runner:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\e7f43592051571add194abf4324589b2\transformed\runner-1.4.0\AndroidManifest.xml:27:18-80
 service#com.google.android.datatransport.runtime.backends.TransportBackendDiscovery
 ADDED from [com.google.android.datatransport:transport-backend-cct:2.3.3] C:\Users\PMLS\.gradle\caches\transforms-3\e39449332b16abbff71917ad5661bdd3\transformed\jetified-transport-backend-cct-2.3.3\AndroidManifest.xml:29:9-35:19
 MERGED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\PMLS\.gradle\caches\transforms-3\5b4aa339182f7c0c9798b03e5e65fdd0\transformed\jetified-transport-runtime-2.2.6\AndroidManifest.xml:36:9-38:40
@@ -906,6 +960,18 @@ ADDED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\P
 		ADDED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\PMLS\.gradle\caches\transforms-3\5b4aa339182f7c0c9798b03e5e65fdd0\transformed\jetified-transport-runtime-2.2.6\AndroidManifest.xml:34:13-37
 	android:name
 		ADDED from [com.google.android.datatransport:transport-runtime:2.2.6] C:\Users\PMLS\.gradle\caches\transforms-3\5b4aa339182f7c0c9798b03e5e65fdd0\transformed\jetified-transport-runtime-2.2.6\AndroidManifest.xml:33:13-132
+package#androidx.test.orchestrator
+ADDED from [androidx.test:runner:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\e7f43592051571add194abf4324589b2\transformed\runner-1.4.0\AndroidManifest.xml:25:9-62
+	android:name
+		ADDED from [androidx.test:runner:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\e7f43592051571add194abf4324589b2\transformed\runner-1.4.0\AndroidManifest.xml:25:18-59
+package#androidx.test.services
+ADDED from [androidx.test:runner:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\e7f43592051571add194abf4324589b2\transformed\runner-1.4.0\AndroidManifest.xml:26:9-58
+	android:name
+		ADDED from [androidx.test:runner:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\e7f43592051571add194abf4324589b2\transformed\runner-1.4.0\AndroidManifest.xml:26:18-55
+package#com.google.android.apps.common.testing.services
+ADDED from [androidx.test:runner:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\e7f43592051571add194abf4324589b2\transformed\runner-1.4.0\AndroidManifest.xml:27:9-83
+	android:name
+		ADDED from [androidx.test:runner:1.4.0] C:\Users\PMLS\.gradle\caches\transforms-3\e7f43592051571add194abf4324589b2\transformed\runner-1.4.0\AndroidManifest.xml:27:18-80
 meta-data#com.facebook.soloader.enabled
 ADDED from [com.facebook.soloader:soloader:0.10.5] C:\Users\PMLS\.gradle\caches\transforms-3\ec3312a013bd7d8a70466a1977a1dba4\transformed\jetified-soloader-0.10.5\AndroidManifest.xml:12:9-14:37
 	android:value

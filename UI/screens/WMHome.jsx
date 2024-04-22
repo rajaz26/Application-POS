@@ -5,28 +5,187 @@ import { COLORS } from '../assets/theme'
 import Ionic from 'react-native-vector-icons/Ionicons';
 import {productsObj} from '../assets/Products';
 import { useNavigation } from '@react-navigation/native'; 
-import { useSelector} from 'react-redux'; 
+import { useDispatch, useSelector} from 'react-redux'; 
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { selectConnectedDevice } from '../store/bluetoothReducer';
-import { listWarehouseScans } from '../src/graphql/queries';
+import { listNotifications, listWarehouseScans } from '../src/graphql/queries';
 import { generateClient } from 'aws-amplify/api';
+import { setUserDetails } from '../store/userSlice';
+import { fetchUserAttributes } from 'aws-amplify/auth';
 const WMHome = () => {  
   const [warehouseScanObj,setWarehouseScanObj]=useState(null);
+  const dispatch = useDispatch();
   const client = generateClient();
+  const storeID = useSelector((state) => state.user.storeId);
+  const [latestNotification, setLatestNotification] = useState(null);
+  const userByIdQuery = /* GraphQL */ `
+query UserById($userId: ID!) {
+  userById(userId: $userId) {
+    items {
+      id
+      userId
+      username
+      phonenumber
+      image
+      role
+      idcardimage
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeUsersId
+      __typename
+    }
+  }
+}
+`;
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const attributes = await fetchUserAttributes();
+        const userId = attributes.sub;
+        const { data } = await client.graphql({
+          query: userByIdQuery,
+          variables: { userId },
+          authMode: 'apiKey',
+        });
+  
+        const userDetails = data.userById.items[0]; 
+        if (userDetails) {
+          dispatch(setUserDetails({
+            userId: userDetails.userId,
+            username: userDetails.username,
+            role: userDetails.role,
+            storeId: userDetails.storeUsersId,
+            storeName: userDetails.store.name,
+          }));
+        }
+      } catch (error) {
+        console.log('Error fetching user details:', error);
+      }
+    };
+  
+    fetchUserDetails();
+  }, [dispatch, client]);
+
+  const getWarehouseScansByStoreId = /* GraphQL */ `
+  query GetWarehouseScansByStoreId($storeId: ID!) {
+    listWarehouseScans(filter: { 
+      storeWarehouseScanId: { eq: $storeId },
+      _deleted: { ne: true } 
+    }) {
+      items {
+        id
+        scannedBy
+        scannedByName
+        productId
+        productName
+        productQuantity
+        store {
+          id
+          name
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeWarehouseScanId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+
+const getNotificationsByStoreId = /* GraphQL */ `
+  query GetNotificationsByStoreId($storeId: ID!) {
+    listNotifications(filter: { 
+      storeNotificationsId: { eq: $storeId },
+      _deleted: { ne: true } 
+    }) {
+      items {
+        id
+        warehousequanity
+        shelfquantity
+        productID
+        productname
+        isRead
+        isWarehouseNotification
+        isShelfNotification
+        store {
+          id
+          name
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeNotificationsId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+
+const fetchLatestNotification = async () => {
+  if (!storeID) return;
+  try {
+    const { data } = await client.graphql({
+      query: getNotificationsByStoreId, 
+      variables: { storeId: storeID },
+      authMode: 'apiKey',
+    });
+    const { items } = data.listNotifications;
+    if (items.length > 0) {
+      const sortedNotifications = items.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      setLatestNotification(sortedNotifications[0]);
+    }
+  } catch (error) {
+    console.log('Error fetching latest notification:', error);
+  }
+};
+
+
 
   const fetchLatestWarehouseScan = async () => {
+    if (!storeID) {
+      console.log('storeID:', storeID);
+      return;
+    }
     try {
+      console.log('storeID:', storeID);
       const { data } = await client.graphql({
-        query: listWarehouseScans,
-        variables: {
-          // No limit specified
+        query: getWarehouseScansByStoreId,
+        variables: {  storeId: storeID },
+        filter: {
+            _deleted: {
+                ne: true
+            }
         },
-        authMode: 'apiKey'
+        authMode: 'apiKey',
       });
-  
+      console.log("WS",data.listWarehouseScans);
       const { items } = data.listWarehouseScans;
       if (items.length > 0) {
-        // Sort items by updatedAt in descending order
         const sortedItems = items.sort((a, b) => {
           return new Date(b.updatedAt) - new Date(a.updatedAt);
         });
@@ -37,17 +196,17 @@ const WMHome = () => {
         console.log('No warehouse scans found.');
       }
     } catch (error) {
-      console.error('Error fetching warehouse scans:', error);
+      console.log('Error fetching warehouse scans:', error);
     }
   };
   
   
-useEffect(() => {
-  fetchLatestWarehouseScan();
-  if(warehouseScanObj!=null){
-  // console.log("this is read",warehouseScanObj.productName);
-  }
-}, []);
+  useEffect(() => {
+    fetchLatestWarehouseScan();
+    fetchLatestNotification(); 
+  }, [storeID]);
+
+  
 const formatUpdatedAt = (updatedAt) => {
   const date = new Date(updatedAt);
   const formattedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -112,8 +271,8 @@ const connectedDevice = useSelector(state => selectConnectedDevice(state)?.name)
                      <Ionic name="archive" size={25} color={COLORS.primary} style={styles.homeIcon} />
                     <Text style={styles.iconText}>POs List</Text>
                   </TouchableOpacity>
-                  {/* <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('History')}> */}
-                    <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('Staff')}>
+                  <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('History')}>
+                
                   
                     <Ionic name="newspaper-outline" size={25} color={COLORS.primary} style={styles.homeIcon} />
                     <Text style={styles.iconText}>Bills</Text>
@@ -140,10 +299,10 @@ const connectedDevice = useSelector(state => selectConnectedDevice(state)?.name)
                   
               <TouchableOpacity
                 style={styles.iconContainer}
-                onPress={() => navigation.navigate('Bluetooth')}
+                onPress={() => navigation.navigate('Notifications')}
               >
                 <Ionic name="notifications" size={28} color={COLORS.primary} />
-                <Text style={styles.iconText}>Notification</Text>
+                <Text style={styles.iconText}>Alerts</Text>
               </TouchableOpacity>
         
                 </View>
@@ -188,31 +347,28 @@ const connectedDevice = useSelector(state => selectConnectedDevice(state)?.name)
                   <View style={styles.previousContainer}>
                     <Text style={styles.previousText}>Recent Notifications</Text>
                   </View>
-                  <View style={styles.billSection}>
-                  <View style={styles.billContainer}>
-                    <Image style={styles.logoStyles} source={require("../assets/images/logo7.png")}/>
-                    <View style={styles.billText}>
-                      <View style={styles.cashierName}>
-                        <Text  style={styles.cashierText}>
-                          LU Prince - 20 mg
-                        </Text>
-                        <Text  style={styles.billTotal}>
-                          10 Pieces
-                        </Text>
-                      </View>
-                      <View  style={styles.billBottomText}>
-                        <Text  style={styles.billTime}>
-                          07:36 PM
-                        </Text>
-                      <TouchableOpacity  style={styles.billViewButton}>
-                          <Text  style={styles.billViewText}>
-                            Short
-                          </Text>
-                      </TouchableOpacity>
-                      </View>
-                    </View>
-                  </View>
-                </View>
+                  {latestNotification ? (
+        <View style={styles.billSection}>
+          <View style={styles.billContainer}>
+            {/* Display latest notification details here */}
+            <Text style={styles.cashierText}>
+              {latestNotification.productName} - {latestNotification.productQuantity} Piece/s
+            </Text>
+            <Text style={styles.billTime}>
+              {formatUpdatedAt(latestNotification.updatedAt)}
+            </Text>
+          </View>
+        </View>
+      ) : (
+        <View style={styles.billSection}>
+        <View style={styles.billContainer1}>
+        <View style={styles.noDeviceContainer}>
+      <Text style={styles.noDeviceText}>No Recent Notifications</Text>
+</View>
+</View>
+      </View>
+    
+      )}
               </View>
             </View>
         </View>
@@ -401,6 +557,12 @@ billContainer:{
   flex:0,
   flexDirection:'row',  
 },
+billContainer1:{
+  flex:0,
+  flexDirection:'row',  
+  justifyContent:'center',
+  alignItems:'center',
+},
 bluetoothContainer:{
   flex:0,
   flexDirection:'row', 
@@ -430,8 +592,8 @@ cashierText:{
 },
 noDeviceContainer:{
   flex:0,
-  justifyContent:'flex-end',
-  alignItems:'flex-end',
+  justifyContent:'center',
+  alignItems:'center',
   right:10,
 },
 noDeviceText:{
@@ -439,6 +601,8 @@ noDeviceText:{
   color:'black',
   fontSize:15,
   fontFamily:'Poppins-Regular',
+  textAlign:'center',
+  borderWidth:2,
 },
 uploadText:{
   fontWeight:'500',

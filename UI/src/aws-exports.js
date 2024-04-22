@@ -29,7 +29,8 @@ const awsmobile = {
         "EMAIL"
     ],
     "aws_user_files_s3_bucket": "fypimages234005-zaif",
-    "aws_user_files_s3_bucket_region": "ap-south-1"
+    "aws_user_files_s3_bucket_region": "ap-south-1",
+    "AWS_SDK_LOAD_CONFIG":"1"
 };
 
 

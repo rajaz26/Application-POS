@@ -1,6 +1,5 @@
-// Import React and necessary components from React Native
 import React, { useState, useEffect } from 'react';
-import { View, Image, StyleSheet, Button, Alert } from 'react-native';
+import { View, Image, StyleSheet, Button, Alert, Share } from 'react-native';
 import RNFetchBlob from 'rn-fetch-blob';
 
 const ImageViewScreen = ({ route, navigation }) => {
@@ -26,10 +25,24 @@ const ImageViewScreen = ({ route, navigation }) => {
     navigation.navigate('BluetoothConnectivity', { printingImage: base64Image });
   };
 
+  const shareImage = async () => {
+    try {
+      await Share.share({
+        message: 'Check out this image!',
+        // For sharing a base64 image, you might need to prepend the base64 format info
+        // Note: Not all apps support sharing base64 images directly
+        url: `data:image/jpeg;base64,${base64Image}`,
+      });
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Image source={{ uri: imageUri }} style={styles.image} resizeMode="contain" />
-      <Button title="Print Image via Bluetooth" onPress={navigateToBluetoothScreen} />
+      
+      <Button title="Share Image" onPress={shareImage} />
     </View>
   );
 };

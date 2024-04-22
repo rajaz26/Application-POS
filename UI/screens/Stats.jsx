@@ -8,6 +8,7 @@ import {
   TextInput,
   TouchableOpacity,
   Keyboard,
+  ActivityIndicator,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import PieChartC from '../components/PieChart';
@@ -20,21 +21,15 @@ const windowHeight = Dimensions.get('window').height;
 
 const Stats = ({ route }) => {
   const {bills}=route.params;
-  console.log("stats screen 7&&&&&&"+bills  )
+  const [isLoading, setIsLoading] = useState(true);
   const [searchText, setSearchText] = useState('');
   const searchInputRef = useRef(null);
 
   const chartComponents = [
-    {name: 'Sales Line Chart,Sales graph', component: <SalesLineChart bills={bills} />},
-    {name: 'Transactions Bar Chart', component: <TransactionsBarChart bills={bills}/>},
-    {
-      name: 'Pie Chart,Top 5, five ,Five,top,products,Products',
-      component: <PieChartC bills={bills}/>,
-    },
-    {
-      name: 'Line Chart Product,Products Sales Graph,Select,select,product sale',
-      component: <LineChartProduct bills={bills}/>,
-    },
+    {name: 'Monthly Sales Chart', component: <SalesLineChart bills={bills} />},
+    {name: 'Transactions in Last 5 hours', component: <TransactionsBarChart bills={bills}/>},
+    {name: 'Top Five Selling Products', component: <PieChartC bills={bills}/>},
+    // {name: 'Product Sales Graph', component: <LineChartProduct bills={bills}/>,},
   ];
 
   const filteredComponents = chartComponents.filter(component =>
@@ -50,6 +45,21 @@ const Stats = ({ route }) => {
     Keyboard.dismiss();
     clearSearch();
   };
+
+  React.useEffect(() => {
+    if (bills) {
+      setIsLoading(false);
+    }
+  }, [bills]);
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </View>
+    );
+  }
+
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -75,10 +85,12 @@ const Stats = ({ route }) => {
           )}
         </View>
       </View>
+      {/* <Text style={styles.chartHeading}>GRAPHS</Text> */}
       {filteredComponents.map((component, index) => (
         <View
           key={index}
-          style={[styles.chartContainer, {marginTop: index === 0 ? 20 : 0}]}>
+          style={[styles.chartContainer, {marginVertical:10}]}>
+           <Text style={styles.chartHeading}>{component.name}</Text>
           {component.component}
         </View>
       ))}
@@ -101,8 +113,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 10,
   },
+  loadingContainer:{
+    flex:0,
+    justifyContent:'center',
+    alignItems:'center'
+  },
   chartContainer: {
     width: '100%',
+    
+  },
+  chartHeading: {
+    fontFamily:'Poppins-Regular',
+    color:'black',
+    fontSize:15,
+
   },
   searchBar: {
     flexDirection: 'row',

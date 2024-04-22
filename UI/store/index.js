@@ -1,14 +1,16 @@
 // store/index.js
-import { configureStore, getDefaultMiddleware } from '@reduxjs/toolkit';
+import { configureStore } from '@reduxjs/toolkit';
 import logger from 'redux-logger';
-// import userReducer from './useReducer';
 import userReducer from './userSlice'; 
-import bluetoothReducer from './bluetoothReducer'; // Import the Bluetooth reducer
+import bluetoothReducer from './bluetoothReducer'; 
+import userSlice from './userSlice';
+import currencySlice from './currencySlice';
 
 export const store = configureStore({
   reducer: {
-    user: userReducer,
-    bluetooth: bluetoothReducer, // Add the Bluetooth reducer
+    user: userSlice,
+    bluetooth: bluetoothReducer,
+    currency: currencySlice,  
   },
   middleware: (getDefaultMiddleware) => [...getDefaultMiddleware(), logger],
 });

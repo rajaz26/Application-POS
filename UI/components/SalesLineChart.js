@@ -90,9 +90,9 @@ const SalesLineChart = ({ bills }) => {
     <View style={styles.container}>
       <View
         style={[styles.chartCard, { height: cardHeight }, { width: cardWidth }]}>
-        <View style={styles.chartTitleContainer}>
+        {/* <View style={styles.chartTitleContainer}>
           <Text style={styles.chartTitle}>Monthly Sales</Text>
-        </View>
+        </View> */}
         <View style={styles.chartContainer}>
           <LineChart
             data={{

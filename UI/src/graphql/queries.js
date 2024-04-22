@@ -6,7 +6,9 @@ export const getStore = /* GraphQL */ `
     getStore(id: $id) {
       id
       name
+      currency
       address
+      contact
       users {
         nextToken
         startedAt
@@ -66,7 +68,9 @@ export const listStores = /* GraphQL */ `
       items {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -96,7 +100,9 @@ export const syncStores = /* GraphQL */ `
       items {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -124,7 +130,9 @@ export const getCategory = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -212,7 +220,9 @@ export const getNotifications = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -309,7 +319,9 @@ export const getUser = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -426,7 +438,9 @@ export const getProduct = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -577,7 +591,9 @@ export const getBillItem = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -681,7 +697,9 @@ export const getBill = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -769,7 +787,9 @@ export const getPurchaseOrder = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -993,7 +1013,9 @@ export const getWarehouseScan = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -1065,6 +1087,42 @@ export const syncWarehouseScans = /* GraphQL */ `
         _deleted
         _lastChangedAt
         storeWarehouseScanId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const storeByName = /* GraphQL */ `
+  query StoreByName(
+    $name: String!
+    $id: ModelIDKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelStoreFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    storeByName(
+      name: $name
+      id: $id
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        name
+        currency
+        address
+        contact
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
         __typename
       }
       nextToken

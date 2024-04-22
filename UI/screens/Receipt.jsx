@@ -4,135 +4,129 @@ import {
   StyleSheet,
   Text,
   View,
+  Image,
   ScrollView,
   TouchableOpacity,
   Alert,
-  Image
 } from 'react-native';
-import { useSelector } from 'react-redux';
-import { BluetoothEscposPrinter } from 'react-native-bluetooth-escpos-printer';
-import { selectConnectedDevice } from '../store/bluetoothReducer.js'; // Adjust this path as necessary
-import ViewShot from 'react-native-view-shot';
+import { useNavigation } from '@react-navigation/native';
 import { COLORS } from '../assets/theme/index.js';
+import ViewShot from 'react-native-view-shot';
+import Share from 'react-native-share';
+
+
 const Receipt = () => {
+  const navigation = useNavigation();
   const viewShotRef = useRef(null);
-  const connectedDevice = useSelector(selectConnectedDevice);
+  const [capturedImageURI, setCapturedImageURI] = useState(null);
 
-  const sampleBill = {
-    store: {
-      name: "Khattak Store",
-      address: "Yousuf Colony",
-    },
-    cashier: {
-      username: "cashier01",
-    },
-    items: [
-      { product: { name: "Product A", price: 10.00 }, quantity: 2 },
-      { product: { name: "Product B", price: 5.50 }, quantity: 1 },
-    ],
-    totalAmount: 25.50,
-    status: "Paid",
-  };
+ 
+// Function to share the captured image
+const shareImage2 = async () => {
+  if (!capturedImageURI) {
+    Alert.alert('Error', 'Please capture the receipt first!');
+    return;
+  }
 
-  const _formatBill = (bill) => {
-    let receipt = "";
-    receipt += "Store: " + bill.store.name + "\n";
-    receipt += "Address: " + bill.store.address + "\n";
-    receipt += "Cashier: " + bill.cashier.username + "\n";
-    receipt += "-----------------------------\n";
-    bill.items.forEach((item) => {
-      receipt += item.product.name + " x " + item.quantity + " = $" + (item.product.price * item.quantity).toFixed(2) + "\n";
+  try {
+    // Use react-native-share to handle the sharing
+    await Share.open({
+      url: capturedImageURI,
+      type: 'image/jpeg', // Specify the content type
     });
-    receipt += "-----------------------------\n";
-    receipt += "Total: $" + bill.totalAmount.toFixed(2) + "\n";
-    receipt += "Status: " + bill.status + "\n";
-    receipt += "Thank you for your purchase!\n";
-    return receipt;
+  } catch (error) {
+    Alert.alert('Error', 'Failed to share the image');
+    console.error('Error sharing image:', error);
+  }
+};
+
+
+  // Function to capture the view and set the image URI
+  const captureView = async () => {
+    try {
+      const uri = await viewShotRef.current.capture();
+      setCapturedImageURI(uri);
+      console.log(uri);
+    } catch (error) {
+      console.error('Error capturing view:', error);
+      Alert.alert('Error', 'Failed to capture content');
+    }
   };
 
-  const captureAndDisplay = async () => {
-    if (!connectedDevice) {
-      Alert.alert("Print Error", "No Bluetooth device is connected.");
+  // Function to share the captured image
+  const shareImage = async () => {
+    if (!capturedImageURI) {
+      Alert.alert('Error', 'Please capture the receipt first!');
       return;
     }
 
-    const formattedReceipt = _formatBill(sampleBill);
-
     try {
-      await BluetoothEscposPrinter.printerInit();
-      await BluetoothEscposPrinter.printText(formattedReceipt, {});
-      Alert.alert("Print Success", "Receipt printed successfully.");
+      await Share.share({
+        message: 'Check out this receipt!',
+        url: capturedImageURI,
+      });
     } catch (error) {
-      console.error('Error printing receipt:', error);
+      Alert.alert('Error', 'Failed to share the image');
+      console.error('Error sharing image:', error);
     }
   };
 
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView style={styles.scrollView}>
-      <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 1.0 }}>
-    
-    <View style={styles.headerContainer}>
-      
-      <ScrollView style={styles.billContainer}>
-          
-        <ScrollView style={styles.wrapper}>
-          
-          <View style={styles.logo}>
-            <Image
-              style={styles.logoStyles}
-              source={require('../assets/images/logo7.png')}
-            />
+      <ViewShot ref={viewShotRef} options={{ format: 'jpg', quality: 0.9, backgroundColor: '#FFFFFF' }}>
+          <View style={[styles.headerContainer, { backgroundColor: '#FFFFFF' }]}> 
+            <ScrollView style={styles.billContainer}>
+              <ScrollView style={styles.wrapper}>
+                <View style={styles.logo}>
+                  <Image
+                    style={styles.logoStyles}
+                    source={require('../assets/images/logo7.png')}
+                  />
+                </View>
+                <View style={styles.address}>
+                  <Text style={styles.addressText}>
+                    Shop 28, Yousuf Colony
+                    {'\n'}
+                    Chaklala Scheme 3, Rawalpindi
+                  </Text>
+                </View>
+                <View style={styles.dashedLine} />
+                <View style={styles.receipt}>
+                  <View style={styles.header}>
+                    <Text style={styles.headerText}>QTY</Text>
+                    <Text style={styles.headerText}>ITEM</Text>
+                    <Text style={styles.headerText}>PRICE</Text>
+                    <Text style={styles.headerText}>TOTAL</Text>
+                  </View>
+                  {Array.from({ length: 15 }, (_, index) => (
+                    <View style={styles.itemRow} key={index}>
+                      <Text style={styles.itemText}>2</Text>
+                      <Text style={styles.itemText}>Product A</Text>
+                      <Text style={styles.itemText}>$10.00</Text>
+                      <Text style={styles.itemText}>$20.00</Text>
+                    </View>
+                  ))}
+                  <View style={styles.totalRow}>
+                    <Text style={[styles.totalText, styles.alignRight]}>TOTAL</Text>
+                    <Text style={[styles.totalAmount, styles.alignRight]}>$35.00</Text>
+                  </View>
+                </View>
+                <View style={styles.dashedLine} />
+              </ScrollView>
+            </ScrollView>
           </View>
-          <View style={styles.address}>
-            <Text style={styles.addressText}>
-              Shop 28, Yousuf Colony
-              {'\n'}
-              Chaklala Scheme 3, Rawalpindi
-            </Text>
-          </View>
-          <View style={styles.dashedLine} />
-          
-          <View style={styles.receipt}>
-            {/* Receipt Header */}
-            <View style={styles.header}>
-              
-              <Text style={styles.headerText}>QTY</Text>
-              <Text style={styles.headerText}>ITEM</Text>
-              <Text style={styles.headerText}>PRICE</Text>
-              <Text style={styles.headerText}>TOTAL</Text>
-            </View>
-
-            {/* Receipt Items */}
-            {Array.from({ length: 15}, (_, index) => (
-              <View style={styles.itemRow} key={index}>
-                <Text style={styles.itemText}>2</Text>
-                <Text style={styles.itemText}>Product A</Text>
-                <Text style={styles.itemText}>$10.00</Text>
-                <Text style={styles.itemText}>$20.00</Text>
-              </View>
-            ))}
-         
-            {/* Total */}
-            <View style={styles.totalRow}>
-              <Text style={[styles.totalText, styles.alignRight]}>TOTAL</Text>
-              <Text style={[styles.totalAmount, styles.alignRight]}>$35.00</Text>
-            </View>
-          </View>
-          
-          {/* Horizontal Line Below Total */}
-          <View style={styles.dashedLine} />
-        
-        </ScrollView>
-   
-      </ScrollView>
-    </View>
-  </ViewShot>
+        </ViewShot>
       </ScrollView>
       <View style={styles.footerContainer}>
-        <TouchableOpacity style={styles.confirmButton} onPress={captureAndDisplay}>
-          <Text style={styles.confirmText}>Download</Text>
-        </TouchableOpacity>
+        <View style={styles.footerWrapper}>
+          <TouchableOpacity style={styles.confirmButton} onPress={captureView}>
+            <Text style={styles.confirmText}>Capture</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.confirmButton, { marginLeft: 10 }]} onPress={shareImage2}>
+            <Text style={styles.confirmText}>Share</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -151,8 +145,6 @@ const styles = StyleSheet.create({
     position: 'absolute', // Position the footer at the bottom
     bottom: 0, // Align the footer to the bottom
     width: '100%', // Make the footer full width
-    justifyContent:'center',
-    alignItems:'center'
   },
   wrapper: {
     paddingHorizontal: 16,

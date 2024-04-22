@@ -22,26 +22,43 @@ import {generateClient} from 'aws-amplify/api';
 import { createBill, createBillItem, updateBill, updateBillItem } from '../src/graphql/mutations';
 import { fetchUserAttributes, getCurrentUser } from 'aws-amplify/auth';
 import Sound from 'react-native-sound';
+import { useSelector } from 'react-redux';
 
 export default function Scan({route}) {
+  const storeID = useSelector((state) => state.user.storeId);
   const [hasPermission, setHasPermission] = React.useState(false);
   const [isScanning, setIsScanning] = React.useState(true);
-  const [scannedBarcodes, setScannedBarcodes] = React.useState([]);
   const [totalBillAmount, setTotalBillAmount] = useState(0);
   const [scannedProducts, setScannedProducts] = useState([]);
   const [manualEntryModalVisible, setManualEntryModalVisible] = React.useState(false);
   const [manualBarcode, setManualBarcode] = React.useState('');
   const [billModalVisible, setBillModalVisible] = React.useState(false);
   const [currentBillId, setCurrentBillId] = useState(null);
-  const [cameraActive, setCameraActive] = useState(true);
   const [cameraKey, setCameraKey] = useState(1);
-
+  const [zoom, setZoom] = useState(device?.neutralZoom ?? 0);
   const [version, setVersion] = useState(null);
   const devices = useCameraDevices();
+  
   const device = devices.back;
   const client = generateClient();
 
    const [fadeAnim] = useState(new Animated.Value(0));
+
+   // Function to handle zoom in
+
+const zoomIn = () => {
+  console.log("Zoming In");
+  console.log(zoom);// Decrease zoom by 0.1, down to a min of 0
+  // Increment zoom level, respecting the maximum zoom capability of the device
+  setZoom((prevZoom) => Math.min(prevZoom + 0.1, device?.maxZoom ?? 1));
+};
+
+// Function to handle zoom out
+const zoomOut = () => {
+  // Decrement zoom level, ensuring it doesn't go below 1
+  console.log("Zoming Out");
+  setZoom((prevZoom) => Math.max(prevZoom - 0.1, 1));
+};
 
    const playAnimation = () => {
      Animated.sequence([
@@ -90,9 +107,10 @@ export default function Scan({route}) {
       checkInverted: true,
     }
   );
-  const ProductByBarcode = /* GraphQL */ `
-  query ProductByBarcode($barcode: String!) {
-    productByBarcode(barcode: $barcode) {
+
+  const ProductByBarcodeAndStoreId = /* GraphQL */ `
+  query ProductByBarcodeAndStoreId($barcode: String!, $storeId: ID!) {
+    productByBarcode(barcode: $barcode, filter: {storeProductsId: {eq: $storeId}}) {
       items {
         id
         name
@@ -102,11 +120,16 @@ export default function Scan({route}) {
         category
         warehouseQuantity
         shelfQuantity
+        store {
+          id
+          name
+        }
+        _version
       }
     }
   }
-  
 `;
+
 
   React.useEffect(() => {
     (async () => {
@@ -171,6 +194,7 @@ toggleBillModal();
       </View>
     );
   };
+  
   const handleBarcodeScanned = async (barcode) => {
  
     if (!isScanning && manualBarcode === '') return;
@@ -186,32 +210,47 @@ toggleBillModal();
         if (existingProductIndex !== -1) {
           console.log("Existing barcode");
           console.log("Bill item before updating:", scannedProducts[existingProductIndex]);
-  
-          let updatedScannedProducts = [...scannedProducts];
-          let productToUpdate = updatedScannedProducts[existingProductIndex];
           
-          productToUpdate.quantity += 1;
-          productToUpdate.subtotal = productToUpdate.quantity * productToUpdate.price; 
+          const updatedProduct = {...scannedProducts[existingProductIndex]};
+          updatedProduct.quantity += 1;
+          updatedProduct.subtotal = updatedProduct.quantity * updatedProduct.price;
+          const updatedProducts = scannedProducts.map((product, index) =>
+            index === existingProductIndex ? updatedProduct : product
+          );
+          setScannedProducts(updatedProducts);
+
+
+          // let updatedScannedProducts = [...scannedProducts];
+          // let productToUpdate = {...updatedScannedProducts[existingProductIndex]};
+          
+          // productToUpdate.quantity += 1;
+          // productToUpdate.subtotal = productToUpdate.quantity * productToUpdate.price; 
           try {
               const response = await client.graphql({
                   query: updateBillItem,
                   variables: {
                       input: {
-                          id: productToUpdate.id,
-                          quantity: productToUpdate.quantity,
-                          subtotal: productToUpdate.subtotal,
-                          _version: productToUpdate._version,
+                          id: updatedProduct.id,
+                          quantity: updatedProduct.quantity,
+                          subtotal: updatedProduct.subtotal,
+                          _version: updatedProduct._version,
+                          
                       },
                   },
                   authMode: 'apiKey',
               });
-  
-              productToUpdate._version = response.data.updateBillItem._version;
-              console.log("Bill item after updating:", productToUpdate);
-  
-              setScannedProducts(updatedScannedProducts);
-              Playsound();
-              playAnimation();
+
+
+	      // productToUpdate._version = response.data.updateBillItem._version;
+  	    // console.log("Bill item after updating:", productToUpdate);
+        // updatedScannedProducts[existingProductIndex] = productToUpdate;
+        // setScannedProducts(updatedScannedProducts);
+        updatedProduct._version = response.data.updateBillItem._version;
+  	    console.log("Bill item after updating:", updatedProduct);
+        // updatedScannedProducts[existingProductIndex] = productToUpdate;
+        // setScannedProducts(updatedScannedProducts);
+        playAnimation();
+        Playsound();
           } catch (error) {
               console.error("Error updating bill item:", error);
           }
@@ -219,14 +258,13 @@ toggleBillModal();
           console.log("New barcode");
   
             const productDetailsResponse = await client.graphql({
-                query: ProductByBarcode,
-                variables: { barcode: barcodeValue },
+                query: ProductByBarcodeAndStoreId,
+                variables: { barcode: barcodeValue, storeId:storeID },
                 authMode: 'apiKey',
             });
   
             if (productDetailsResponse.data.productByBarcode.items.length > 0) {
                 const productDetails = productDetailsResponse.data.productByBarcode.items[0]; 
-                
                 const billId = await ensureBillCreated(); 
                 const billItemResponse = await client.graphql({
                     query: createBillItem,
@@ -240,6 +278,7 @@ toggleBillModal();
                             manufacturer:productDetails.manufacturer,
                             category:productDetails.category,
                             productName:productDetails.name,
+                            storeBillItemsId: storeID
                         },
                     },
                     authMode: 'apiKey',
@@ -257,10 +296,15 @@ toggleBillModal();
                     _deleted: billItemResponse.data.createBillItem._deleted,
                     name: productDetails.name,
                     barcode:productDetails.barcode,
+                    storeBillItemsId: storeID
                 };
                 Playsound();
                 playAnimation();
                 setScannedProducts([...scannedProducts, newProductDetails]);
+            }
+            else {
+            console.log("barcode" + barcodeValue + " not found");
+              Alert.alert("Product Not Found", "No product found for the scanned barcode. Please try again.");
             }
         }
     } catch (error) {
@@ -281,6 +325,7 @@ toggleBillModal();
                     cashier: userAttributes.sub,
                     totalAmount: 0,
                     status: 'PENDING',
+                    storeBillsId: storeID
             
                 },
             },
@@ -311,6 +356,7 @@ const handleConfirmPressed = () => {
         version: version,
       });
       setScannedProducts([]);
+      setCurrentBillId(null);
     } else {
       Alert.alert('Scan a product first.');
     
@@ -346,6 +392,7 @@ const handleConfirmPressed = () => {
   
   const refreshScannedProductsList = () => {
     setScannedProducts([]);
+    setCurrentBillId(null);
     console.log("Scanned products list has been refreshed.");
   };
 
@@ -363,50 +410,31 @@ const handleConfirmPressed = () => {
     isActive={true}
     frameProcessor={frameProcessor}
     frameProcessorFps={5}
+    zoom={zoom}
   />
         
-        {/* <TouchableOpacity
-          onPress={toggleScanning}
-          style={[
-            styles.scanButton,
-            isScanning ? styles.continueButton : styles.startButton,
-          ]}
-        >
-          <Text
-            style={[
-              styles.buttonText,
-              isScanning && styles.continueButtonText,
-            ]}
-          >
-            {isScanning ? 'Continue Scanning' : 'Start Scanning'}
-          </Text>
-        </TouchableOpacity> */}
-        <TouchableOpacity
-          onPressIn={startScanning} // Start scanning on button press
-          onPressOut={stopScanning} // Stop scanning on button release
-          style={[
-            styles.scanButton,
-            isScanning ? styles.scanButtonPressed : styles.scanButtonNotPressed, // Change style based on scanning state
-          ]}
-        >
-          
 
+        <TouchableOpacity
+          onPressIn={startScanning} 
+          onPressOut={stopScanning}
+          style={[
+            styles.scanButton,
+            isScanning ? styles.scanButtonPressed : styles.scanButtonNotPressed, 
+          ]}
+        >
           <Text style={styles.buttonText}>
             {isScanning ? 'Scanning...' : 'Hold to Scan'}
           </Text>
-          <Text style={
-          styles.buttonContainer2}>ALI</Text>
         </TouchableOpacity>
+
         <View style={styles.buttonContainer}>
-        
-       
         <TouchableOpacity
           onPress={toggleManualEntryModal}
-          style={styles.showModal}
-        >
+          style={styles.showModal}>
           <Ionic size={25} color={'white'} name="create-outline" />
           <Text style={styles.buttonTextShow}>Manual</Text>
         </TouchableOpacity>
+        
         <Animated.Text
         style={[
           styles.scannedFeedback,
@@ -436,7 +464,16 @@ const handleConfirmPressed = () => {
               <Text style={styles.buttonTextShow}>Clear</Text>
             </TouchableOpacity>
         )}
-         
+       
+        <TouchableOpacity onPress={() => zoomIn()} style={styles.zoomContainer}>
+        <Text style={styles.buttonTextShow}>+ </Text>
+          <Ionic size={25} color={'white'} name="search-outline" />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => zoomOut()}  style={styles.zoomContainer}>
+        <Text style={styles.buttonTextShow}>- </Text>
+          <Ionic size={25} color={'white'} name="search-outline" />
+ 
+        </TouchableOpacity>
 
 <TouchableOpacity onPress={refreshCamera} style={styles.confirmButton}>
 <Ionic size={25} color={'white'} name="camera-outline" />
@@ -502,6 +539,23 @@ const styles = StyleSheet.create({
   startButton: {
     backgroundColor: COLORS.primary,
   },
+  zoomControlsContainer: {
+    position: 'absolute',
+    bottom: 80, // Adjust position as needed
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  zoomButton: {
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    marginHorizontal: 10,
+    padding: 10,
+    borderRadius: 5,
+  },
+  zoomButtonText: {
+    color: 'white',
+    fontSize: 20,
+  },
   continueButton: {
     backgroundColor: COLORS.secondary,
   },
@@ -518,7 +572,7 @@ const styles = StyleSheet.create({
   buttonContainer:{
     position: 'absolute',
     right: 20,
-    top: 120,
+    top: 10,
     flexDirection:'column',
     justifyContent:'space-between',
     alignItems:'space-evenly',
@@ -566,6 +620,13 @@ const styles = StyleSheet.create({
     // position: 'absolute',
     // right: 20,
     // top: 200,
+    justifyContent:'center',
+    alignItems:'center',
+    marginBottom:30,
+  },
+
+  zoomContainer: {
+    flexDirection:'row',
     justifyContent:'center',
     alignItems:'center',
     marginBottom:30,

@@ -6,7 +6,9 @@ export const onCreateStore = /* GraphQL */ `
     onCreateStore(filter: $filter) {
       id
       name
+      currency
       address
+      contact
       users {
         nextToken
         startedAt
@@ -61,7 +63,9 @@ export const onUpdateStore = /* GraphQL */ `
     onUpdateStore(filter: $filter) {
       id
       name
+      currency
       address
+      contact
       users {
         nextToken
         startedAt
@@ -116,7 +120,9 @@ export const onDeleteStore = /* GraphQL */ `
     onDeleteStore(filter: $filter) {
       id
       name
+      currency
       address
+      contact
       users {
         nextToken
         startedAt
@@ -180,7 +186,9 @@ export const onCreateCategory = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -212,7 +220,9 @@ export const onUpdateCategory = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -244,7 +254,9 @@ export const onDeleteCategory = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -278,7 +290,9 @@ export const onCreateNotifications = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -312,7 +326,9 @@ export const onUpdateNotifications = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -346,7 +362,9 @@ export const onDeleteNotifications = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -377,7 +395,9 @@ export const onCreateUser = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -410,7 +430,9 @@ export const onUpdateUser = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -443,7 +465,9 @@ export const onDeleteUser = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -492,7 +516,9 @@ export const onCreateProduct = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -550,7 +576,9 @@ export const onUpdateProduct = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -608,7 +636,9 @@ export const onDeleteProduct = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -685,7 +715,9 @@ export const onCreateBillItem = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -753,7 +785,9 @@ export const onUpdateBillItem = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -821,7 +855,9 @@ export const onDeleteBillItem = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -857,7 +893,9 @@ export const onCreateBill = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -891,7 +929,9 @@ export const onUpdateBill = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -925,7 +965,9 @@ export const onDeleteBill = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -955,7 +997,9 @@ export const onCreatePurchaseOrder = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -997,7 +1041,9 @@ export const onUpdatePurchaseOrder = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -1039,7 +1085,9 @@ export const onDeletePurchaseOrder = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -1257,7 +1305,9 @@ export const onCreateWarehouseScan = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -1289,7 +1339,9 @@ export const onUpdateWarehouseScan = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -1321,7 +1373,9 @@ export const onDeleteWarehouseScan = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version

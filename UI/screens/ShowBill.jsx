@@ -12,20 +12,57 @@ import { createBillItem, deleteBill, deleteBillItem, updateBill, updateBillItem,
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { getBill, getBillItem, getProduct } from '../src/graphql/queries.js';
 import { useSelector } from 'react-redux';
+import Share from 'react-native-share';
+import RNFS from 'react-native-fs';
+import ViewShot from 'react-native-view-shot';
 
 const ShowBill = ({route}) => {
     const navigation = useNavigation();
     const [loading, setLoading] = useState(false);
     const userName = useSelector((state) => state.user.username);
+    const userRole = useSelector((state) => state.user.role);
     const storeName = useSelector((state) => state.user.storeName);
+    const viewShotRef = useRef(null);
+    const [capturedImageURI, setCapturedImageURI] = useState('');
     const client = generateClient();
     const billid = route.params.billId;
+    const billcashier = route.params.billcashier;
     const [billtotal, setBillTotal] = useState( route.params.billtotal);
     const billVersion= route.params.billVersion;
     const [isEditing, setIsEditing] = useState(false);
     const [manualEntryModalVisible, setManualEntryModalVisible] = useState(false);
     const [manualBarcode, setManualBarcode] = useState('');
     const [billItems, setBillItems] = useState([]);
+    const storeCurrency  = useSelector(state => state.currency.value); 
+
+    const captureView = async () => {
+        try {
+            const uri = await viewShotRef.current.capture();
+            setCapturedImageURI(uri);
+            shareImage(uri);
+        } catch (error) {
+            console.error('Error capturing view:', error);
+            Alert.alert('Error', 'Failed to capture content');
+        }
+    };
+    
+    
+    const shareImage = async (uri) => {
+        try {
+            let imagePath = null;
+            const fileName = 'purchase_order.jpg';
+            const newPath = `${RNFS.CachesDirectoryPath}/${fileName}`;
+            await RNFS.copyFile(uri, newPath);
+            imagePath = `file://${newPath}`;
+    
+            const shareResponse = await Share.open({ url: imagePath });
+            console.log('Share Response:', shareResponse);
+        } catch (error) {
+            // Alert.alert('Error', 'Failed to share the image');
+            // console.error('Error sharing image:', error);
+        }
+    };
+
     const modalBarcodeRef = useRef('');
     useEffect(() => {
         setIsEditing(false);
@@ -73,16 +110,13 @@ const ShowBill = ({route}) => {
     
             console.log("BillItemDeleted", deleteBillItemMutation);
             console.log("Bill Total", billtotal);
-            // Update the bill total by subtracting the subtotal of the deleted item
             const updatedTotal = billtotal - subtotalToDelete;
             setBillTotal(updatedTotal);
     
-            // Update the bill in the database with the new total
             updateBillInDB(billid, updatedTotal, billVersion);
     
-            // Update the product quantity in shelf
             const productName = deleteBillItemMutation.data.deleteBillItem.productName;
-            const updatedQuantity = -1 * deleteBillItemMutation.data.deleteBillItem.quantity; // Negative quantity for deduction
+            const updatedQuantity = -1 * deleteBillItemMutation.data.deleteBillItem.quantity; 
             updateProductQuantityInShelf(productName, updatedQuantity);
     
             console.log("Bill total and product quantity updated successfully");
@@ -93,9 +127,8 @@ const ShowBill = ({route}) => {
     
     const updateProductQuantityInShelf = async (productName, quantityChange) => {
         try {
-            // Fetch the product data by name
             const productData = await client.graphql({
-                query: getProductByName, // Import getProductByName query if not already imported
+                query: getProductByName, 
                 variables: { name: productName },
                 authMode: 'apiKey',
             });
@@ -105,22 +138,19 @@ const ShowBill = ({route}) => {
                 return;
             }
     
-            // Access the product items
+  
             const items = productData.data.productByName.items;
     
-            // Ensure items array is not empty
             if (items.length === 0) {
                 console.error("No items found for the product");
                 return;
             }
     
-            // Access the first item (assuming there's only one)
             const productItem = items[0];
     
-            // Calculate the new quantity in shelf
+          
             const newShelfQuantity = productItem.shelfQuantity + quantityChange;
     
-            // Update the product with the new shelf quantity
             const updateProductResponse = await client.graphql({
                 query: updateProduct,
                 variables: {
@@ -170,14 +200,14 @@ const ShowBill = ({route}) => {
 
         const productDetails = productDetailsResponse.data.productByBarcode.items[0];
 
-        // Check if the product already exists in the bill items
+       
         const existingBillItem = billItems.find(item => item.productName === productDetails.name);
         console.log("Existing Bill Item", existingBillItem);
         console.log("Bill items",billItems);
         console.log("items",productDetails);
 
         if (existingBillItem) {
-            // If the product already exists, update its quantity and subtotal
+           
             const updatedQuantity = existingBillItem.quantity + 1;
             const updatedSubtotal = existingBillItem.productPrice * updatedQuantity;
 
@@ -196,12 +226,11 @@ const ShowBill = ({route}) => {
 
             console.log("Bill Item updated successfully", updateBillItemResponse);
 
-            // Update the total amount of the bill
-            const updatedTotal = billtotal + (productDetails.price * 1); // Increment by 1
+            const updatedTotal = billtotal + (productDetails.price * 1); 
             setBillTotal(updatedTotal);
             updateBillInDB(billid, updatedTotal, billVersion);
         } else {
-            // If the product does not exist, create a new bill item
+      
             const billItemResponse = await client.graphql({
                 query: createBillItem,
                 variables: {
@@ -221,7 +250,6 @@ const ShowBill = ({route}) => {
 
             console.log("New Bill Item created ", billItemResponse.data.createBillItem.subtotal);
 
-            // Update the total amount of the bill
             const updatedTotal = billtotal + billItemResponse.data.createBillItem.subtotal;
             setBillTotal(updatedTotal);
             console.log("Received", billid, updatedTotal, billVersion);
@@ -236,7 +264,6 @@ const ShowBill = ({route}) => {
 };
 
 
-// Function to update the total value of the bill in the database
 const updateBillInDB = async (billId, total, billVersion) => {
     console.log("Received", billId, total, billVersion);
     try {
@@ -272,7 +299,6 @@ const addManualBarcode = () => {
 
 const handleAddProduct = () => {
     setIsEditing(true);
-    // setManualEntryModalVisible(true);
 };
 const handleShowAdd = () => {
     setIsEditing(true);
@@ -337,7 +363,6 @@ const getBillItemsByBillIdQuery = /* GraphQL */ `
   }
 `;
  
-   // Function to get bill items by bill ID
    const getBillItemsByBillId = async (billId) => {
     try {
         const response = await client.graphql({
@@ -361,11 +386,9 @@ const getBillItemsByBillIdQuery = /* GraphQL */ `
 
 const handlePrintBill = async () => {
     try {
-        // Initialize the printer
         await BluetoothEscposPrinter.printerInit();
         await BluetoothEscposPrinter.printerLeftSpace(0);
         
-        // Set printer alignment
         await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.CENTER);
         await BluetoothEscposPrinter.setBlob(0);
         await BluetoothEscposPrinter.printText(`${storeName || 'Storename'}\n`, {
@@ -375,13 +398,10 @@ const handlePrintBill = async () => {
             heigthtimes: 3,
             fonttype: 1
         });
-        // Print bill details
 
-        // Print each bill item
         await BluetoothEscposPrinter.printerAlign(BluetoothEscposPrinter.ALIGN.LEFT);
         await BluetoothEscposPrinter.printText("--------------------------------\n", {});
-        
-        // Print column headers
+
         await BluetoothEscposPrinter.printText("PRODUCT NAME        QTY      PRICE      SUBTOTAL\n", {});
       
         billItems.forEach(async (item) => {
@@ -422,7 +442,6 @@ const handleDeleteBill = async () => {
   
   const deleteBillFunction = async () => {
     try {
-        // Call the GraphQL mutation to delete the bill
         const response = await client.graphql({
             query: deleteBill,
             variables: {
@@ -434,26 +453,22 @@ const handleDeleteBill = async () => {
             authMode: 'apiKey',
         });
 
-        // Handle success response
         console.log("Bill deleted successfully:", response);
 
-        // Now, delete associated bill items
         await Promise.all(billItems.map(async (item) => {
             await deleteBillItemAfterBill(item.id, item._version);
         }));
 
-        // Update the state or perform any necessary actions after deletion
-        // For example, navigate to a different screen or reset state variables
-        navigation.navigate('History'); // Close the bill modal if it's open
+        navigation.navigate('History'); 
     } catch (error) {
         console.error("Error deleting bill:", error);
-        // Handle error, such as displaying an error message to the user
+
     }
 };
 
 const deleteBillItemAfterBill = async (itemId, itemVersion) => {
     try {
-        // Perform deletion of a single bill item
+    
         const deleteBillItemMutation = await client.graphql({
             query: deleteBillItem,
             variables: { input: { id: itemId, _version: itemVersion } },
@@ -462,11 +477,9 @@ const deleteBillItemAfterBill = async (itemId, itemVersion) => {
 
         console.log("BillItemDeleted", deleteBillItemMutation);
         console.log("Bill Total", billtotal);
-        // Update the bill total by subtracting the subtotal of the deleted item
-       
-        // Update the product quantity in shelf
+
         const productName = deleteBillItemMutation.data.deleteBillItem.productName;
-        const updatedQuantity = -1 * deleteBillItemMutation.data.deleteBillItem.quantity; // Negative quantity for deduction
+        const updatedQuantity = -1 * deleteBillItemMutation.data.deleteBillItem.quantity; 
         await updateProductQuantityInShelf(productName, updatedQuantity);
 
         console.log("Bill total and product quantity updated successfully");
@@ -496,11 +509,15 @@ return (
                 <Ionic size={24} color={COLORS.primary} name='chevron-back-outline' />
             </TouchableOpacity>
         </View>
+        <ViewShot ref={viewShotRef} style={{ backgroundColor:'white',flex:1}} options={{ format: 'jpg', quality: 0.9, backgroundColor: 'white'}}>
+
         <View style={styles.mainLogo}>
             <Ionic style={styles.logo} size={90} color={'black'} name='logo-behance' />
         </View>
         <View style={styles.mainLogo}>
-            <Text style={styles.totalBill}>PKR {billtotal}</Text>
+            <Text style={styles.totalBill}>
+            {`${storeCurrency || '$'} ${billtotal}`}
+            </Text>
         </View>
 
         <View style={styles.columnHeadingContainer}>
@@ -546,7 +563,7 @@ return (
                 </View>
             ))}
         </ScrollView>
-
+</ViewShot>
         <View style={styles.footerContainer}>
             <View style={styles.footerWrapper}>
             {isEditing && <TouchableOpacity style={styles.confirmButton} onPress={handleShowAdd}>
@@ -556,24 +573,32 @@ return (
                     {isEditing &&  <TouchableOpacity style={styles.addButton} onPress={handlePrintBill}>
                 <Text style={styles.addText}>Print Bill</Text>
             </TouchableOpacity>}
+            
                 {isEditing ? (
                     <TouchableOpacity style={styles.confirmButton} onPress={handleAddProduct}>
-                        <Text style={styles.confirmText}>Confirm Bill</Text>
+                        <Text style={styles.confirmText}>Save Bill</Text>
                     </TouchableOpacity>
                 ) : (
-                    <TouchableOpacity style={styles.confirmButton} onPress={handleAddProduct}>
-                        <Text style={styles.confirmText}>Edit Bill</Text>
+                    (userRole === 'GENERAL_MANAGER' || userName === billcashier) && (
+                        <TouchableOpacity style={styles.confirmButton} onPress={handleAddProduct}>
+                            <Text style={styles.confirmText}>Edit Bill</Text>
+                        </TouchableOpacity>
+                    )
+                )}<TouchableOpacity style={styles.addButton} onPress={captureView}>
+            <Text style={styles.addText}>Share Purchase Order</Text>
+        </TouchableOpacity>
+                {isEditing && 
+                    <TouchableOpacity style={styles.confirmButton} onPress={handleCancel}>
+                        <Text style={styles.confirmText}>Cancel</Text>
                     </TouchableOpacity>
-                )}
-                {isEditing ? (
-                    <TouchableOpacity style={styles.addButton} onPress={handleCancel}>
-                        <Text style={styles.addText}>Cancel</Text>
+                }
+
+                {userRole === 'GENERAL_MANAGER' && !isEditing &&
+                        <TouchableOpacity style={styles.confirmButton} onPress={handleDeleteBill}>
+                        <Text style={styles.confirmText}>Delete Bill</Text>
                     </TouchableOpacity>
-                ) : (
-                    <TouchableOpacity style={styles.addButton} onPress={handleDeleteBill}>
-                        <Text style={styles.addText}>Delete Bill</Text>
-                    </TouchableOpacity>
-                )}
+                }
+                
             </View>
         </View>
         <Modal
@@ -802,6 +827,7 @@ const styles = StyleSheet.create({
         borderRadius:25,
         borderWidth:1,
         borderColor:COLORS.primary,
+        marginBottom:10,
     },
     addText:{
         fontSize:18,

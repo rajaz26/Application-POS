@@ -14,7 +14,9 @@ enum BillStatus {
 type Store {
   id: ID!
   name: String!
+  currency: String
   address: String
+  contact: String
   users(filter: ModelUserFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelUserConnection
   products(filter: ModelProductFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelProductConnection
   bills(filter: ModelBillFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelBillConnection
@@ -354,7 +356,9 @@ type ModelStoreConnection {
 input ModelStoreFilterInput {
   id: ModelIDInput
   name: ModelStringInput
+  currency: ModelStringInput
   address: ModelStringInput
+  contact: ModelStringInput
   and: [ModelStoreFilterInput]
   or: [ModelStoreFilterInput]
   not: ModelStoreFilterInput
@@ -392,6 +396,7 @@ type Query {
   getWarehouseScan(id: ID!): WarehouseScan
   listWarehouseScans(filter: ModelWarehouseScanFilterInput, limit: Int, nextToken: String): ModelWarehouseScanConnection
   syncWarehouseScans(filter: ModelWarehouseScanFilterInput, limit: Int, nextToken: String, lastSync: AWSTimestamp): ModelWarehouseScanConnection
+  storeByName(name: String!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelStoreFilterInput, limit: Int, nextToken: String): ModelStoreConnection
   userById(userId: ID!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelUserFilterInput, limit: Int, nextToken: String): ModelUserConnection
   productByName(name: String!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelProductFilterInput, limit: Int, nextToken: String): ModelProductConnection
   productByBarcode(barcode: String!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelProductFilterInput, limit: Int, nextToken: String): ModelProductConnection
@@ -401,7 +406,9 @@ type Query {
 
 input ModelStoreConditionInput {
   name: ModelStringInput
+  currency: ModelStringInput
   address: ModelStringInput
+  contact: ModelStringInput
   and: [ModelStoreConditionInput]
   or: [ModelStoreConditionInput]
   not: ModelStoreConditionInput
@@ -411,14 +418,18 @@ input ModelStoreConditionInput {
 input CreateStoreInput {
   id: ID
   name: String!
+  currency: String
   address: String
+  contact: String
   _version: Int
 }
 
 input UpdateStoreInput {
   id: ID!
   name: String
+  currency: String
   address: String
+  contact: String
   _version: Int
 }
 
@@ -463,7 +474,9 @@ type Mutation {
 input ModelSubscriptionStoreFilterInput {
   id: ModelSubscriptionIDInput
   name: ModelSubscriptionStringInput
+  currency: ModelSubscriptionStringInput
   address: ModelSubscriptionStringInput
+  contact: ModelSubscriptionStringInput
   and: [ModelSubscriptionStoreFilterInput]
   or: [ModelSubscriptionStoreFilterInput]
   _deleted: ModelBooleanInput

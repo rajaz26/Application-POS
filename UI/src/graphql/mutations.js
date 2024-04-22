@@ -9,7 +9,9 @@ export const createStore = /* GraphQL */ `
     createStore(input: $input, condition: $condition) {
       id
       name
+      currency
       address
+      contact
       users {
         nextToken
         startedAt
@@ -67,7 +69,9 @@ export const updateStore = /* GraphQL */ `
     updateStore(input: $input, condition: $condition) {
       id
       name
+      currency
       address
+      contact
       users {
         nextToken
         startedAt
@@ -125,7 +129,9 @@ export const deleteStore = /* GraphQL */ `
     deleteStore(input: $input, condition: $condition) {
       id
       name
+      currency
       address
+      contact
       users {
         nextToken
         startedAt
@@ -192,7 +198,9 @@ export const createCategory = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -227,7 +235,9 @@ export const updateCategory = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -262,7 +272,9 @@ export const deleteCategory = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -297,7 +309,9 @@ export const createNotifications = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -332,7 +346,9 @@ export const updateNotifications = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -367,7 +383,9 @@ export const deleteNotifications = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -401,7 +419,9 @@ export const createUser = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -437,7 +457,9 @@ export const updateUser = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -473,7 +495,9 @@ export const deleteUser = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -525,7 +549,9 @@ export const createProduct = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -586,7 +612,9 @@ export const updateProduct = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -647,7 +675,9 @@ export const deleteProduct = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -727,7 +757,9 @@ export const createBillItem = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -798,7 +830,9 @@ export const updateBillItem = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -869,7 +903,9 @@ export const deleteBillItem = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -908,7 +944,9 @@ export const createBill = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -945,7 +983,9 @@ export const updateBill = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -982,7 +1022,9 @@ export const deleteBill = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -1013,7 +1055,9 @@ export const createPurchaseOrder = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -1056,7 +1100,9 @@ export const updatePurchaseOrder = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -1099,7 +1145,9 @@ export const deletePurchaseOrder = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -1321,7 +1369,9 @@ export const createWarehouseScan = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -1354,7 +1404,9 @@ export const updateWarehouseScan = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version
@@ -1387,7 +1439,9 @@ export const deleteWarehouseScan = /* GraphQL */ `
       store {
         id
         name
+        currency
         address
+        contact
         createdAt
         updatedAt
         _version

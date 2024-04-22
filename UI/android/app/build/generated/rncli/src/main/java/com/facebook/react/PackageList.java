@@ -23,6 +23,10 @@ import org.reactnative.maskedview.RNCMaskedViewPackage;
 import com.reactnativecommunity.picker.RNCPickerPackage;
 // react-native-bluetooth-escpos-printer
 import cn.jystudio.bluetooth.RNBluetoothEscposPrinterPackage;
+// react-native-camera
+import org.reactnative.camera.RNCameraPackage;
+// react-native-fs
+import com.rnfs.RNFSPackage;
 // react-native-gesture-handler
 import com.swmansion.gesturehandler.RNGestureHandlerPackage;
 // react-native-get-random-values
@@ -35,12 +39,16 @@ import com.imagepicker.ImagePickerPackage;
 import com.BV.LinearGradient.LinearGradientPackage;
 // react-native-pager-view
 import com.reactnativepagerview.PagerViewPackage;
+// react-native-permissions
+import com.zoontek.rnpermissions.RNPermissionsPackage;
 // react-native-reanimated
 import com.swmansion.reanimated.ReanimatedPackage;
 // react-native-safe-area-context
 import com.th3rdwave.safeareacontext.SafeAreaContextPackage;
 // react-native-screens
 import com.swmansion.rnscreens.RNScreensPackage;
+// react-native-share
+import cl.json.RNSharePackage;
 // react-native-sound
 import com.zmxv.RNSound.RNSoundPackage;
 // react-native-sound-player
@@ -112,15 +120,19 @@ public class PackageList {
       new RNCMaskedViewPackage(),
       new RNCPickerPackage(),
       new RNBluetoothEscposPrinterPackage(),
+      new RNCameraPackage(),
+      new RNFSPackage(),
       new RNGestureHandlerPackage(),
       new RNGetRandomValuesPackage(),
       new RNReactNativeHapticFeedbackPackage(),
       new ImagePickerPackage(),
       new LinearGradientPackage(),
       new PagerViewPackage(),
+      new RNPermissionsPackage(),
       new ReanimatedPackage(),
       new SafeAreaContextPackage(),
       new RNScreensPackage(),
+      new RNSharePackage(),
       new RNSoundPackage(),
       new RNSoundPlayerPackage(),
       new SvgPackage(),

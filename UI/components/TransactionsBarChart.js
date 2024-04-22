@@ -21,7 +21,6 @@ const TransactionsBarChart = ({bills}) => {
     }
   });
 
-  console.log("transaction bar vhart : %^%&^&"+bills)
   const cardHeight = windowHeight * 0.25; 
   const cardWidth = windowWidth * 0.9; 
 
@@ -33,8 +32,7 @@ const TransactionsBarChart = ({bills}) => {
   };
 
   const labels = [];
-  const currentHour = new Date().getHours();
-  console.log("***************************"+currentHour); 
+  const currentHour = new Date().getHours(); 
   for (let i = currentHour - 5; i < currentHour; i++) {
     const hour = i < 0 ? 24 + i : i; 
     labels.push(getTimeLabel(hour));
@@ -45,7 +43,7 @@ const TransactionsBarChart = ({bills}) => {
       <View
         style={[styles.chartCard, {height: cardHeight}, {width: cardWidth}]}>
         <View style={styles.chartTitleContainer}>
-          <Text style={styles.chartTitle}>Transactions in Last 5 Hours</Text>
+          <Text style={styles.chartTitle}></Text>
         </View>
         <View style={styles.chartContainer}>
           <BarChart
@@ -55,18 +53,12 @@ const TransactionsBarChart = ({bills}) => {
                 {
                   data: transactionData,
                   colors: [
-                    // (opacity = 1) => `#FF5733`,
-                    // (opacity = 1) => `#C70039`,
-                    // (opacity = 1) => `#900C3F`,
-                    // (opacity = 1) => `#581845`,
-                    // (opacity = 1) => `#2E86C1`,
-                    // (opacity = 1) => `#1E8449`,
-                    (opacity = 1) => `#808080`,
-                    (opacity = 1) => `#808080`,
-                    (opacity = 1) => `#808080`,
-                    (opacity = 1) => `#808080`,
-                    (opacity = 1) => `#808080`,
-                    (opacity = 1) => `#808080`,
+                    (opacity = 1) => '#FFD700',
+                    (opacity = 1) => '#FFD700',
+                    (opacity = 1) => '#FFD700',
+                    (opacity = 1) => '#FFD700',
+                    (opacity = 1) => '#FFD700',
+                    (opacity = 1) => '#FFD700',
                   ],
                 },
               ],
@@ -76,20 +68,20 @@ const TransactionsBarChart = ({bills}) => {
             showValuesOnTopOfBars={true}
             fromZero={true}
             withInnerLines={true}
-            height={cardHeight - 30}
+            height={cardHeight - 10}
             withCustomBarColorFromData={true}
             flatColor={true}
             chartConfig={{
-              backgroundGradientFrom: COLORS.barchart,
+              backgroundGradientFrom:COLORS.primary,
               backgroundGradientTo: COLORS.barchart,
-              backgroundColor: COLORS.barchart,
+              backgroundColor: COLORS.secondary,
               decimalPlaces: 0,
               color: (opacity = 1) => "#686a6c",
-              labelColor: (opacity = 1) => "#686a6c",
+              labelColor: (opacity = 1) => "#FFFFFF",
               propsForDots: {
                 r: '2',
                 strokeWidth: '2',
-                stroke: COLORS.barchart,
+                stroke: COLORS.secondary,
               },
               propsForLabels:{
                 alignmentBaseline:'after-edge',
@@ -114,17 +106,11 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
   },
   chartCard: {
-    elevation: 4,
-    backgroundColor: "black",
     borderRadius: 8,
-    marginTop: windowHeight * 0.02,
-    marginHorizontal: windowWidth * 0.05,
-    padding: 0, 
+    marginHorizontal: windowWidth * 0.05, 
   },
   chartTitleContainer: {
     alignItems: 'center',
-    marginTop: 2,
-    marginBottom: 2,
   },
   chartTitle: {
     color: "white", 
@@ -134,6 +120,7 @@ const styles = StyleSheet.create({
   chartContainer: {
     flex: 1,
     justifyContent: 'space-between',
+    
   },
 });
 

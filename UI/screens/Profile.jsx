@@ -22,6 +22,7 @@ import { fetchUserAttributes, getCurrentUser } from 'aws-amplify/auth';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { deleteUser, updateUser } from '../src/graphql/mutations';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
+import { useSelector } from 'react-redux';
 const Profile = ({route}) => {
   
   const navigation = useNavigation();
@@ -29,12 +30,13 @@ const Profile = ({route}) => {
   const userRole = useSelector((state) => state.user.role);
   const [loading, setLoading] = useState(false);
   const defaultIdCardImage = require('../assets/images/profile.png');
+  const defaultProfileImageUrl = require('../assets/images/profile.png');
   const [originalProfileImage, setOriginalProfileImage] = useState('');
   const [originalIdCardImage, setOriginalIdCardImage] = useState('');
   const [password, setPassword] = useState('password123');
   const [editing, setEditing] = useState(false);
   const [successMessage, setSuccessMessage] = useState(false);
- const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [selectedRole, setSelectedRole] = useState('');
   const [user, setUser] = useState({
     id:'',
@@ -46,6 +48,12 @@ const Profile = ({route}) => {
     _version:'',
     image:'',
   });
+  
+  const [showPassword, setShowPassword] = useState(false);
+
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
   const handleUpdateUser = async () => {
     setLoading(true);
     Keyboard.dismiss();
@@ -197,6 +205,7 @@ if (user.idcardimage[0] !== originalIdCardImage && originalIdCardImage) {
     console.log("dATA",userItems);
     if (userItems && userItems.length > 0) {
       const userData = userItems[0];
+      console.log("user role",userRole);
       setUser({
         id:userData.id,
         username: userData.username,
@@ -207,7 +216,13 @@ if (user.idcardimage[0] !== originalIdCardImage && originalIdCardImage) {
         image:userData.image,
         _version:userData._version,
       });
-      setOriginalProfileImage(userData.image);
+      if(userData.image)
+      {
+        setOriginalProfileImage(userData.image);
+      }else{
+        setOriginalProfileImage('../assets/images/profile.png');
+      }
+  
       setOriginalIdCardImage(userData.idcardimage);
     }
   } catch (error) {
@@ -569,20 +584,23 @@ const extractFileNameFromUrl = (url) => {
         </View>
         <View style={styles.formInputContainer}>
             <View style={styles.formInputWrapper}>
-               <View style={styles.imageContainer}>
-                    <Ionic size={30} color={COLORS.primary} name ='eye-outline'/>
-                </View>
+            
+               <TouchableOpacity style={styles.imageContainer} onPress={toggleShowPassword}>
+                    <Ionic size={30} color={COLORS.primary} name={showPassword ? 'eye-off-outline' : 'eye-outline'}/>
+               </TouchableOpacity>
+               
                 <View style={styles.inputContainer}>
                     {/* <TextInput style={styles.formInput}  placeholder='Product ID'  placeholderTextColor='rgba(170, 170, 170,4)'/> */}
                 {editing ? (
                    <TextInput
                    value={password}
                    onChangeText={setPassword}
-                   secureTextEntry
+                   secureTextEntry={!showPassword} 
                    style={styles.input}
                  />
                 ) : (
-                  <Text style={styles.formInput}>{password}</Text>
+                  
+                  <Text style={styles.formInput}>{showPassword ? password : '*********'}</Text>
                 )}
                 </View>
             </View>
@@ -611,16 +629,20 @@ const extractFileNameFromUrl = (url) => {
         </ScrollView>
         </View>
       
-          <View style={styles.saveWrapper}>
-              <TouchableOpacity style={styles.saveButton} onPress={toggleEdit}>
-                  <Ionic size={18} color={COLORS.primary} name ={editing ? 'save-outline' : 'brush-outline'}/>
-                  <Text style={styles.saveText}>{editing ? 'Save' : 'Edit'}</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.deleteButton} onPress={showConfirmationDialog}>
-                  <Ionic size={18} color='white' name ={'trash-outline'}/>
-                  <Text style={styles.deleteText}>{'Delete'}</Text>
-              </TouchableOpacity>
-          </View>
+        <View style={styles.saveWrapper}>
+      {userRole === 'GENERAL_MANAGER' && (
+        <>
+          <TouchableOpacity style={styles.saveButton} onPress={toggleEdit}>
+              <Ionic size={18} color={COLORS.primary} name ={editing ? 'save-outline' : 'brush-outline'}/>
+              <Text style={styles.saveText}>{editing ? 'Save' : 'Edit'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.deleteButton} onPress={showConfirmationDialog}>
+              <Ionic size={18} color='white' name ={'trash-outline'}/>
+              <Text style={styles.deleteText}>{'Delete'}</Text>
+          </TouchableOpacity>
+        </>
+      )}
+    </View>
       
       </View>
   );

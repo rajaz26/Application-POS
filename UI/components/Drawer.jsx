@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -15,15 +15,18 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import FontAwesome5 from 'react-native-vector-icons/FontAwesome5';
 import { COLORS } from '../assets/theme';
 import { useNavigation } from '@react-navigation/native'; 
-import { signOut } from 'aws-amplify/auth';
+import { fetchUserAttributes, signOut } from 'aws-amplify/auth';
 import { useDispatch, useSelector } from 'react-redux';
-import { clearUserDetails } from '../store/userSlice';
+import { clearUserDetails, setUserDetails } from '../store/userSlice';
+import { generateClient } from 'aws-amplify/api';
 
 const Drawer = props => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
+  const client = generateClient();
   const userRole = useSelector((state) => state.user.role);
   const userName=useSelector((state) => state.user.username);
+  const [image,setImage]=useState();
   const handleSignOut = async () => {
     console.log('Signing out...');
 
@@ -39,6 +42,78 @@ const Drawer = props => {
     }
 }
 
+const userByIdQuery = /* GraphQL */ `
+query UserById($userId: ID!) {
+  userById(userId: $userId) {
+    items {
+      id
+      userId
+      username
+      phonenumber
+      image
+      role
+      idcardimage
+      store {
+        id
+        name
+        address
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeUsersId
+      __typename
+    }
+  }
+}
+`;
+
+useEffect(() => {
+  const fetchUserDetails = async () => {
+    try {
+      const attributes = await fetchUserAttributes();
+      const userId = attributes.sub;
+      if(attributes)
+      {
+        const { data } = await client.graphql({
+          query: userByIdQuery,
+          variables: { userId },
+          authMode: 'apiKey',
+        });
+  
+        const userDetails = data.userById.items[0]; 
+       
+        setImage(userDetails.image);
+        // console.log("Image",image);
+        // console.log("User",userDetails);
+        // if (userDetails) {
+        //   dispatch(setUserDetails
+        //     ({
+        //     userId: userDetails.userId,
+        //     username: userDetails.username,
+        //     role: userDetails.role,
+        //     storeId: userDetails.storeUsersId,
+        //     storeName: userDetails.store.name,
+        //   }));
+        // }
+      }
+      
+    } catch (error) {
+      // console.error('Error fetching user details:', error);
+    }
+  };
+
+  fetchUserDetails();
+}, [dispatch, client]);
+
   return (
     <View style={{flex: 1}}>
       <DrawerContentScrollView
@@ -46,9 +121,10 @@ const Drawer = props => {
         contentContainerStyle={{backgroundColor: COLORS.primary}}>
           <View style={{backgroundColor:COLORS.primary,paddingHorizontal:20,paddingVertical:35}}>
           <Image
-            source={require('../assets/images/person.jpg')}
-            style={{height: 80, width: 80, borderRadius: 40, marginBottom: 10}}
+            source={image ? { uri: image } : require("../assets/images/person.jpg")}
+            style={{height: 100, width: 100, borderRadius: 40, marginBottom: 10}}
           />
+         
           <Text
             style={{
               color: '#fff',

@@ -17,8 +17,22 @@ export const schema = {
                     "isRequired": true,
                     "attributes": []
                 },
+                "currency": {
+                    "name": "currency",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "address": {
                     "name": "address",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "contact": {
+                    "name": "contact",
                     "isArray": false,
                     "type": "String",
                     "isRequired": false,
@@ -175,6 +189,17 @@ export const schema = {
                 {
                     "type": "model",
                     "properties": {}
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byName",
+                        "queryField": "storeByName",
+                        "fields": [
+                            "name",
+                            "id"
+                        ]
+                    }
                 },
                 {
                     "type": "auth",
@@ -1492,5 +1517,5 @@ export const schema = {
     },
     "nonModels": {},
     "codegenVersion": "3.4.4",
-    "version": "5fa2323fc1566021247f1aee07d47fed"
+    "version": "36e11014a983dd373ac5d5fe92fda529"
 };

@@ -8,12 +8,15 @@ import { generateClient } from 'aws-amplify/api';
 import { getPurchaseOrder, listCategories, listPurchaseOrders } from '../src/graphql/queries.js';
 import { setCategory } from 'react-native-sound';
 import { createCategory } from '../src/graphql/mutations.js';
+import { useSelector } from 'react-redux';
 
 
 
-const Categories = () => {
+const Categories = ({route}) => {
   const navigation=useNavigation();
   const client= generateClient();
+  const storeID = useSelector((state) => state.user.storeId);
+  const item=route.params.item;
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [categoryName, setCategoryName] = useState('');
@@ -52,21 +55,45 @@ const handleSubmitCategory = async () => {
     }
   };
 
+  const getCategoriesByStoreId = /* GraphQL */ `
+  query GetCategoriesByStoreId($storeId: ID!) {
+    listCategories(filter: { 
+      storeCategoryId: { eq: $storeId },
+      _deleted: { ne: true } 
+    }) {
+      items {
+        id
+        name
+        description
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeCategoryId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
 
 const fetchCategories = async () => {
     try {
       const { data } = await client.graphql({
-        query: listCategories,
-        variables: {
-          filter: {
-              _deleted: {
-                  ne: true
-                        }
-                  }
-                },
+        query: getCategoriesByStoreId,
+        variables: {  storeId: storeID },
+            filter: {
+                _deleted: {
+                    ne: true
+                }
+            },
           authMode:'apiKey'
       });
       const { items } = data.listCategories
+      console.log("Item Passed",route.params.item);
       console.log("Categories",items);
       setPurchaseOrders(data.listCategories.items);
       setCategory('');
@@ -121,12 +148,12 @@ const fetchCategories = async () => {
     
   const handleAddCategory = async () => {
     setIsModalVisible(true);
-    console.log("Creating");
+    console.log("Creating",storeID);
     
     try {
       const newCategory = await client.graphql({
         query: createCategory,
-        variables: { input: { name: category } },
+        variables: { input: { name: category,storeCategoryId:storeID } },
         authMode: 'apiKey',
       });
       console.log('New category created:', newCategory.data.createCategory);
@@ -159,13 +186,21 @@ const fetchCategories = async () => {
       </View>
     </View>
     {purchaseOrders.map((po, index) => (
-     <TouchableOpacity
-     key={po.id} 
-     style={styles.resetButton}
-     onPress={() => navigation.navigate('AddProduct', { categoryId: po.id, categoryName: po.name })}>
-     <Text style={styles.resetText}>{po.name}</Text>
-   </TouchableOpacity>
-    ))}
+  <TouchableOpacity
+    key={po.id}
+    style={styles.resetButton}
+    onPress={() => {
+      if (route.params.source === 'fromProducts') {
+        navigation.navigate('Product', { categoryId: po.id, categoryName: po.name, item: item });
+      } else if (route.params.source === 'fromAddProduct') {
+        navigation.navigate('AddProduct', { categoryId: po.id, categoryName: po.name });
+      }
+    }}
+  >
+    <Text style={styles.resetText}>{po.name}</Text>
+  </TouchableOpacity>
+))}
+
   </ScrollView>
 )}
        <TouchableOpacity style={styles.refreshButton} onPress={() => setIsModalVisible(true)}>

@@ -32,16 +32,14 @@ const UploadPurchase = () => {
     const userId= useSelector((state) => state.user.userId);
     const userName = useSelector((state) => state.user.username);
     const [totalAmount, setTotalAmount] = useState(0);
-
-    // useEffect(() => {
-    //     vendorRef.current = vendor;
-    //   }, [vendor]);
-    
+    const storeID = useSelector((state) => state.user.storeId);
     const [selectedImage, setSelectedImage] = useState(null);
     const [selectedImageUri, setSelectedImageUri] = useState(null);
     const client = generateClient();
     const navigation = useNavigation();
+    const storeCurrency  = useSelector(state => state.currency.value); 
     const { handleSubmit, control, formState: { errors }, reset } = useForm();
+    
     const handleScannedProduct = (product) => {
         setScannedProducts([...scannedProducts, product]);
     }
@@ -225,7 +223,8 @@ const UploadPurchase = () => {
                         purchaserName: userName,
                         vendor: vendor,
                         totalAmount: totalAmount,
-                        status: 'PENDING'
+                        status: 'PENDING',
+                        storePurchaseOrderId:storeID
                     }
                 },
                 authMode: 'apiKey',
@@ -334,7 +333,9 @@ const UploadPurchase = () => {
    <View style={styles.headingText}> 
     <Text style={styles.totalBill}>PurchaseOrder</Text>
     <View style={styles.totalAmountContainer}>
-        <Text style={styles.totalAmountText}>Total Amount: ${totalAmount.toFixed(2)}</Text>
+        <Text style={styles.totalAmountText}>
+            Total Amount: {`${storeCurrency || '$'} ${totalAmount.toFixed(2)}`}
+        </Text>
       </View>
     </View>
 

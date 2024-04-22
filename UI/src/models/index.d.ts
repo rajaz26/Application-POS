@@ -24,7 +24,9 @@ type EagerStore = {
   };
   readonly id: string;
   readonly name: string;
+  readonly currency?: string | null;
   readonly address?: string | null;
+  readonly contact?: string | null;
   readonly users?: (User | null)[] | null;
   readonly products?: (Product | null)[] | null;
   readonly bills?: (Bill | null)[] | null;
@@ -44,7 +46,9 @@ type LazyStore = {
   };
   readonly id: string;
   readonly name: string;
+  readonly currency?: string | null;
   readonly address?: string | null;
+  readonly contact?: string | null;
   readonly users: AsyncCollection<User>;
   readonly products: AsyncCollection<Product>;
   readonly bills: AsyncCollection<Bill>;

@@ -7,21 +7,67 @@ import { useNavigation } from '@react-navigation/native';
 import { listBills, userById } from '../src/graphql/queries.js';
 import { generateClient } from 'aws-amplify/api';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import { useSelector } from 'react-redux';
 
 const HistoryScreen = ({ route }) => {
   const navigation = useNavigation();
   const client = generateClient();
   const [formattedBills, setFormattedBills] = useState([]);
+  const storeID = useSelector((state) => state.user.storeId);
   const [loading, setLoading] = useState(true);
+  const storeCurrency = useSelector((state) => state.user.currency);
+
+  const listBillsByStoreAndStatus = /* GraphQL */ `
+  query ListBillsByStoreAndStatus($storeId: ID!, $status: BillStatus!, $limit: Int, $nextToken: String) {
+    listBills(
+      filter: { 
+        storeBillsId: { eq: $storeId },
+        _deleted: { ne: true },
+        status: { eq: $status } 
+      },
+      limit: $limit,
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        cashier
+        cashierName
+        totalAmount
+        status
+        store {
+          id
+          name
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeBillsId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
 
   const fetchAllBills = async () => {
     try {
       const { data } = await client.graphql({
-        query: listBills,
-        variables: { filter: { status: { eq: 'PAID' } ,  _deleted: {
-          ne: true
-      }} },
-     
+        query: listBillsByStoreAndStatus,
+        variables: { 
+          storeId: storeID, 
+          status: "PAID", 
+         
+        },
+        filter: {
+            _deleted: {
+                ne: true
+            },
+           
+        },     
         authMode: 'apiKey'
       });
       console.log("Bills are coming");
@@ -33,63 +79,49 @@ const HistoryScreen = ({ route }) => {
       setFormattedBills(formattedData);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching bills:', error);
+      console.log('Error fetching bills:', error);
       setLoading(false);  
     }
   };
 
   useEffect(() => {
-    console.log("Route", route.params);
     if (route.params?.bills) {
       const formattedData = formatBillsData(route.params.bills);
       setFormattedBills(formattedData);
     } else {
       fetchAllBills();
     }
-  }, [route.params]);
+  }, [storeID]);
+
+  const formatDateToDDMMYYYY = (dateString) => {
+    const date = new Date(dateString);
+    return `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
+  };
 
   const formatBillsData = (bills) => {
-    console.log("Formatting",bills);
-    const formattedData = [];
-    bills.forEach((bill) => {
-      // Check if the bill data is valid
-      if (!bill.id || !bill.cashier || !bill.totalAmount || !bill.createdAt) {
-        // Skip this bill if any required data is missing
-        return;
-      }
+    let groupedByDate = bills.reduce((acc, bill) => {
+      const billDate = formatDateToDDMMYYYY(bill.createdAt); // Use the new format here
+      if (!acc[billDate]) acc[billDate] = [];
+      acc[billDate].push({
+        ...bill,
+        formattedDate: billDate, 
+      });
+      return acc;
+    }, {});
   
-      const billDate = new Date(bill.createdAt);
-      
-      const formattedDate = `${billDate.getDate()}-${getMonthName(billDate.getMonth())}-${billDate.getFullYear()}`;
-      const billTime = formatTime(billDate);
-      const existingDateIndex = formattedData.findIndex((item) => item.date === formattedDate);
-      if (existingDateIndex !== -1) {
-        formattedData[existingDateIndex].items.push({
-          cashier: bill.cashierUsername,
-          total: bill.totalAmount,
-          id: bill.id,
-          version: bill._version,
-          date: bill._createdAt,
-          time: billTime,
-        });
-      } else {
-        formattedData.push({
-          date: formattedDate,
-          items: [{
-            cashier: bill.cashierUsername,
-            total: bill.totalAmount,
-            id: bill.id,
-            version: bill._version,
-            date: bill._createdAt,
-            time: billTime,
-          }]
-        });
-      }
-    });
+    
+    let formattedBills = Object.entries(groupedByDate).map(([date, bills]) => ({
+      date: date,
+      items: bills.map(bill => ({
+        cashier: bill.cashierName,
+        total: bill.totalAmount,
+        id: bill.id,
+        version: bill._version,
+        time: formatTime(new Date(bill.createdAt)), // Assuming formatTime function exists
+      })).sort((a, b) => new Date('1970/01/01 ' + a.time) - new Date('1970/01/01 ' + b.time)), // Sorting items by time if necessary
+    })).sort((a, b) => new Date(b.date) - new Date(a.date)); // This sort might need adjustment based on your date format
   
-    formattedData.sort((a, b) => new Date(b.date) - new Date(a.date));
-    setLoading(false); 
-    return formattedData;
+    return formattedBills;
   };
   
   const formatTime = (date) => {
@@ -114,6 +146,7 @@ const HistoryScreen = ({ route }) => {
   };
   
   const handleRefresh = () => {
+    
     fetchAllBills();
   };
 
@@ -130,10 +163,10 @@ const HistoryScreen = ({ route }) => {
       <View style={styles.downloadContainer}>
         <TouchableOpacity style={styles.downloadButton}  onPress={handleRefresh}>
           <Text style={styles.downloadText}>Refresh</Text>
-          <Ionic style={styles.dowloadIcon}  size={20} color={'rgb(73,204,148)'} name ='download-outline'/>
+          <Ionic style={styles.dowloadIcon}  size={20} color={'rgb(73,204,148)'} name ='refresh-outline'/>
         </TouchableOpacity>
       </View>
-        {loading ? ( // Display loading indicator
+        {loading ? (
          <View style={{flex:1,backgroundColor:'white',justifyContent:'center',paddingHorizontal:25}}>
          <SkeletonPlaceholder borderRadius={4}>
          <SkeletonPlaceholder.Item width={100} height={20} />
@@ -219,7 +252,7 @@ const HistoryScreen = ({ route }) => {
                       <View style={styles.cashierName}>
                         <Text style={styles.cashierText}>Cashier: {item.cashier}</Text>
                         
-                        <Text style={styles.billTotal}>Rs. {item.total}</Text>
+                        <Text style={styles.billTotal}>{storeCurrency || '$'}{item.total}</Text>
                       </View>
                       <View style={styles.billBottomText}>
                         <Text style={styles.billTime}>{item.time}</Text>
@@ -364,18 +397,21 @@ const styles = StyleSheet.create({
     flex:0,
     justifyContent:'center',
     alignItems:'center',
-    paddingVertical:14,
+    
     backgroundColor:'white',
     marginVertical:15,
 },
 downloadButton:{
   flex:0,
-  flexDirection:'row'
+  flexDirection:'row',
+  width:'100%',
+  justifyContent:'center',
+  paddingVertical:13,
 },
 downloadText:{
   color:'rgb(73,204,148)',
   // fontWeight:'600',
-  fontSize:14,
+  fontSize:15,
   marginRight:5,
   fontFamily:'Poppins-Medium',
 },

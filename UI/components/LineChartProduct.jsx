@@ -62,7 +62,12 @@ const LineChartProduct = ({bills}) => {
       setPopupVisible(false);
     }, 2000);
   };
-
+  useEffect(() => {
+    console.log("Sorted Products:", sortedProducts);
+    console.log("Selected Product:", selectedProduct);
+    console.log("Product Sales Data:", productSalesDatac);
+  }, [sortedProducts, selectedProduct, productSalesDatac]);
+  
   return (
     <View style={styles.container}>
       <View
@@ -71,19 +76,22 @@ const LineChartProduct = ({bills}) => {
           { height: windowHeight * 0.35 * 1.3 },
           { width: windowWidth * 0.9 },
         ]}>
-        <View style={styles.chartTitleContainer}>
+        {/* <View style={styles.chartTitleContainer}>
           <Text style={styles.chartTitle}>Products Sales Graph</Text>
-        </View>
+        </View> */}
         <View style={styles.chartContainer}>
           <SelectList
             selected={selectedProduct}
             setSelected={setSelectedProduct}
             data={sortedProducts.map((product) => ({ key: product, value: product }))}
             fontFamily="lato"
-            arrowicon={<FontAwesome name="chevron-down" size={12} color={'black'} />}
+            arrowicon={<FontAwesome name="chevron-down" size={12} color={'rgba(270,270,270,0.9)'} />}
             searchicon={<FontAwesome name="search" size={12} color={'black'} />}
             search={false}
-            boxStyles={{ borderRadius: 0 }}
+            inputStyles={{ fontFamily: 'Poppins-Regular', color: 'rgba(270,270,270,0.9)' }}
+            boxStyles={{ borderRadius: 0,marginBottom:6,height:45 }}
+            dropdownTextStyles={{fontFamily: 'Poppins-Regular',height:16, color: 'rgba(270,270,270,0.9)' }}
+            
             defaultOption={{ key: selectedProduct, value: selectedProduct }}
           />
           <LineChart

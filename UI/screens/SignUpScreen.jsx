@@ -1,5 +1,7 @@
 import { StyleSheet, Text, TouchableOpacity, Alert, View, Image, TextInput,Keyboard} from 'react-native';
 import React,{useState} from 'react';
+import { KeyboardAvoidingView, Platform } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { useForm, Controller } from 'react-hook-form';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionic from 'react-native-vector-icons/Ionicons';
@@ -9,6 +11,7 @@ import Animated, { FadeIn, FadeInDown, FadeInUp } from 'react-native-reanimated'
 import { signUp } from 'aws-amplify/auth';
 import { createStore } from '../src/graphql/mutations.js';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
+import { ScrollView } from 'react-native-gesture-handler';
 const SignUpScreen = () => {
   const navigation = useNavigation();
   const [loading, setLoading] = useState(null);
@@ -41,10 +44,7 @@ const SignUpScreen = () => {
     try {
       console.log('try');
       console.log(data.username)
-  //     const storeName = data.storeName;
-  // const newStore = {
-  //   name: storeName,
-  // };
+    
  
       const username=data.username;
       const password=data.password;
@@ -61,11 +61,16 @@ const SignUpScreen = () => {
       });
       console.log('Sign-up success', user);
       const userId=user.userId;
+      // const storeName = data.storeName;
+      // const newStore = {
+      //   name: storeName,
+      // };
       // const createStoreResponse = await client.graphql({
       //   query: createStore,
       //   variables: { input: newStore},
       //   authMode: 'apiKey',
       // });
+      // console.log("Store Created",createStoreResponse);
       reset();
       
       if (data && data.username) {
@@ -84,6 +89,11 @@ const SignUpScreen = () => {
 
   return (
     <View style={styles.container}>
+        <KeyboardAvoidingView 
+    style={styles.container}
+    behavior={Platform.OS === "ios" ? "padding" : "margin" }
+    keyboardVerticalOffset={Platform.OS === "ios" ? 150 : 500} 
+  >
       <SafeAreaView style={{ flex: 1, marginTop: 10 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'flex-start' }}>
           <TouchableOpacity style={styles.arrowLeftContainer} onPress={() => navigation.goBack()}>
@@ -95,7 +105,7 @@ const SignUpScreen = () => {
         </View> */}
       </SafeAreaView>
       <Animated.View style={styles.formContainer} entering={FadeInDown.duration(1000).springify()}>
-        <View style={styles.form}>
+        <ScrollView style={styles.form}>
           <Text style={styles.formText}>Username</Text>
           <Controller
             control={control}
@@ -165,7 +175,7 @@ const SignUpScreen = () => {
           />
           {errors.email && <Text style={{ color: 'red' }}>This field is required</Text>}
 
-        </View>
+        </ScrollView >
        
         <View style={styles.signupButtonContainer}>
           <TouchableOpacity style={styles.signupButton} onPress={handleSubmit(onSubmit)}>
@@ -186,6 +196,7 @@ const SignUpScreen = () => {
             <Text style={{ color: '#ffc200', marginLeft: 5, fontWeight: '500', fontFamily: 'Poppins-Medium', fontSize: 13 }}>Login</Text></TouchableOpacity>
         </View>
       </Animated.View>
+      </KeyboardAvoidingView>
     </View>
   )
 }

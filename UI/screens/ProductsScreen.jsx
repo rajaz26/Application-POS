@@ -16,39 +16,77 @@ import ImageResizeMode from 'react-native/Libraries/Image/ImageResizeMode';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { COLORS } from '../assets/theme';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { connect } from 'react-redux';
+import { connect, useSelector } from 'react-redux';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 
 const ProductsScreen = ({ route }) => {
   const client = generateClient();
   const [productsObj, setProductsObj] = useState([]);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true);
+  const userRole = useSelector((state) => state.user.role);
+  const storeID = useSelector((state) => state.user.storeId); 
+  const storeName = useSelector((state) => state.user.storeName); 
+  const storeCurrency  = useSelector(state => state.currency.value); 
+    
+  const getProductsByStoreIdQuery = /* GraphQL */ `
+  query GetProductsByStoreId($storeId: ID!) {
+    listProducts(filter: { 
+      storeProductsId: { eq: $storeId },
+      _deleted: { ne: true } 
+    }) {
+      items {
+        id
+        name
+        barcode
+        image
+        price
+        manufacturer
+        category
+        warehouseQuantity
+        shelfQuantity
+        warehouseInventoryLimit
+        shelfInventoryLimit
+        store {
+          id
+          name
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        categoryProductId
+      }
+    }
+  }
+`;
 
   const fetchAllProducts = async () => {
+    console.log("Store",storeID);
+    console.log("StoreName",storeName);
+    console.log("Role",userRole);
     try {
       const { data } = await client.graphql({
-        query: listProducts,
-        variables: {
-          filter: {
-            _deleted: {
-              ne: true,
+        query: getProductsByStoreIdQuery,
+        variables: {  storeId: storeID },
+            filter: {
+                _deleted: {
+                    ne: true
+                }
             },
-          },
-        },
         authMode: 'apiKey',
       });
       const { items } = data.listProducts;
       setProductsObj(items);
-      setLoading(false); // Set loading to false when products are fetched
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching products:', error);
-      setLoading(false); // Set loading to false even if there's an error
+      setLoading(false); 
     }
   };
 
   useEffect(() => {
     fetchAllProducts();
-  }, []);
+  }, [storeID]);
 
   // useEffect(() => {
   //   productsObj.forEach((product) => {
@@ -61,7 +99,6 @@ const ProductsScreen = ({ route }) => {
   // }, [productsObj]); // Log productsObj whenever it changes
 
   const navigation = useNavigation();
-  // const products = route.params.productsObj;
   const products = productsObj;
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -70,6 +107,7 @@ const ProductsScreen = ({ route }) => {
   const [selectedCategory, setSelectedCategory] = useState('All');
 
   useEffect(() => {
+    console.log("Store",storeID);
     setFilteredProducts(products);
     const allCategories = Array.from(
       new Set(products.map((product) => product.category))
@@ -131,7 +169,7 @@ const ProductsScreen = ({ route }) => {
         {/* Product Name */}
         <Text style={styles.productName}>{item.name}</Text>
         {/* Product Price */}
-        <Text style={styles.productPrice}>{item.price}</Text>
+        <Text style={styles.productPrice}>{`${storeCurrency || '$'} ${item.price}`}</Text>
       </View>
     </TouchableOpacity>
   );
@@ -236,43 +274,52 @@ const ProductsScreen = ({ route }) => {
             )}
           </View>
           <ScrollView style={styles.containerScrollView}>
-            {filteredCategories.map((category) => (
-              <View key={category}>
-                <View style={styles.categoryTitleContainer}>
-                  <Text style={styles.categoryTitle}>{category}</Text>
-                  {filteredProducts.filter(
-                    (product) => product.category === category
-                  ).length > 2 && (
-                    <Ionicons
-                      name="chevron-forward"
-                      size={24}
-                      color={COLORS.primary}
-                    />
-                  )}
-                </View>
-                <View style={styles.categoryRow}>
-                  <FlatList
-                    data={filteredProducts.filter(
-                      (product) => product.category === category
-                    )}
-                    renderItem={renderProductCard}
-                    keyExtractor={(item) => item.id}
-                    horizontal
-                    contentContainerStyle={styles.categoryCardList}
-                    showsHorizontalScrollIndicator={false}
-                  />
-                </View>
-              </View>
-            ))}
-          </ScrollView>
+  {filteredCategories.sort().map((category, index) => {
+    
+    const categoryProducts = filteredProducts.filter((product) => {
+  
+      if (category === 'Other') {
+        return !product.category || !filteredCategories.includes(product.category);
+      }
+    
+      return product.category === category;
+    });
+
+  
+    if (categoryProducts.length > 0) {
+      return (
+        <View key={category + index}>
+          <View style={styles.categoryTitleContainer}>
+            <Text style={styles.categoryTitle}>{category}</Text>
+          </View>
+          <View style={styles.categoryRow}>
+          <FlatList
+            data={categoryProducts}
+            renderItem={renderProductCard}
+            keyExtractor={(item) => item.id}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoryCardList}
+          />
+          </View>
+        </View>
+      );
+    }
+    return null;
+  })}
+</ScrollView>
+
           <View style={styles.containerButton}>
+          {userRole === 'GENERAL_MANAGER' && (
             <TouchableOpacity
               style={styles.floatingButton}
               onPress={handleAddProduct}
             >
               <Text style={styles.buttonText}>Add Product</Text>
             </TouchableOpacity>
-          </View>
+          )}
+        </View>
+
         </>
       )}
     </View>

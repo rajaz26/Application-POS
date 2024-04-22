@@ -16,7 +16,45 @@ import { updateNotifications } from '../src/graphql/mutations';
 import { generateClient } from 'aws-amplify/api';
 import { COLORS } from '../assets/theme'
 import { refresh } from '@react-native-community/netinfo';
+import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import { useSelector } from 'react-redux';
+
 const client = generateClient();
+
+const listNotificationsByStoreId = /* GraphQL */ `
+  query ListNotificationsByStoreId($storeId: ID!) {
+    listNotifications(filter: { 
+      storeNotificationsId: { eq: $storeId },
+      _deleted: { ne: true } 
+    }) {
+      items {
+        id
+        warehousequanity
+        shelfquantity
+        productID
+        productname
+        isRead
+        isWarehouseNotification
+        isShelfNotification
+        store {
+          id
+          name
+        }
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeNotificationsId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+
 const formatTime = (timestamp) => {
 const date = new Date(timestamp);
 return date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).toLowerCase();
@@ -89,21 +127,28 @@ useFocusEffect(
   }, [])
 );
 const navigation = useNavigation();
+const storeID = useSelector((state) => state.user.storeId);
+const [loading, setLoading] = useState(true);
 const [unreadNotifications, setUnreadNotifications] = useState([]);
 const fetchUnreadNotifications = async () => {
+  setLoading(true);
   try {
     const response = await client.graphql({
-      query: listNotifications,
-      variables: {
-        filter: {
-          isRead: { eq: false },
-        },
+      query: listNotificationsByStoreId,
+      variables: {  storeId: storeID },
+      filter: {
+          _deleted: {
+              ne: true
+          }
       },
+      authMode: 'apiKey',
     });
 
     const unreadNotificationsData = response.data.listNotifications.items;
     setUnreadNotifications(unreadNotificationsData);
+    setLoading(false);
   } catch (error) {
+    setLoading(false);
     console.error('Error fetching unread notifications:', error);
   }
 };
@@ -123,16 +168,89 @@ return (
       <Text style={styles.headerText}>Notifications</Text>
     </View>
   </View>
-
   <ScrollView style={styles.notificationContainer}>
-  {unreadNotifications.map((notification, index) => (
+  {loading ? (
+          <View style={{flex:1,justifyContent:'center',paddingHorizontal:25,  borderTopRightRadius:50,
+        borderTopLeftRadius:50,width:'100%'}}>
+        
+       <SkeletonPlaceholder borderRadius={4}>
+       
+           <View style={{paddingVertical:20}}>
+           <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+           <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50}/>
+           <SkeletonPlaceholder.Item marginLeft={20}>
+             <SkeletonPlaceholder.Item width={200} height={20} />
+             <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+           </SkeletonPlaceholder.Item>
+         </SkeletonPlaceholder.Item>
+           </View>
+        
+         
+       </SkeletonPlaceholder>
+       <SkeletonPlaceholder borderRadius={4}>
+       <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+           <View style={{paddingVertical:20}}>
+           <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+           <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+           <SkeletonPlaceholder.Item marginLeft={20}>
+             <SkeletonPlaceholder.Item width={200} height={20} />
+             <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+           </SkeletonPlaceholder.Item>
+         </SkeletonPlaceholder.Item>
+           </View>
+        
+         
+       </SkeletonPlaceholder>
+       <SkeletonPlaceholder borderRadius={4}>
+       <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+           <View style={{paddingVertical:20}}>
+           <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+           <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+           <SkeletonPlaceholder.Item marginLeft={20}>
+             <SkeletonPlaceholder.Item width={200} height={20} />
+             <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+           </SkeletonPlaceholder.Item>
+         </SkeletonPlaceholder.Item>
+           </View>
+        
+         
+       </SkeletonPlaceholder>
+       <SkeletonPlaceholder borderRadius={4}>
+       <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
+           <View style={{paddingVertical:20}}>
+           <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
+           <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
+           <SkeletonPlaceholder.Item marginLeft={20}>
+             <SkeletonPlaceholder.Item width={200} height={20} />
+             <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
+           </SkeletonPlaceholder.Item>
+         </SkeletonPlaceholder.Item>
+           </View>
+        
+         
+       </SkeletonPlaceholder>
+   
+       </View>
+       
+       ) : unreadNotifications.length > 0 ? (
+     <View>
+      {unreadNotifications.map((notification, index) => (
         <NotificationItem
          key={index} 
          notification={notification}
           handleMarkRead={(notification) => handleMarkRead(notification, unreadNotifications, setUnreadNotifications)}
             unreadNotifications={unreadNotifications} setUnreadNotifications={setUnreadNotifications} />
       ))}
-  </ScrollView>
+ </View>
+ 
+       ):(
+        
+        <View style={styles.noOrdersContainer}>
+          <Text style={styles.noOrdersText}>No Notifications to Show</Text>
+        </View>
+        )}  
+       </ScrollView>
+  
 </View>
 )
 }
@@ -142,6 +260,17 @@ const styles = StyleSheet.create({
   headerContainer:{
       flex:0,
       backgroundColor:COLORS.primary,
+  },
+  noOrdersContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    height:'100%',
+    paddingVertical:100,
+  },
+  noOrdersText: {
+    fontSize: 20,
+    fontFamily:'Poppins-Medium',
+    color: COLORS.primary,
   },
   headerWrapper:{
       paddingVertical:40,

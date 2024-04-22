@@ -13,8 +13,10 @@ enum BillStatus {
 
 type Store @model @auth(rules: [{ allow: public }]) {
   id: ID!
-  name: String!
+  name: String! @index(name: "byName", queryField: "storeByName", sortKeyFields: ["id"])
+  currency:String
   address: String
+  contact: String
   users: [User] @hasMany
   products: [Product] @hasMany
   bills: [Bill] @hasMany

@@ -53,9 +53,9 @@ const ChartScreen = ({ bills }) => {
   return (
     <View style={styles.container}>
       <View style={[styles.chartCard, { height: cardHeight, width: cardWidth }]}>
-        <View style={styles.chartTitleContainer}>
+        {/* <View style={styles.chartTitleContainer}>
           <Text style={styles.chartTitle}>Top Five Selling Products</Text>
-        </View>
+        </View> */}
         <PieChart
           data={chartData}
           width={cardWidth}
@@ -66,7 +66,7 @@ const ChartScreen = ({ bills }) => {
             strokeWidth: 2,
             barPercentage: 0.5,
             
-            
+
           }}
           accessor="population"
           backgroundColor="transparent"

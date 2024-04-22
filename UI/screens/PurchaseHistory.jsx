@@ -7,31 +7,48 @@ import { useNavigation } from '@react-navigation/native';
 import { generateClient } from 'aws-amplify/api';
 import { getPurchaseOrder, listPurchaseOrders } from '../src/graphql/queries.js';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import { useSelector } from 'react-redux';
 
 
 const PurchaseHistory = () => {
   const navigation=useNavigation();
   const client= generateClient();
+  const [loading, setLoading] = useState(true);
   const [purchaseOrders, setPurchaseOrders] = useState([]);
+  const storeID = useSelector((state) => state.user.storeId);
+  const storeCurrency  = useSelector(state => state.currency.value);  
+    
+  const getPurchaseOrdersByStoreId = /* GraphQL */ `
+  query GetPurchaseOrdersByStoreId($storeId: ID!) {
+    listPurchaseOrders(filter: { 
+      storePurchaseOrderId: { eq: $storeId },
+      _deleted: { ne: true } 
+    }) {
+      items {
+        id
+        purchaser
+        purchaserName
+        vendor
+        totalAmount
+        status
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storePurchaseOrderId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
 
-  const  fetchAllPOs=async()=>{
-    try{
-    const {data}= await client.graphql({
-      query:listPurchaseOrders,
-      variables: {
-        filter: {
-          _deleted: {
-            ne: true
-          }
-        }
-      },
-      authMode: 'apiKey',
-    })
-    console.log("DATA",data.listPurchaseOrders.items);
-    setPurchaseOrders(data.listPurchaseOrders.items);
-  } catch (error) {
-    console.error('Error fetching bills:', error);
-  }};
+
+
+
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -40,18 +57,39 @@ const PurchaseHistory = () => {
   };
 
   
-  useEffect(()=>{
+  useEffect(() => {
     fetchAllPOs();
-  },[])
+  }, [storeID]);
   
-  
+  const fetchAllPOs = async () => {
+    try {
+      const { data } = await client.graphql({
+        query: getPurchaseOrdersByStoreId, 
+          variables: {  storeId: storeID },
+          filter: {
+              _deleted: {
+                  ne: true
+              },
+          },    
+          authMode: 'apiKey',
+      });
+      setPurchaseOrders(data.listPurchaseOrders.items);
+    } catch (error) {
+      console.error('Error fetching purchase orders:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleRefresh = () => {
     fetchAllPOs();
   };
 
   return (
     <View  style={{flex:1,backgroundColor:'white'}}>
-    {purchaseOrders.length === 0 ? ( <View style={{flex:1,backgroundColor:'white',borderWidth:1,justifyContent:'center',paddingHorizontal:25}}>
+    {loading ? 
+    ( 
+    <View style={{flex:1,backgroundColor:'white',borderWidth:1,justifyContent:'center',paddingHorizontal:25}}>
      <SkeletonPlaceholder borderRadius={4}>
      <SkeletonPlaceholder.Item width={100} height={20} />
       <View style={{paddingVertical:20}}>
@@ -122,7 +160,22 @@ const PurchaseHistory = () => {
   </SkeletonPlaceholder>
 
   </View>
-  ):(       
+  ): purchaseOrders.length === 0 ? 
+  (
+ 
+    <SafeAreaView style={styles.headContainer}>
+      <View style={styles.header}>
+          <TouchableOpacity style={styles.arrowBackIcon}  onPress={()=> navigation.goBack()}>
+              <Ionic size={22} color={COLORS.primary} name ='chevron-back-outline'/>
+          </TouchableOpacity>
+          <Text style={styles.settingsText}>Purchase History</Text>
+      </View>
+     
+    <View style={styles.noOrdersContainer}>
+      <Text style={styles.noOrdersText}>No Purchase Orders</Text>
+    </View>
+    </SafeAreaView>
+  ) : (
     <SafeAreaView style={styles.headContainer}>
       <View style={styles.header}>
           <TouchableOpacity style={styles.arrowBackIcon}  onPress={()=> navigation.goBack()}>
@@ -142,7 +195,7 @@ const PurchaseHistory = () => {
                   <View style={styles.billText}>
                     <View style={styles.cashierName}>
                       <Text style={styles.cashierText}>Vendor: {po.vendor}</Text>
-                      <Text style={styles.billTotal}>Rs. {po.totalAmount}</Text>
+                      <Text style={styles.billTotal}>{`${storeCurrency || '$'} ${po.totalAmount}`}</Text>
                     </View>
                     <View style={styles.billBottomText}>
                     <Text style={[styles.billTime, { color: po.status === 'PENDING' ? 'orange' : 'green' }]}>{po.status}</Text>
@@ -161,13 +214,13 @@ const PurchaseHistory = () => {
        <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
         <Text style={styles.refreshButtonText}>Refresh</Text>
       </TouchableOpacity>
-   </SafeAreaView>) 
-     }
+   </SafeAreaView>
+   )
+    }
 
    
   </View>
-  )
-}
+  )}
 
 export default PurchaseHistory
 

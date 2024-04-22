@@ -21,7 +21,7 @@ const POHome = () => {
   const dispatch = useDispatch();
   const client = generateClient();
   const connectedDevice = useSelector(state => selectConnectedDevice(state)?.name);
- const userRole = useSelector((state) => state.user.role);
+  const userRole = useSelector((state) => state.user.role);
  
 //const userRole = 'GENERAL_MANAGER';
   const navigation = useNavigation();
@@ -70,33 +70,35 @@ query UserById($userId: ID!) {
 useEffect(() => {
   const fetchUserDetails = async () => {
     try {
-      const currentUser = await fetchUserAttributes();
-      const userId = currentUser.sub; 
-
+      const attributes = await fetchUserAttributes();
+      const userId = attributes.sub;
       const { data } = await client.graphql({
         query: userByIdQuery,
-        variables: { userId: userId },
+        variables: { userId },
         authMode: 'apiKey',
       });
 
       const userDetails = data.userById.items[0]; 
+      console.log("User",userDetails);
       if (userDetails) {
         dispatch(setUserDetails({
           userId: userDetails.userId,
           username: userDetails.username,
           role: userDetails.role,
+          storeId: userDetails.storeUsersId,
+          storeName: userDetails.store.name,
         }));
-        setLoading(false); 
       }
     } catch (error) {
-      console.error("Error fetching user details:", error);
-      setLoading(false); 
+      console.error('Error fetching user details:', error);
     }
   };
 
   fetchUserDetails();
-}, [dispatch]);
-const [loading, setLoading] = useState(true); 
+}, [dispatch, client]);
+
+
+const [loading, setLoading] = useState(false); 
   return (
 <View  style={{flex:1,backgroundColor:'white'}}>
       {loading ? ( <View style={{flex:1,backgroundColor:'white',borderWidth:1,justifyContent:'center',paddingHorizontal:25}}>
@@ -234,9 +236,9 @@ const [loading, setLoading] = useState(true);
                         {/* <Text  style={styles.billTime}>
                           07:36 PM
                         </Text> */}
-                      <TouchableOpacity  style={styles.billViewButton} onPress={()=> navigation.navigate('Receipt')}>
+                      <TouchableOpacity  style={styles.billViewButton} onPress={()=> navigation.navigate('Upload')}>
                           <Text  style={styles.billViewText}>
-                            Fill Form
+                            Fill Form and Generate PO
                           </Text>
                       </TouchableOpacity>
                      
@@ -269,7 +271,7 @@ const [loading, setLoading] = useState(true);
                         {/* <Text  style={styles.billTime}>
                           07:36 PM
                         </Text> */}
-                      <TouchableOpacity  style={styles.billViewButton} onPress={()=> navigation.navigate('Receipt')}>
+                      <TouchableOpacity  style={styles.billViewButton} onPress={()=> navigation.navigate('PurchaseHistory')}>
                           <Text  style={styles.billViewText}>
                             Recent Purchases
                           </Text>
@@ -307,7 +309,9 @@ const [loading, setLoading] = useState(true);
                         {/* <Text  style={styles.billTime}>
                           07:36 PM
                         </Text> */}
-                      <TouchableOpacity  style={styles.billViewButton} onPress={()=> navigation.navigate('ProductsList')}>
+                      <TouchableOpacity  style={styles.billViewButton} onPress={()=> navigation.navigate('ProductsList', {
+                    productsObj: productsObj,
+                  })}>
                           <Text  style={styles.billViewText}>
                             Products in Inventory
                           </Text>

@@ -7,37 +7,69 @@ import { generateClient } from 'aws-amplify/api';
 import { listUsers } from '../src/graphql/queries.js';
 import { SelectList } from 'react-native-dropdown-select-list';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import { useSelector } from 'react-redux';
 
 const StaffListScreen = () => {
   const [selected, setSelected] = useState('');
   const [value, setValue] = useState('');
   const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true); // Added loading state
-
+  const [loading, setLoading] = useState(true);
+  const storeID = useSelector((state) => state.user.storeId);
   const client = generateClient();
 
   useEffect(() => {
     fetchAllUsers();
-  }, []);
+  }, [storeID]);
+
+const getUsersByStoreId = /* GraphQL */ `
+  query GetUsersByStoreId($storeId: ID!) {
+    listUsers(filter: { 
+      storeUsersId: { eq: $storeId },
+      _deleted: { ne: true } 
+    }) {
+      items {
+        id
+        userId
+        username
+        phonenumber
+        image
+        role
+        idcardimage
+        bills
+        purchaseOrders
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeUsersId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+
 
   const fetchAllUsers = async () => {
     try {
       const { data } = await client.graphql({
-        query: listUsers,
-        variables: {
-          filter: {
-            _deleted: {
-              ne: true
-            }
-          }
-        },
+        query: getUsersByStoreId,
+       variables: {  storeId: storeID },
+            filter: {
+                _deleted: {
+                    ne: true
+                }
+            },
         authMode: 'apiKey',
       });
       setUsers(data.listUsers.items);
-      setLoading(false); // Set loading to false after users are fetched
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching users:', error);
-      setLoading(false); // Set loading to false even if there's an error
+      setLoading(false); 
     }
   };
 
@@ -59,7 +91,11 @@ const StaffListScreen = () => {
       <View style={styles.listContainer}>
         <View style={styles.selectedContainer}>
           <SelectList
-            setSelected={setSelected}
+     
+            setSelected={(selectedValue) => {
+              setSelected(selectedValue);
+              console.log("Selected Role: ", selectedValue);
+            }}
             data={[
               { key: '1', value: 'CASHIER' },
               { key: '2', value: 'PURCHASER' },
@@ -67,7 +103,11 @@ const StaffListScreen = () => {
               { key: '4', value: '' }
             ]}
             search={false}
-            onSelect={() => setValue(selected)}
+            
+            onSelect={() => {setValue(selected);
+              console.log("Selected Role: ", selected);
+            }}
+            save="value"
             placeholder="Select Role"
             boxStyles={{ borderWidth: 2 }}
             arrowicon={<Ionic style={{ position: 'absolute', right: 10, top: 14 }} size={26} color='rgba(180, 180, 180,4)' name='chevron-down-outline' />}
@@ -77,32 +117,8 @@ const StaffListScreen = () => {
         </View>
         {loading ? (
           <View style={{flex:1,backgroundColor:'white',justifyContent:'center',paddingHorizontal:25}}>
-          <SkeletonPlaceholder borderRadius={4}>
-          <SkeletonPlaceholder.Item width={100} height={20} />
-           <View style={{paddingVertical:20}}>
-           <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
-           <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
-           <SkeletonPlaceholder.Item marginLeft={20}>
-             <SkeletonPlaceholder.Item width={200} height={20} />
-             <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
-           </SkeletonPlaceholder.Item>
-         </SkeletonPlaceholder.Item>
-           </View>      
-       </SkeletonPlaceholder>
-       <SkeletonPlaceholder borderRadius={4}>
-       
-           <View style={{paddingVertical:20}}>
-           <SkeletonPlaceholder.Item flexDirection="row" alignItems="center" >
-           <SkeletonPlaceholder.Item width={60} height={60} borderRadius={50} />
-           <SkeletonPlaceholder.Item marginLeft={20}>
-             <SkeletonPlaceholder.Item width={200} height={20} />
-             <SkeletonPlaceholder.Item marginTop={6} width={200} height={20} />
-           </SkeletonPlaceholder.Item>
-         </SkeletonPlaceholder.Item>
-           </View>
-        
-         
-       </SkeletonPlaceholder>
+          
+     
        <SkeletonPlaceholder borderRadius={4}>
        <SkeletonPlaceholder.Item width={100} height={20} marginTop={20}/>
            <View style={{paddingVertical:20}}>
@@ -150,9 +166,8 @@ const StaffListScreen = () => {
         ) : (
           <ScrollView>
             {users.map(user => (
-              // Check if no role is selected or if the selected role matches the user's role
               !selected || selected === user.role ? (
-                <View key={user.id} style={styles.billContainer}>
+                <TouchableOpacity key={user.id} style={styles.billContainer} onPress={() => navigation.navigate('Profile', { userId: user.userId })}>
                   <Image style={styles.logoStyles} source={user.image ? { uri: user.image } : require("../assets/images/person.jpg")} />
                   <View style={styles.billText}>
                     <View style={styles.intro}>
@@ -169,7 +184,7 @@ const StaffListScreen = () => {
                       </View>
                     </View>
                   </View>
-                </View>
+                </TouchableOpacity>
               ) : null
             ))}
           </ScrollView>

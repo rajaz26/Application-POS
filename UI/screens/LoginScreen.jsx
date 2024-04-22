@@ -100,19 +100,26 @@ query UserById($userId: ID!) {
           variables: { userId: idUser },
           authMode: 'apiKey',
         });
-        console.log(userData);
-        const userDetails = userData.data.userById.items[0];
-    if ( await userDetails) {
-       
-      // Dispatch setUserDetails action with all necessary details
-      dispatch(setUserDetails({
-        userId: userDetails.userId,
-        username: userDetails.username,
-        role: userDetails.role,
-        // storeId: userDetails.store.id,
-        // storeName: userDetails.store.name,
-      }));
-    }
+        
+        const userDetails = userData.data.userById.items;
+        console.log("DETAILS",userDetails);
+        if (userDetails && userDetails.length > 0) {
+          const userDetail = userDetails[0]; // Access the first user detail since userDetails is an array
+        
+          console.log("SETUP",
+            userDetail.userId, userDetail.username, userDetail.role, userDetail.storeUsersId, userDetail.store.name);
+        
+         
+          dispatch(setUserDetails({
+            userId: userDetail.userId,
+            username: userDetail.username,
+            role: userDetail.role,
+            storeId: userDetail.storeUsersId,
+            storeName: userDetail.store.name, 
+          }));
+         console.log("Dispatch Done"); 
+        }
+        
     setLoading(false);
   
      
@@ -176,7 +183,7 @@ query UserById($userId: ID!) {
                 style={[styles.formInputPassword, styles.passwordInput]}
                 onChangeText={field.onChange}
                 value={field.value}
-                secureTextEntry={!showPassword} // Conditionally set secureTextEntry based on showPassword
+                secureTextEntry={!showPassword}
               />
             )}
             name="password"

@@ -11,23 +11,30 @@ import { deleteProduct,updateProduct,createNotifications } from '../src/graphql/
 import { generateClient } from 'aws-amplify/api';
 import { useForm, Controller } from 'react-hook-form';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
+import { useSelector } from 'react-redux';
 const { width, height } = Dimensions.get('window');
 
 const Product = ({ route }) => {
 
 const  product  = route.params.item;
+
 useEffect(() => {
+
 }, [product,startingProductImageUrl]);
 
+const storeCurrency  = useSelector(state => state.currency.value); 
 const [startingProductImageUrl, setStartingProductImageUrl] = useState(product.image);
 const client = generateClient();
  const navigation=useNavigation();
+ const [categoryName, setCategoryName] = useState('');
  const { handleSubmit, control, formState: { errors }, reset } = useForm(); 
  const [selected, setSelected] = React.useState("");
  const [loading, setLoading] = useState(false);
  const [successMessage, setSuccessMessage] = useState(false);
  const [isEditing, setIsEditing] = useState(false);
  const [selectedImage, setSelectedImage] = useState(null);
+ const pricePlaceholder = `Price in ${storeCurrency || 'Currency'}`;
+
  useEffect(() => {
 }, [selectedImage]); 
 const [originalBarcode, setOriginalBarcode] = useState(product.barcode);
@@ -65,14 +72,38 @@ const checkBarcodeExists = async (barcode) => {
     throw new Error('Failed to check barcode uniqueness');
   }
 };
+useEffect(() => {
+  // If navigating from a screen with product details
+  if (route.params?.item) {
+    setOriginalBarcode(product.barcode);
+    setProductInput({
+      id: product.id,
+      name: product.name,
+      barcode: product.barcode,
+      price: product.price,
+      manufacturer: product.manufacturer,
+      category: categoryName ? categoryName : product.category,
+      warehouseQuantity: product.warehouseQuantity,
+      shelfQuantity: product.shelfQuantity,
+      shelfInventoryLimit:product.shelfInventoryLimit,
+      warehouseInventoryLimit:product.warehouseInventoryLimit,
+      image: product.image,
+      _version: product._version,
+    });
+  }
 
+  // If navigating from a screen with category selection
+  if (route.params?.categoryId && route.params?.categoryName) {
+    setCategoryName(route.params.categoryName);
+  }
+}, [route.params]);
 const [productInput, setProductInput] = useState({
   id:product.id,
   name: product.name,
   barcode: product.barcode,
   price: product.price,
   manufacturer: product.manufacturer,
-  category: product.category,
+  category: categoryName ? categoryName : product.category,
   warehouseQuantity: product.warehouseQuantity,
   shelfQuantity: product.shelfQuantity,
   image: product.image,
@@ -82,13 +113,17 @@ const [productInput, setProductInput] = useState({
   
 });
 useEffect(() => {
+  setCategoryName('');
+}, [product,startingProductImageUrl]);
+
+useEffect(() => {
   setProductInput({
     id: product.id,
     name: product.name,
     barcode: product.barcode,
     price: product.price,
     manufacturer: product.manufacturer,
-    category: product.category,
+    category:categoryName ? categoryName : product.category,
     warehouseQuantity: product.warehouseQuantity,
     shelfQuantity: product.shelfQuantity,
     shelfInventoryLimit:product.shelfInventoryLimit,
@@ -96,7 +131,10 @@ useEffect(() => {
     image: product.image,
     _version: product._version,
   });
-}, [product]);
+  setOriginalBarcode(product.barcode);
+}, [product,startingProductImageUrl]);
+
+
   const handleChoosePhoto = () => {
     launchImageLibrary({}, (response) => {
       console.log(response);
@@ -224,6 +262,7 @@ const getImageUrlFromS3 = async (fileKey) => {
   const handleSuccessButtonPress= () => {
     setLoading(false)
     setSuccessMessage(false);
+    navigation.navigate("ProductsList");
 
   }
 
@@ -247,7 +286,9 @@ const handleUpdateData = async () => {
   
   const barcodeChanged = productInput.barcode !== originalBarcode;
   const barcodeExists = barcodeChanged && await checkBarcodeExists(productInput.barcode);
-
+  console.log(productInput.barcode);
+  console.log(productInput.originalBarcode);
+  console.log(barcodeChanged);
   if (barcodeExists) {
     Alert.alert('Barcode already exists', 'The entered barcode is already in use by another product. Please use a different barcode.');
     setLoading(false);
@@ -286,7 +327,7 @@ const handleUpdateData = async () => {
         barcode:productInput.barcode,
         price:productInput.price,
         manufacturer:productInput.manufacturer,
-        category:productInput.category,
+        category:categoryName ? categoryName : productInput.category,
         warehouseQuantity:productInput.warehouseQuantity,
         shelfQuantity:productInput.shelfQuantity,
         image:productInput.image,
@@ -346,8 +387,10 @@ const handleUpdateData = async () => {
       }
     }
     setOriginalBarcode(productInput.barcode);
-    setLoading(false);
     console.log('Updated Product:', updatedProduct);
+    setIsEditing(false);
+    setSuccessMessage(true);
+    
   } catch (error) {
     setLoading(false);
     console.error('Error updating product:', error);
@@ -374,16 +417,19 @@ const handleUpdateData = async () => {
   size={120}
   width={15}
   fill={100}
+  duration={3000} 
+  delay={0}
   tintColor={COLORS.secondary}
   onAnimationComplete={() => console.log('onAnimationComplete')}
   backgroundColor="#3d5875" />
     <View style={styles.successMessageContainer}>
-      <Text style={styles.loadingText}>updating Product</Text>
-      <TouchableOpacity
+      {successMessage ? (  <Text style={styles.loadingText}>Product Updated</Text>):(  <Text style={styles.loadingText}>Updating Product</Text>)}
+    
+      {successMessage && <TouchableOpacity
         style={styles.successButton}
         onPress={handleSuccessButtonPress}>
         <Text style={styles.buttonText}>Go Back</Text>
-      </TouchableOpacity>
+      </TouchableOpacity>}
     </View>
       </View>
      )}
@@ -493,30 +539,21 @@ const handleUpdateData = async () => {
                         </View>
                     </View>
                 </View>{isEditing ? (
-  <View style={styles.formInputContainerSelected}>
-    <View style={styles.formInputWrapper}>
-      <View style={styles.imageContainer}>
-        <Ionic size={33} color='rgba(180, 180, 180,4)' name='list-circle-outline'/>
-      </View>
-      <View style={styles.inputContainer}>
-        <SelectList 
-          setSelected={(val) => {
-            setSelected(val);
-            setProductInput(prevState => ({ ...prevState, category: val }));
-          }} 
-          data={data} 
-          search={false} 
-          renderRightIcon={{size:30,}}
-          save="value"
-          placeholder={productInput.category}
-          boxStyles={{ borderWidth:0,left:-16}} 
-          arrowicon={<Ionic style={{top:3,left:7}} size={28} color='rgba(180, 180, 180,4)' name='chevron-down-outline'/>}
-          inputStyles={{fontSize:18.5,top:1,fontFamily:'Poppins-Regular',color:'rgba(180, 180, 180,4)'}}
-          dropdownTextStyles={{ fontFamily:'Poppins-Regular',fontSize:15,color:'rgba(180, 180, 180,4)' }}
-        />
-      </View>
-    </View>
-  </View>
+                  <View style={styles.formInputContainerSelectedCategory}>
+                    <View style={styles.formInputWrapper}>
+                        <View style={styles.imageContainer}>
+                             <Ionic size={33} color='rgba(180, 180, 180,4)' name ='list-circle-outline'/>
+                        </View>
+                        <View style={styles.categoryContainer}>
+                        <TouchableOpacity style={styles.categoryTextContainer} onPress={()=>navigation.navigate('Categories', { source: 'fromProducts', item: product })}>
+                                                                                                
+
+                        <Text style={[styles.categoryText, { top:1,color: categoryName ? 'black' : 'black' }]}> {categoryName ? categoryName : productInput.category} </Text>
+
+                        </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
 ) : (
   <View style={styles.formInputContainerSelected}>
     <View style={styles.formInputWrapper}>
@@ -532,6 +569,7 @@ const handleUpdateData = async () => {
   </View>
 )}
 
+
                 <View style={styles.formInputContainer}>
                     <View style={styles.formInputWrapper}>
                         <View style={styles.imageContainer}>
@@ -544,7 +582,7 @@ const handleUpdateData = async () => {
                     render={({ field }) => (
                         <TextInput
                         style={styles.formInput}
-                        placeholder='Price in PKR'
+                        placeholder={pricePlaceholder}
                         placeholderTextColor='rgba(170, 170, 170,4)'
                         onChangeText={(text) => setProductInput(prevState => ({ ...prevState, price: text }))}
                         value={productInput.price.toString()}
@@ -671,7 +709,7 @@ const handleUpdateData = async () => {
                       onPress={() => {
                           if (isEditing) {
                               handleUpdateData();
-                              setIsEditing(false);
+                              
                           } else {
                               setIsEditing(true); 
                           }
@@ -765,16 +803,43 @@ const styles = StyleSheet.create({
     formInputContainerSelected:{
         borderBottomWidth:1,
         borderColor:'lightgray',
-        paddingVertical:10,
+        paddingVertical:24,
         paddingRight:20,
         paddingLeft:17,
+      
     },
-
+    formInputContainerSelectedCategory:{
+      borderBottomWidth:1,
+      borderColor:'lightgray',
+      paddingVertical:12,
+      paddingRight:20,
+      paddingLeft:17,
+     
+  },
     formInputWrapper:{
         flex:1,
         flexDirection:'row',
         paddingHorizontal:10,
     },
+    categoryContainer:{
+      paddingVertical:10,
+      paddingHorizontal:20,
+      flex:1,
+      paddingLeft:20,
+      alignItems:'flex-start'
+  },
+  categoryTextContainer:{
+    color:'rgba(170, 170, 170,4)',
+    width:'100%',
+    alignItems:'flex-start',
+    
+},
+categoryText:{
+  fontFamily:'Poppins-Regular',
+  fontSize:18.5,
+  color:'black',
+  textAlign:'center'
+},
     formInput:{
         flex:1,
         fontSize:18.5,
