@@ -37,8 +37,8 @@
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-retailfyp-zaif-234005-deployment/amplify-cfn-templates/api/cloudformation-template.json",
         "logicalId": "apiretailfyp"
       },
-      "lastPushTimeStamp": "2024-03-29T10:34:36.161Z",
-      "lastPushDirHash": "4tpOE5crWN9a3pLKpjheJDTAfoA="
+      "lastPushTimeStamp": "2024-05-05T11:25:33.505Z",
+      "lastPushDirHash": "dvqBf0xcW9iJ5KKYqAq61VubmSk="
     }
   },
   "auth": {
@@ -69,7 +69,7 @@
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-retailfyp-zaif-234005-deployment/amplify-cfn-templates/auth/retailfypf13cba35-cloudformation-template.json",
         "logicalId": "authretailfypf13cba35"
       },
-      "lastPushTimeStamp": "2024-03-29T10:24:23.748Z",
+      "lastPushTimeStamp": "2024-05-05T11:25:23.488Z",
       "output": {
         "UserPoolId": "ap-south-1_eoD6Z9WaP",
         "AppClientIDWeb": "72r7l2digge831ua2tt4st5jpl",
@@ -87,7 +87,7 @@
       "dependsOn": [],
       "providerPlugin": "awscloudformation",
       "service": "S3",
-      "lastPushTimeStamp": "2024-03-29T10:24:31.252Z",
+      "lastPushTimeStamp": "2024-05-05T11:25:23.507Z",
       "providerMetadata": {
         "s3TemplateURL": "https://s3.amazonaws.com/amplify-retailfyp-zaif-234005-deployment/amplify-cfn-templates/storage/cloudformation-template.json",
         "logicalId": "storagefypstorage"
@@ -97,6 +97,23 @@
         "Region": "ap-south-1"
       },
       "lastPushDirHash": "3Z5gYekasLGF25hh6djmEv0xepc="
+    }
+  },
+  "analytics": {
+    "retailfyp": {
+      "service": "Pinpoint",
+      "providerPlugin": "awscloudformation",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-retailfyp-zaif-234005-deployment/amplify-cfn-templates/analytics/pinpoint-cloudformation-template.json",
+        "logicalId": "analyticsretailfyp"
+      },
+      "lastPushTimeStamp": "2024-05-05T11:25:23.524Z",
+      "output": {
+        "appName": "retailfyp-zaif",
+        "Region": "ap-south-1",
+        "Id": "86bac303675245cda4a5a50c7054f273"
+      },
+      "lastPushDirHash": "7OzxdbjjQ32Zu/RX6KfMVkPFkMg="
     }
   }
 }

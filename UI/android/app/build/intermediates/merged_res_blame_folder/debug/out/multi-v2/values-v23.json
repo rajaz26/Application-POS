@@ -1,10 +1,20 @@
 {
     "logs": [
         {
-            "outputFile": "com.uifyp.app-mergeDebugResources-48:/values-v23/values-v23.xml",
+            "outputFile": "com.uifyp.app-mergeDebugResources-58:/values-v23/values-v23.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\PMLS\\.gradle\\caches\\transforms-3\\9300c7fc5aff0974f1ee709fb212c45e\\transformed\\material-1.1.0\\res\\values-v23\\values-v23.xml",
+                    "source": "C:\\Users\\PMLS\\.gradle\\caches\\transforms-3\\d53d397cd6b5cd30c9bedff39e657619\\transformed\\work-runtime-2.8.0\\res\\values-v23\\values-v23.xml",
+                    "from": {
+                        "startLines": "2,3",
+                        "startColumns": "4,4",
+                        "startOffsets": "55,121",
+                        "endColumns": "65,62",
+                        "endOffsets": "116,179"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\PMLS\\.gradle\\caches\\transforms-3\\8dc7c80155e04692f14cc70b1947cd84\\transformed\\material-1.1.0\\res\\values-v23\\values-v23.xml",
                     "from": {
                         "startLines": "2,6",
                         "startColumns": "4,4",
@@ -14,16 +24,16 @@
                         "endOffsets": "315,588"
                     },
                     "to": {
-                        "startLines": "53,57",
+                        "startLines": "55,59",
                         "startColumns": "4,4",
-                        "startOffsets": "3382,3647",
-                        "endLines": "56,60",
+                        "startOffsets": "3511,3776",
+                        "endLines": "58,62",
                         "endColumns": "10,10",
-                        "endOffsets": "3642,3915"
+                        "endOffsets": "3771,4044"
                     }
                 },
                 {
-                    "source": "C:\\Users\\PMLS\\.gradle\\caches\\transforms-3\\8a4582fcf4777cd70591117a23078262\\transformed\\appcompat-1.5.0\\res\\values-v23\\values-v23.xml",
+                    "source": "C:\\Users\\PMLS\\.gradle\\caches\\transforms-3\\61371c2a47d9a3b6b5c41820ab3fee47\\transformed\\appcompat-1.5.0\\res\\values-v23\\values-v23.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,20,34,35,36,39,43,44,45,46",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4",
@@ -31,10 +41,18 @@
                         "endLines": "2,3,4,5,19,33,34,35,38,42,43,44,45,49",
                         "endColumns": "134,134,74,86,12,12,118,126,12,12,114,106,112,12",
                         "endOffsets": "185,320,395,482,1220,1970,2089,2216,2438,2662,2777,2884,2997,3227"
+                    },
+                    "to": {
+                        "startLines": "4,5,6,7,8,22,36,37,38,41,45,46,47,48",
+                        "startColumns": "4,4,4,4,4,4,4,4,4,4,4,4,4,4",
+                        "startOffsets": "184,319,454,529,616,1354,2104,2223,2350,2572,2796,2911,3018,3131",
+                        "endLines": "4,5,6,7,21,35,36,37,40,44,45,46,47,51",
+                        "endColumns": "134,134,74,86,12,12,118,126,12,12,114,106,112,12",
+                        "endOffsets": "314,449,524,611,1349,2099,2218,2345,2567,2791,2906,3013,3126,3356"
                     }
                 },
                 {
-                    "source": "C:\\Users\\PMLS\\.gradle\\caches\\transforms-3\\c785f2650a4ab9597610a42a5423b6e7\\transformed\\cardview-1.0.0\\res\\values-v23\\values-v23.xml",
+                    "source": "C:\\Users\\PMLS\\.gradle\\caches\\transforms-3\\7d3531a002cf30346bff1926ff123be8\\transformed\\cardview-1.0.0\\res\\values-v23\\values-v23.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",
@@ -44,12 +62,12 @@
                         "endOffsets": "200"
                     },
                     "to": {
-                        "startLines": "50",
+                        "startLines": "52",
                         "startColumns": "4",
-                        "startOffsets": "3232",
-                        "endLines": "52",
+                        "startOffsets": "3361",
+                        "endLines": "54",
                         "endColumns": "12",
-                        "endOffsets": "3377"
+                        "endOffsets": "3506"
                     }
                 }
             ]

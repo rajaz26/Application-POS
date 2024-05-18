@@ -22,6 +22,7 @@ import { fetchUserAttributes } from 'aws-amplify/auth';
 import { setUserDetails } from '../store/userSlice'; 
 import { useDispatch, useSelector } from 'react-redux';
 import Sound from 'react-native-sound';
+import notifee from '@notifee/react-native';
 import { updateProduct,createWarehouseScan ,createNotifications } from '../src/graphql/mutations';
 export default function Scan2({route}) {
   Sound.setCategory('Playback');
@@ -48,6 +49,33 @@ const [usernameW, setUsernameW] = useState('');
 const [zoom, setZoom] = useState(1); 
 const storeID = useSelector((state) => state.user.storeId);
 
+const showPopupNotification = async (productName,productQuantity) => {
+  console.log("Notification on its way");
+  try {
+    await notifee.requestPermission();
+
+    const channelId = await notifee.createChannel({
+      id: 'default',
+      name: 'Default Channel',
+    });
+      notifee.displayNotification({
+        title: 'Low Warehouse Quantity Alert',
+        body: `${productName} | Warehouse quantity: ${productQuantity}`,
+        android: {
+          channelId,
+          pressAction: {
+            id: 'default',
+          },
+        },
+      });
+      Playsound();  
+      setPopupVisible(true);
+    
+  } catch (error) {
+    console.log('Error displaying notification:', error);
+  }
+};
+
 
 const Playsound = ()=>{
   var beep = new Sound('beep.mp3', Sound.MAIN_BUNDLE, (error) => {
@@ -65,7 +93,8 @@ const Playsound = ()=>{
     });
   });
 }
-  const [frameProcessor, barcodes] = useScanBarcodes(
+
+const [frameProcessor, barcodes] = useScanBarcodes(
     [
       BarcodeFormat.EAN_13,
       BarcodeFormat.EAN_8,
@@ -77,7 +106,7 @@ const Playsound = ()=>{
     {
       checkInverted: true,
     }
-  );
+);
 
   const ProductByBarcodeAndStoreId = /* GraphQL */ `
   query ProductByBarcodeAndStoreId($barcode: String!, $storeId: ID!) {
@@ -201,38 +230,61 @@ const handleBarcodeScanned = async (barcode) => {
     if (manualBarcode !== '') setManualBarcode('');
 };
 
-  const handleAddQuantity = () => {
-    if (!quantity) {
-        Alert.alert("Please enter a quantity.");
-        return;
-    }
+const handleAddQuantity = () => {
+  if (!quantity ) {
+      Alert.alert("Please enter a quantity.");
+      return;
+  }
 
-    const existingProductIndex = scannedProducts.findIndex(product => product.id === currentProduct.id);
+    if (isNaN(parseInt(quantity, 10))) {
+      Alert.alert("Invalid quantity", "Please enter a valid integer quantity.");
+      return;
+  }
 
-    let updatedScannedProducts;
+  const quantityInt = parseInt(quantity, 10);
 
-    if (existingProductIndex !== -1) {
-        updatedScannedProducts = [...scannedProducts];
-        updatedScannedProducts[existingProductIndex].quantity += parseInt(quantity, 10);
-    } else {
-        const updatedProductDetails = {
-            ...currentProduct,
-            quantity: parseInt(quantity, 10), 
-        };
-        updatedScannedProducts = [...scannedProducts, updatedProductDetails];
-    }
+  if (quantityInt <= 0) {
+      Alert.alert("Invalid quantity", "Please enter a positive quantity.");
+      return;
+  }
+  if (currentProduct.warehouseQuantity <= 0) {
+      Alert.alert("Product not available", "The product is not available in the warehouse.");
+      return;
+  }
 
-    setScannedProducts(updatedScannedProducts);
+  if (parseInt(quantity, 10) > currentProduct.warehouseQuantity) {
+      Alert.alert("Invalid quantity", "The quantity entered is greater than the product's warehouse quantity.");
+      return;
+  }
 
-    setQuantity('');
-    setCurrentProduct(null);
-    setQuantityModalVisible(false);
+  const existingProductIndex = scannedProducts.findIndex(product => product.id === currentProduct.id);
+
+  let updatedScannedProducts;
+
+  if (existingProductIndex !== -1) {
+      updatedScannedProducts = [...scannedProducts];
+      updatedScannedProducts[existingProductIndex].quantity += parseInt(quantity, 10);
+  } else {
+      const updatedProductDetails = {
+          ...currentProduct,
+          quantity: parseInt(quantity, 10),
+      };
+      updatedScannedProducts = [...scannedProducts, updatedProductDetails];
+  }
+
+  setScannedProducts(updatedScannedProducts);
+
+  setQuantity('');
+  setCurrentProduct(null);
+  setQuantityModalVisible(false);
 };
+
 
 useEffect(() => {
   const total = scannedProducts.reduce((acc, curr) => acc + (curr.subtotal || 0), 0);
   setTotalBillAmount(total);
 }, [scannedProducts]);
+
 const userByIdQuery = /* GraphQL */ `
 query UserById($userId: ID!) {
   userById(userId: $userId) {
@@ -301,11 +353,11 @@ const handleConfirmPressed = async () => {
     setErrorMessage('');
     for (const product of scannedProducts) {
         console.log("product",product);
-      const newQuantity = product.warehouseQuantity - product.quantity;
-      await updateProductQuantityInBackend(product.id, newQuantity,product._version);
+      const newWarehouseQuantity = product.warehouseQuantity - product.quantity;
+      const newShelfQuantity = product.shelfQuantity + product.quantity;
+      await updateProductQuantityInBackend(product.id, newShelfQuantity,newWarehouseQuantity,product._version);
       await createWarehouseScanF(userIdW, usernameW, product.id, product.name, product.quantity);
-      
-    }
+  }
   
     console.log("All products updated successfully.");
    
@@ -333,19 +385,24 @@ const handleConfirmPressed = async () => {
   };
 
   
-const updateProductQuantityInBackend = async (productId, newQuantity,version) => {
-    console.log("UPDATING PRODUCTS IN BACKEND",productId,newQuantity, version);
+const updateProductQuantityInBackend = async (productId, shelfquantity,warehousequantity,version) => {
+    console.log("UPDATING PRODUCTS IN BACKEND",productId, shelfquantity,warehousequantity,version);
+    
     try {
       const response = await client.graphql({
         query: updateProduct,
-        variables: {input:{
+        variables: 
+        {
+          input:
+          {
             id: productId,
-            warehouseQuantity: newQuantity,
+            warehouseQuantity: warehousequantity,
+            shelfQuantity:shelfquantity,
             _version:version
-        }
-        },
-        authMode: 'apiKey',
-      });
+          }
+          },
+          authMode: 'apiKey',
+        });
       
     const up=response.data.updateProduct;
       if (up && up.warehouseQuantity <= up.warehouseInventoryLimit) {
@@ -358,6 +415,7 @@ const updateProductQuantityInBackend = async (productId, newQuantity,version) =>
             isRead: false,
             isWarehouseNotification: true, 
             isShelfNotification:false, 
+            storeNotificationsId:storeID,
           },
           authMode: 'apiKey',
         };
@@ -366,7 +424,7 @@ const updateProductQuantityInBackend = async (productId, newQuantity,version) =>
             query: createNotifications,
             variables: notificationInput,
           });
-        
+          showPopupNotification(up.name,up.warehouseQuantity);
           console.log('New Notification:', newNotification);
         } catch (error) {
           console.error('Error creating notification:', error);
@@ -442,14 +500,14 @@ const handleGoBack = () => {
   {loading && (
         <View style={styles.loadingContainer}>
           <AnimatedCircularProgress
-  size={120}
-  width={15}
-  duration={2200} 
-  delay={0}
-  fill={100}
-  tintColor={COLORS.secondary}
-  onAnimationComplete={() => console.log('onAnimationComplete')}
-  backgroundColor="#3d5875" />
+        size={120}
+        width={15}
+        duration={2200} 
+        delay={0}
+        fill={100}
+        tintColor={COLORS.secondary}
+        onAnimationComplete={() => console.log('onAnimationComplete')}
+        backgroundColor="#3d5875" />
         <View style={{justifyContent:'center',alignItems:'center',marginTop:10,}}>
           <Text style={styles.loadingText}>{successMessage ? "Products Updated Successfully" : "Updating Products..."}</Text>
           </View>
@@ -551,33 +609,6 @@ const handleGoBack = () => {
   transparent={true}
   onRequestClose={() => setQuantityModalVisible(false)}
 >
-{/* 
-<Modal
-  visible={quantityModalVisible}
-  animationType="fade"
-  transparent={true}
-  onRequestClose={() => setQuantityModalVisible(false)}
->
-  <View style={styles.modalContainer}>
-    <Text style={styles.modalTitle}>Enter Quantity:</Text>
-    <TextInput
-      style={styles.input}
-      placeholder="Quantity"
-      keyboardType="number-pad"
-      onChangeText={setQuantity}
-      value={quantity}
-    />
-    <View style={styles.modalButtonContainer}>
-      <TouchableOpacity onPress={handleAddQuantity} style={styles.modalButton}>
-        <Text style={styles.modalButtonText}>Add</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => setQuantityModalVisible(false)} style={styles.modalButton}>
-        <Text style={styles.modalButtonText}>Cancel</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-</Modal> */}
-
   <View style={styles.modalContainer}>
     <Text style={styles.modalTitle}>Enter Product Quantity:</Text>
     <TextInput
@@ -622,7 +653,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 10,
     position: 'absolute',
-    bottom: 30,
+    bottom: 50,
     right: 5,
     borderRadius: 10,
   },
@@ -645,7 +676,7 @@ const styles = StyleSheet.create({
   buttonContainer:{
     position: 'absolute',
     right: 20,
-    top: 120,
+    top: 10,
     flexDirection:'column',
     justifyContent:'space-between',
     alignItems:'space-evenly',

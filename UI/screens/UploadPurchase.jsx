@@ -15,11 +15,10 @@ import { useSelector } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { DataTable } from 'react-native-paper';
 
-const UploadPurchase = () => {
-    const route = useRoute();
+const UploadPurchase = ({route}) => {
     const vendorRef = useRef('');
     const [date, setDate] = useState('');
-    const [vendor, setVendor] = useState('');
+    const [vendor, setVendor] = useState(route.params?.vendor);
     const [amount, setAmount] = useState('');
     const [scannedProducts, setScannedProducts] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -39,6 +38,14 @@ const UploadPurchase = () => {
     const navigation = useNavigation();
     const storeCurrency  = useSelector(state => state.currency.value); 
     const { handleSubmit, control, formState: { errors }, reset } = useForm();
+    
+    useEffect(() => {
+        console.log("Vendor Received",vendor)
+        if (route.params?.vendor) {
+            setVendor(route.params.vendor);
+        }
+    }, [route.params?.vendor]);
+
     
     const handleScannedProduct = (product) => {
         setScannedProducts([...scannedProducts, product]);
@@ -61,7 +68,7 @@ const UploadPurchase = () => {
         setLoading(false)
         setSuccessMessage(false); 
         setSuccess(false); 
-        navigation.goBack();
+        navigation.navigate('PurchaseHistory');
       }
 
       const handleErrorButtonPress= () => {
@@ -90,7 +97,7 @@ const UploadPurchase = () => {
         try {
             const updateBillInput = {
               id: currentBillId,
-              totalAmount: totalBillAmount,
+              totalAmount: totalAmount,
               status: "PAID",
               _version: version,
             };
@@ -146,8 +153,10 @@ const UploadPurchase = () => {
         }
         
       };
-      const handleAddProduct = () => {
-        navigation.navigate('ScanPurchaseOrder', { vendor });
+    
+    const handleAddProduct = () => {
+        console.log("Vendor before going",vendor);
+        navigation.navigate('ScanPurchaseOrder', { vendor:vendor});
     };
     
     useEffect(() => {
@@ -158,6 +167,14 @@ const UploadPurchase = () => {
     }, [route.params?.scannedProducts]);
     
     
+    useEffect(() => {
+        console.log("store",storeID);
+       
+    }, []);
+    useEffect(() => {
+        console.log("store1",storeID);
+       
+    }, [storeID]);
     const uploadImageToS3 = async (imageUri, fileName) => {
         try {
             const response = await fetch(imageUri);
@@ -214,7 +231,7 @@ const UploadPurchase = () => {
             scannedProducts.forEach(product => {
                 totalAmount += product.price * product.quantity;
             });
-    
+            
             const newPurchaseOrder = await client.graphql({
                 query: createPurchaseOrder,
                 variables: {
@@ -233,6 +250,7 @@ const UploadPurchase = () => {
             console.log("New",newPurchaseOrder);
     
             const createPurchaseItemPromises = scannedProducts.map(async (product) => {
+                console.log("Products",product);
                 const createPurchaseItemInput = {
                     productName: product.name,
                     productPrice: product.price,
@@ -246,35 +264,41 @@ const UploadPurchase = () => {
     
                 return client.graphql({
                     query: createPurchaseItem,
-                    variables: { input: createPurchaseItemInput },
+                    variables: { input: {
+                        productName: product.name,
+                        productPrice: product.price,
+                        quantityOrdered: product.quantity,
+                        quantityReceived: 0,
+                        productPurchaseItemsId: product.id,      
+                        purchaseOrderItemsId: newPurchaseOrder.data.createPurchaseOrder.id           
+                    } },
                     authMode: 'apiKey',
                 });
             });
-    
-           
+
             const createdPurchaseItems = await Promise.all(createPurchaseItemPromises);
-            console.log('Created Purchase Items:', createdPurchaseItems);
-            const updatePurchaseOrderInput = {
-                id: newPurchaseOrder.data.createPurchaseOrder.id,
-                totalAmount: totalAmount.toString(), 
-                _version: newPurchaseOrder.data.createPurchaseOrder._version,
-            };
-    
+            console.log('Created Purchase Items:', createdPurchaseItems);    
             const updatingPurchaseOrders=await client.graphql({
                 query: updatePurchaseOrder,
-                variables: { input: updatePurchaseOrderInput},
+                variables: { input: {
+                    id: newPurchaseOrder.data.createPurchaseOrder.id,
+                    totalAmount: totalAmount.toString(), 
+                    _version: newPurchaseOrder.data.createPurchaseOrder._version,
+                }},
                 authMode: 'apiKey',
             });
            
-            console.log('Number of Purchase Items Created:', createdPurchaseItems.length);
-            console.log('Number of Purchase Items Created:',updatingPurchaseOrders);
+            // console.log('Number of Purchase Items Created:', createdPurchaseItems.length);
+            // console.log('Number of Purchase Items Created:',updatingPurchaseOrders);
             setSuccess(true);
             setSuccessMessage(true);
            
             
         } catch (error) {
             setError(true);
+            setLoading(false);
             console.error('Error creating purchase order items:', error);
+        
         }
     };
     
@@ -326,53 +350,30 @@ const UploadPurchase = () => {
            <Ionic size={24} color={COLORS.primary} name ='chevron-back-outline'/>
        </TouchableOpacity>
    </View>
-   {/* <View style={styles.mainLogo}>
-       <Ionic style={styles.logo}  size={90} color={'black'} name ='logo-behance'/>
-   </View> */}
    <View style={styles.headContainer2}>
    <View style={styles.headingText}> 
-    <Text style={styles.totalBill}>PurchaseOrder</Text>
+    <Text style={styles.totalBill}>Purchase Order</Text>
     <View style={styles.totalAmountContainer}>
         <Text style={styles.totalAmountText}>
             Total Amount: {`${storeCurrency || '$'} ${totalAmount.toFixed(2)}`}
         </Text>
       </View>
     </View>
-
     <View  style={styles.headerContainer}>
-{/* 
-   <View style={styles.vendorComponent}>
-   <Text style={styles.totalBill}>From :</Text>
-<TextInput
-                                        value={vendor}
-                                        onChangeText={setVendor}
-                                        style={styles.formInput}
-                                        placeholderTextColor='rgba(170, 170, 170,4)'
-                                        multiline={true}
-                                        numberOfLines={4} 
-                                    />
-   </View> */}
-   <View style={styles.vendorComponent}>
-<Text style={styles.totalBill}>Vendor :</Text>
-<TextInput
-                                        value={vendor}
-                                        onChangeText={setVendor}
-                                        style={styles.formInput}
-                                        placeholderTextColor='rgba(170, 170, 170,4)'
-                                        multiline={true} 
-                                        numberOfLines={4} 
-                                    />
-</View>
+    <View style={styles.vendorComponent}>
+        <Text style={styles.totalBill2}>Vendor :</Text>
+        <TextInput value={vendor} onChangeText={setVendor} style={styles.formInput} placeholderTextColor='rgba(170, 170, 170,4)' placeholder="Enter Vendor Name"  />
+    </View>
                                   
 </View>
 </View>
    <DataTable style={styles.columnHeadingContainer}>
                 <DataTable.Header >
-                    <DataTable.Title textStyle={{color: 'white'}} style={{justifyContent:'flex-start',flex:1.2}} >ITEM</DataTable.Title>
+                    <DataTable.Title textStyle={{color: 'white'}} style={{justifyContent:'flex-start',flex:2}} >ITEM</DataTable.Title>
                     <DataTable.Title textStyle={{color: 'white'}} style={{justifyContent:'center'}}>QTYORD</DataTable.Title>
                     <DataTable.Title textStyle={{color: 'white'}}  style={{justifyContent:'center'}}>PRICE</DataTable.Title>
                     {/* <DataTable.Title style={{justifyContent:'center'}}>SUBTOTAL</DataTable.Title> */}
-                    <DataTable.Title textStyle={{color: 'white'}}  style={{justifyContent:'center'}}>QTYREC</DataTable.Title>
+                    {/* <DataTable.Title textStyle={{color: 'white'}}  style={{justifyContent:'center'}}>QTYREC</DataTable.Title> */}
                     <DataTable.Title textStyle={{color: 'white'}}  style={{justifyContent:'center',flex:0.5}}>EDIT</DataTable.Title>
                 </DataTable.Header>
                 </DataTable>
@@ -381,10 +382,10 @@ const UploadPurchase = () => {
     {scannedProducts.map((product, index) => (
         <DataTable key={index}>
             <DataTable.Row key={index}>
-                <DataTable.Cell style={{justifyContent:'flex-start',flex:1.2}} >{product.name}</DataTable.Cell>
+                <DataTable.Cell style={{justifyContent:'flex-start',flex:2}} >{product.name}</DataTable.Cell>
                 <DataTable.Cell style={{justifyContent:'center'}}>{product.quantity}</DataTable.Cell>
                 <DataTable.Cell style={{justifyContent:'center'}}>{product.price}</DataTable.Cell>
-                <DataTable.Cell style={{justifyContent:'center'}}></DataTable.Cell>
+                {/* <DataTable.Cell style={{justifyContent:'center'}}></DataTable.Cell> */}
                 <DataTable.Cell style={{ justifyContent: 'center', flex: 0.5 }}>
                     <TouchableOpacity style={styles.deleteBill} onPress={() => handleDeleteItem(index)}>
                         <Ionic style={styles.trash} size={21.5} color={'red'} name='trash' />
@@ -473,18 +474,14 @@ formInputWrapper:{
 formInput:{
     flex:0,
     width:'100%',
-    // width:100,
-    // height:100,
     width:300,
     height:50,
-    fontSize:15,
+    fontSize:17,
     fontFamily:'Poppins-Regular',
     justifyContent:'center',
     alignItems:'center',
     color:'rgba(0, 0, 0,0.6)',
-    // textAlign:'center',
-    borderWidth:0.5,
-    
+    borderBottomWidth:0.5,
 },
 formInputSize:{
     flex:0,
@@ -668,6 +665,12 @@ mainLogo:{
     alignItems:'center'
 },
 totalBill:{
+    color:COLORS.primary,
+    fontSize:22,
+    fontFamily:'Poppins-SemiBold',
+    marginTop:15,
+},
+totalBill2:{
     color:COLORS.primary,
     fontSize:20,
     fontFamily:'Poppins-SemiBold',

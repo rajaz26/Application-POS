@@ -12,7 +12,8 @@ const UserRole = {
 const BillStatus = {
   "PENDING": "PENDING",
   "CONFIRMED": "CONFIRMED",
-  "PAID": "PAID"
+  "PAID": "PAID",
+  "RECEIVED": "RECEIVED"
 };
 
 const { Store, Category, Notifications, User, Product, BillItem, Bill, PurchaseOrder, PurchaseItem, WarehouseScan } = initSchema(schema);

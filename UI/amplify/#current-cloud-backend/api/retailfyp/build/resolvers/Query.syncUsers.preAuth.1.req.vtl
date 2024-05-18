@@ -17,6 +17,11 @@ $util.qr($PkMap.put('userId' , 'byUserId'))
 $util.qr($SkMap.put("byUserId", ["id"]))
 ## [End] Set query expression for @key **
 ## [Start] Set query expression for @key **
+$util.qr($QueryMap.put('username+id' , 'byUserName'))
+$util.qr($PkMap.put('username' , 'byUserName'))
+$util.qr($SkMap.put("byUserName", ["id"]))
+## [End] Set query expression for @key **
+## [Start] Set query expression for @key **
 #set( $filterArgsMap = $ctx.args.filter.get("and") )
 #set( $isLastSyncInDeltaTTLWindow = false )
 #set( $minLastSync = $util.time.nowEpochMilliSeconds() - $ctx.stash.deltaSyncTableTtl * 60 * 1000 )

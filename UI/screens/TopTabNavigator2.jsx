@@ -19,9 +19,9 @@ const Tab = createMaterialTopTabNavigator();
 
 const tabIcons = {
   Dashboard: 'home',
-  WarehouseScan: 'receipt',
+  WarehouseScan: 'phone-portrait',
   Scan2: 'scan',
-  Settings: 'grid',
+  Settings: 'cube',
   Profile: 'person',
 };
 

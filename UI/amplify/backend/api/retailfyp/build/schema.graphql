@@ -9,6 +9,7 @@ enum BillStatus {
   PENDING
   CONFIRMED
   PAID
+  RECEIVED
 }
 
 type Store {
@@ -68,7 +69,8 @@ type User {
   id: ID!
   userId: ID!
   username: String!
-  phonenumber: String!
+  phonenumber: String
+  password: String
   image: String
   role: UserRole!
   idcardimage: [String]
@@ -154,7 +156,6 @@ type PurchaseOrder {
   items(filter: ModelPurchaseItemFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelPurchaseItemConnection
   totalAmount: Float!
   status: BillStatus
-  purchaseItems(filter: ModelPurchaseItemFilterInput, sortDirection: ModelSortDirection, limit: Int, nextToken: String): ModelPurchaseItemConnection
   createdAt: AWSDateTime!
   updatedAt: AWSDateTime!
   _version: Int!
@@ -168,6 +169,7 @@ type PurchaseItem {
   product: Product!
   productName: String
   productPrice: Float
+  productTag: Int
   quantityOrdered: Int!
   quantityReceived: Int!
   purchaseOrder: PurchaseOrder
@@ -178,7 +180,6 @@ type PurchaseItem {
   _lastChangedAt: AWSTimestamp!
   productPurchaseItemsId: ID
   purchaseOrderItemsId: ID!
-  purchaseOrderPurchaseItemsId: ID
 }
 
 type WarehouseScan {
@@ -398,6 +399,7 @@ type Query {
   syncWarehouseScans(filter: ModelWarehouseScanFilterInput, limit: Int, nextToken: String, lastSync: AWSTimestamp): ModelWarehouseScanConnection
   storeByName(name: String!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelStoreFilterInput, limit: Int, nextToken: String): ModelStoreConnection
   userById(userId: ID!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelUserFilterInput, limit: Int, nextToken: String): ModelUserConnection
+  userByName(username: String!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelUserFilterInput, limit: Int, nextToken: String): ModelUserConnection
   productByName(name: String!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelProductFilterInput, limit: Int, nextToken: String): ModelProductConnection
   productByBarcode(barcode: String!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelProductFilterInput, limit: Int, nextToken: String): ModelProductConnection
   billByCashierId(cashier: String!, id: ModelIDKeyConditionInput, sortDirection: ModelSortDirection, filter: ModelBillFilterInput, limit: Int, nextToken: String): ModelBillConnection
@@ -670,6 +672,7 @@ input ModelUserFilterInput {
   userId: ModelIDInput
   username: ModelStringInput
   phonenumber: ModelStringInput
+  password: ModelStringInput
   image: ModelStringInput
   role: ModelUserRoleInput
   idcardimage: ModelStringInput
@@ -686,6 +689,7 @@ input ModelUserConditionInput {
   userId: ModelIDInput
   username: ModelStringInput
   phonenumber: ModelStringInput
+  password: ModelStringInput
   image: ModelStringInput
   role: ModelUserRoleInput
   idcardimage: ModelStringInput
@@ -702,7 +706,8 @@ input CreateUserInput {
   id: ID
   userId: ID!
   username: String!
-  phonenumber: String!
+  phonenumber: String
+  password: String
   image: String
   role: UserRole!
   idcardimage: [String]
@@ -717,6 +722,7 @@ input UpdateUserInput {
   userId: ID
   username: String
   phonenumber: String
+  password: String
   image: String
   role: UserRole
   idcardimage: [String]
@@ -736,6 +742,7 @@ input ModelSubscriptionUserFilterInput {
   userId: ModelSubscriptionIDInput
   username: ModelSubscriptionStringInput
   phonenumber: ModelSubscriptionStringInput
+  password: ModelSubscriptionStringInput
   image: ModelSubscriptionStringInput
   role: ModelSubscriptionStringInput
   idcardimage: ModelSubscriptionStringInput
@@ -1086,6 +1093,7 @@ input ModelPurchaseItemFilterInput {
   id: ModelIDInput
   productName: ModelStringInput
   productPrice: ModelFloatInput
+  productTag: ModelIntInput
   quantityOrdered: ModelIntInput
   quantityReceived: ModelIntInput
   and: [ModelPurchaseItemFilterInput]
@@ -1094,12 +1102,12 @@ input ModelPurchaseItemFilterInput {
   _deleted: ModelBooleanInput
   productPurchaseItemsId: ModelIDInput
   purchaseOrderItemsId: ModelIDInput
-  purchaseOrderPurchaseItemsId: ModelIDInput
 }
 
 input ModelPurchaseItemConditionInput {
   productName: ModelStringInput
   productPrice: ModelFloatInput
+  productTag: ModelIntInput
   quantityOrdered: ModelIntInput
   quantityReceived: ModelIntInput
   and: [ModelPurchaseItemConditionInput]
@@ -1108,31 +1116,30 @@ input ModelPurchaseItemConditionInput {
   _deleted: ModelBooleanInput
   productPurchaseItemsId: ModelIDInput
   purchaseOrderItemsId: ModelIDInput
-  purchaseOrderPurchaseItemsId: ModelIDInput
 }
 
 input CreatePurchaseItemInput {
   id: ID
   productName: String
   productPrice: Float
+  productTag: Int
   quantityOrdered: Int!
   quantityReceived: Int!
   _version: Int
   productPurchaseItemsId: ID
   purchaseOrderItemsId: ID!
-  purchaseOrderPurchaseItemsId: ID
 }
 
 input UpdatePurchaseItemInput {
   id: ID!
   productName: String
   productPrice: Float
+  productTag: Int
   quantityOrdered: Int
   quantityReceived: Int
   _version: Int
   productPurchaseItemsId: ID
   purchaseOrderItemsId: ID
-  purchaseOrderPurchaseItemsId: ID
 }
 
 input DeletePurchaseItemInput {
@@ -1144,6 +1151,7 @@ input ModelSubscriptionPurchaseItemFilterInput {
   id: ModelSubscriptionIDInput
   productName: ModelSubscriptionStringInput
   productPrice: ModelSubscriptionFloatInput
+  productTag: ModelSubscriptionIntInput
   quantityOrdered: ModelSubscriptionIntInput
   quantityReceived: ModelSubscriptionIntInput
   and: [ModelSubscriptionPurchaseItemFilterInput]

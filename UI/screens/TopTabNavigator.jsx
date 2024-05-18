@@ -11,6 +11,7 @@ import { StyleSheet, View, TouchableWithoutFeedback } from 'react-native';
 import SettingsScreen from './SettingsScreen';
 import { useSelector } from 'react-redux'; 
 import CashierHome from './CashierHome';
+import ShelfQuantity from './ShelfQuantity';
 const Tab = createMaterialTopTabNavigator();
 
 
@@ -18,7 +19,7 @@ const tabIcons = {
   Dashboard: 'home',
   History: 'archive',
   Scan: 'scan',
-  Settings: 'settings',
+  Shelf: 'library',
   Profile: 'person',
 };
 
@@ -79,7 +80,7 @@ const TopTabNavigator = () => {
       <Tab.Screen name="Dashboard" component={CashierHome} />
       <Tab.Screen name="History" component={History} />
       <Tab.Screen name="Scan" component={Scan} />
-      <Tab.Screen name="Settings" component={SettingsScreen} />
+      <Tab.Screen name="Shelf" component={ShelfQuantity} />
       <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>
   );

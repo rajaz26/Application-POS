@@ -1,20 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.uifyp.app-mergeDebugResources-48:/values-v16/values-v16.xml",
+            "outputFile": "com.uifyp.app-mergeDebugResources-58:/values-v16/values-v16.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\PMLS\\.gradle\\caches\\transforms-3\\6071112da32bfbae80caeb5ecfa6fe8d\\transformed\\core-1.9.0\\res\\values-v16\\values-v16.xml",
-                    "from": {
-                        "startLines": "2",
-                        "startColumns": "4",
-                        "startOffsets": "55",
-                        "endColumns": "65",
-                        "endOffsets": "116"
-                    }
-                },
-                {
-                    "source": "C:\\Users\\PMLS\\.gradle\\caches\\transforms-3\\8a4582fcf4777cd70591117a23078262\\transformed\\appcompat-1.5.0\\res\\values-v16\\values-v16.xml",
+                    "source": "C:\\Users\\PMLS\\.gradle\\caches\\transforms-3\\61371c2a47d9a3b6b5c41820ab3fee47\\transformed\\appcompat-1.5.0\\res\\values-v16\\values-v16.xml",
                     "from": {
                         "startLines": "2",
                         "startColumns": "4",
@@ -30,6 +20,16 @@
                         "endLines": "6",
                         "endColumns": "12",
                         "endOffsets": "289"
+                    }
+                },
+                {
+                    "source": "C:\\Users\\PMLS\\.gradle\\caches\\transforms-3\\48017f9b5d48d174773195d3d4a64f62\\transformed\\core-1.9.0\\res\\values-v16\\values-v16.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "65",
+                        "endOffsets": "116"
                     }
                 }
             ]

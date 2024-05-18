@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import { Alert,Animated, StyleSheet, Text, View, TouchableOpacity, ScrollView,Modal,TextInput } from 'react-native';
+import { Alert,Animated, StyleSheet, Text, Image,View, TouchableOpacity, ScrollView,Modal,TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Ionic from 'react-native-vector-icons/Ionicons';
 import { COLORS } from '../assets/theme/index.js';
@@ -64,13 +64,18 @@ const ShowBill = ({route}) => {
     };
 
     const modalBarcodeRef = useRef('');
+    
     useEffect(() => {
         setIsEditing(false);
         setManualBarcode('');
         const fetchBillItems = async () => {
             if (billid) {
+                console.log(billid);
                 const billItemsData = await getBillItemsByBillId(billid);
+                const billData=await getBillById(billid);
+               
                 setBillItems(billItemsData);
+                // console.log("BillItams", billItemsData);
             } else {
                 console.error('Bill ID is null');
             }
@@ -280,6 +285,7 @@ const updateBillInDB = async (billId, total, billVersion) => {
                 authMode: 'apiKey',
             });
             console.log("Bill updated successfully", response);
+            setIsEditing(false);
         } else {
             console.error("Total amount is null or undefined");
         }
@@ -381,6 +387,27 @@ const getBillItemsByBillIdQuery = /* GraphQL */ `
     } catch (error) {
         console.error('Error fetching bill items:', error);
         return [];
+    }
+};
+
+const getBillById = async (billId) => {
+    console.log("Bill Id",billId);
+    try {
+        const response = await client.graphql({
+            query: getBill,
+            variables: {id:billId} ,
+            filter: {
+                _deleted: {
+                    ne: true
+                }
+            },
+            authMode: 'apiKey'
+        });
+        const billItems = response.data.getBill.items;
+        console.log("Bill",billItems);
+        
+    } catch (error) {
+        console.error('Error fetching bill :', error);
     }
 };
 
@@ -512,14 +539,11 @@ return (
         <ViewShot ref={viewShotRef} style={{ backgroundColor:'white',flex:1}} options={{ format: 'jpg', quality: 0.9, backgroundColor: 'white'}}>
 
         <View style={styles.mainLogo}>
-            <Ionic style={styles.logo} size={90} color={'black'} name='logo-behance' />
-        </View>
-        <View style={styles.mainLogo}>
+            <Image style={styles.logoStyles} source={require("../assets/images/logo1.png")} />
             <Text style={styles.totalBill}>
             {`${storeCurrency || '$'} ${billtotal}`}
             </Text>
         </View>
-
         <View style={styles.columnHeadingContainer}>
             <View style={styles.columnHeading}>
                 <Text style={styles.headingText1}>ITEM</Text>
@@ -579,13 +603,13 @@ return (
                         <Text style={styles.confirmText}>Save Bill</Text>
                     </TouchableOpacity>
                 ) : (
-                    (userRole === 'GENERAL_MANAGER' || userName === billcashier) && (
+                    (userRole === 'GENERAL_MANAGER' ||  userName === billcashier) && (
                         <TouchableOpacity style={styles.confirmButton} onPress={handleAddProduct}>
                             <Text style={styles.confirmText}>Edit Bill</Text>
                         </TouchableOpacity>
                     )
                 )}<TouchableOpacity style={styles.addButton} onPress={captureView}>
-            <Text style={styles.addText}>Share Purchase Order</Text>
+            <Text style={styles.addText}>Share Bill</Text>
         </TouchableOpacity>
                 {isEditing && 
                     <TouchableOpacity style={styles.confirmButton} onPress={handleCancel}>
@@ -709,13 +733,17 @@ const styles = StyleSheet.create({
     mainLogo:{
         flex:0,
         justifyContent:'center',
-        alignItems:'center'
+        alignItems:'center',
     },
+    logoStyles:{
+        height:60,
+        width:45,
+      },
     totalBill:{
         color:COLORS.primary,
         fontSize:30,
         fontFamily:'Poppins-SemiBold',
-        marginTop:15,
+        marginTop:5,
     },
     columnHeadingContainer:{
         flex:0,

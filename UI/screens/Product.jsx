@@ -33,6 +33,7 @@ const client = generateClient();
  const [successMessage, setSuccessMessage] = useState(false);
  const [isEditing, setIsEditing] = useState(false);
  const [selectedImage, setSelectedImage] = useState(null);
+ const userRole = useSelector((state) => state.user.role);
  const pricePlaceholder = `Price in ${storeCurrency || 'Currency'}`;
 
  useEffect(() => {
@@ -73,7 +74,6 @@ const checkBarcodeExists = async (barcode) => {
   }
 };
 useEffect(() => {
-  // If navigating from a screen with product details
   if (route.params?.item) {
     setOriginalBarcode(product.barcode);
     setProductInput({
@@ -90,9 +90,9 @@ useEffect(() => {
       image: product.image,
       _version: product._version,
     });
+    console.log("Product",productInput);
   }
 
-  // If navigating from a screen with category selection
   if (route.params?.categoryId && route.params?.categoryName) {
     setCategoryName(route.params.categoryName);
   }
@@ -235,8 +235,7 @@ useEffect(() => {
 const getImageUrlFromS3 = async (fileKey) => {
   try {
       console.log("file key is here: " + fileKey);
-      
-      // Fetch the signed URL for the uploaded file
+   
       const getUrlResult = await getUrl({
           key: fileKey,
           options: {
@@ -414,17 +413,17 @@ const handleUpdateData = async () => {
     {loading && (
       <View style={styles.loadingContainer}>
       <AnimatedCircularProgress
-  size={120}
-  width={15}
-  fill={100}
-  duration={3000} 
-  delay={0}
-  tintColor={COLORS.secondary}
-  onAnimationComplete={() => console.log('onAnimationComplete')}
-  backgroundColor="#3d5875" />
+        size={120}
+        width={15}
+        fill={100}
+        duration={3000} 
+        delay={0}
+        tintColor={COLORS.secondary}
+        onAnimationComplete={() => console.log('onAnimationComplete')}
+        backgroundColor="#3d5875" 
+      />
     <View style={styles.successMessageContainer}>
       {successMessage ? (  <Text style={styles.loadingText}>Product Updated</Text>):(  <Text style={styles.loadingText}>Updating Product</Text>)}
-    
       {successMessage && <TouchableOpacity
         style={styles.successButton}
         onPress={handleSuccessButtonPress}>
@@ -446,16 +445,16 @@ const handleUpdateData = async () => {
         <View style={styles.listContainer}>
             <ScrollView >
             <View style={styles.cameraContainer}>
-    {!isEditing && product.image && (
-        <Image source={{ uri: productInput.image }} onError={(error) => console.log("Image loading error:")} style={styles.productImage} />
-    )}
-    {isEditing && (
-      
-        <TouchableOpacity style={styles.imageContainer} onPress={handleChoosePhoto}>
-            <Image source={{ uri: productInput.image }} onError={(error) => console.log("Image loading error:")} style={styles.productImage} />
-            <Ionic style={styles.plusImage} size={38} color={COLORS.primary} name='add-circle' />
-        </TouchableOpacity>
-    )}
+              {!isEditing && product.image && (
+                  <Image source={{ uri: productInput.image }} onError={(error) => console.log("Image loading error:")} style={styles.productImage} />
+              )}
+        {isEditing && (
+          
+            <TouchableOpacity style={styles.imageContainer} onPress={handleChoosePhoto}>
+                <Image source={{ uri: productInput.image }} onError={(error) => console.log("Image loading error:")} style={styles.productImage} />
+                <Ionic style={styles.plusImage} size={38} color={COLORS.primary} name='add-circle' />
+            </TouchableOpacity>
+        )}
     {isEditing && (
         <TouchableOpacity>
             <Text style={styles.addPictureText}>change Picture</Text>
@@ -466,7 +465,7 @@ const handleUpdateData = async () => {
                 <View style={styles.formInputContainer}>
                     <View style={styles.formInputWrapper}>
                         <View style={styles.imageContainer}>
-                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='document-outline'/>
+                             <Text style={styles.productHeading}>Name</Text>
                         </View>
                         <View style={styles.inputContainer}>
                          <Controller
@@ -492,7 +491,7 @@ const handleUpdateData = async () => {
                 <View style={styles.formInputContainer}>
                     <View style={styles.formInputWrapper}>
                         <View style={styles.imageContainer}>
-                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='pricetags-outline'/>
+                        <Text style={styles.productHeading}>Barcode</Text>
                         </View>
                         <View style={styles.inputContainer}>
                         <Controller
@@ -518,7 +517,7 @@ const handleUpdateData = async () => {
                 <View style={styles.formInputContainer}>
                     <View style={styles.formInputWrapper}>
                         <View style={styles.imageContainer}>
-                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='hammer-outline'/>
+                        <Text style={styles.productHeading}>Manufacturer</Text>
                         </View>
                         <View style={styles.inputContainer}>
                             <Controller
@@ -542,7 +541,7 @@ const handleUpdateData = async () => {
                   <View style={styles.formInputContainerSelectedCategory}>
                     <View style={styles.formInputWrapper}>
                         <View style={styles.imageContainer}>
-                             <Ionic size={33} color='rgba(180, 180, 180,4)' name ='list-circle-outline'/>
+                        <Text style={styles.productHeading}>Category</Text>
                         </View>
                         <View style={styles.categoryContainer}>
                         <TouchableOpacity style={styles.categoryTextContainer} onPress={()=>navigation.navigate('Categories', { source: 'fromProducts', item: product })}>
@@ -558,7 +557,7 @@ const handleUpdateData = async () => {
   <View style={styles.formInputContainerSelected}>
     <View style={styles.formInputWrapper}>
       <View style={styles.imageContainer}>
-        <Ionic size={33} color='rgba(180, 180, 180,4)' name='list-circle-outline'/>
+      <Text style={styles.productHeading}>Category</Text>
       </View>
       <View style={styles.inputContainer}>
         <Text style={styles.formInput}>
@@ -573,7 +572,7 @@ const handleUpdateData = async () => {
                 <View style={styles.formInputContainer}>
                     <View style={styles.formInputWrapper}>
                         <View style={styles.imageContainer}>
-                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='cash-outline'/>
+                        <Text style={styles.productHeading}>Price</Text>
                         </View>
                         <View style={styles.inputContainer}>
                     <Controller
@@ -599,7 +598,7 @@ const handleUpdateData = async () => {
                 <View style={styles.formInputContainer}>
                     <View style={styles.formInputWrapper}>
                         <View style={styles.imageContainer}>
-                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='albums-outline'/>
+                             <Text style={styles.productHeading}>Warehouse Quantity</Text>
                         </View>
                         <View style={styles.inputContainer}>
                     <Controller
@@ -625,7 +624,7 @@ const handleUpdateData = async () => {
                 <View style={styles.formInputContainer}>
                     <View style={styles.formInputWrapper}>
                         <View style={styles.imageContainer}>
-                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='albums-outline'/>
+                        <Text style={styles.productHeading}>Shelf Quantity</Text>
                         </View>
                         <View style={styles.inputContainer}>
                     <Controller
@@ -651,7 +650,7 @@ const handleUpdateData = async () => {
                 <View style={styles.formInputContainer}>
                     <View style={styles.formInputWrapper}>
                         <View style={styles.imageContainer}>
-                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='stopwatch-outline'/>
+                        <Text style={styles.productHeading}>Shelf Limit</Text>
                         </View>
                         <View style={styles.inputContainer}>
                     <Controller
@@ -678,7 +677,7 @@ const handleUpdateData = async () => {
                 <View style={styles.formInputContainer}>
                     <View style={styles.formInputWrapper}>
                         <View style={styles.imageContainer}>
-                             <Ionic size={32} color='rgba(180, 180, 180,4)' name ='stopwatch-outline'/>
+                        <Text style={styles.productHeading}>Warehouse Limit</Text>
                         </View>
                         <View style={styles.inputContainer}>
                     <Controller
@@ -702,6 +701,8 @@ const handleUpdateData = async () => {
                         </View>
                     </View>
                 </View>
+                {userRole === 'GENERAL_MANAGER' && (
+    <>
                 <View style={styles.saveContainer}>
                     <View style={styles.saveWrapper}>
                     <TouchableOpacity 
@@ -715,6 +716,7 @@ const handleUpdateData = async () => {
                           }
                       }}
                     >
+
     <Text style={styles.resetText}>{isEditing ? 'Save' : 'Edit'}</Text>
 </TouchableOpacity>
 
@@ -726,6 +728,7 @@ const handleUpdateData = async () => {
                       </TouchableOpacity> } 
                     </View>
                 </View>
+                </>)}
             </ScrollView>
         </View>
    </View>
@@ -768,7 +771,8 @@ const styles = StyleSheet.create({
         borderTopRightRadius:30,
         borderTopLeftRadius:30,
         backgroundColor:'white',  
-        zIndex:-1
+        zIndex:-1,
+        paddingHorizontal:10,
     },
   
     cameraContainer:{
@@ -831,7 +835,7 @@ const styles = StyleSheet.create({
   categoryTextContainer:{
     color:'rgba(170, 170, 170,4)',
     width:'100%',
-    alignItems:'flex-start',
+    alignItems:'flex-end',
     
 },
 categoryText:{
@@ -847,7 +851,9 @@ categoryText:{
         fontFamily:'Poppins-Regular',
         justifyContent:'center',
         alignItems:'center',
-        color:'black'
+        textAlign:'right',
+        color:'black',
+       
     },
     formInputSize:{
         flex:1,
@@ -862,7 +868,14 @@ categoryText:{
         flex:0,
         justifyContent:'center',
         alignItems:'center',
-        // paddingVertical:10,
+    },
+    productHeading:{
+      color:'rgba(180, 180, 180,4)',
+      fontSize:18.5,
+      fontFamily:'Poppins-Regular',
+      top:4,
+      justifyContent:'center',
+      alignItems:'center',
     },
     productImage: {
       width: 130,

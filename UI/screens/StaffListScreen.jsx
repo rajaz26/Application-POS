@@ -90,30 +90,27 @@ const getUsersByStoreId = /* GraphQL */ `
       </SafeAreaView>
       <View style={styles.listContainer}>
         <View style={styles.selectedContainer}>
-          <SelectList
-     
-            setSelected={(selectedValue) => {
-              setSelected(selectedValue);
-              console.log("Selected Role: ", selectedValue);
-            }}
-            data={[
-              { key: '1', value: 'CASHIER' },
-              { key: '2', value: 'PURCHASER' },
-              { key: '3', value: 'WAREHOUSE_MANAGER' },
-              { key: '4', value: '' }
-            ]}
-            search={false}
-            
-            onSelect={() => {setValue(selected);
-              console.log("Selected Role: ", selected);
-            }}
-            save="value"
-            placeholder="Select Role"
-            boxStyles={{ borderWidth: 2 }}
-            arrowicon={<Ionic style={{ position: 'absolute', right: 10, top: 14 }} size={26} color='rgba(180, 180, 180,4)' name='chevron-down-outline' />}
-            inputStyles={{ fontSize: 18.5, top: 1, fontFamily: 'Poppins-Regular', color: 'rgba(140, 140, 140,4)' }}
-            dropdownTextStyles={{ color: 'rgba(140, 140, 140,4)' }}
-          />
+        <SelectList
+    setSelected={(selectedValue) => {
+        setSelected(selectedValue || 'ALL');  // Set to 'ALL' if selectedValue is empty or 'ALL'
+        console.log("Selected Role: ", selectedValue);
+    }}
+    data={[
+        { key: '1', value: 'CASHIER' },
+        { key: '2', value: 'PURCHASER' },
+        { key: '3', value: 'WAREHOUSE_MANAGER' },
+        { key: '4', value: 'ALL' }  // Ensure this represents no filtering
+    ]}
+    search={false}
+    onSelect={() => console.log("Selected Role: ", selected)}
+    save="value"
+    placeholder="Select Role"
+    boxStyles={{ borderWidth: 2 }}
+    arrowicon={<Ionic style={{ position: 'absolute', right: 10, top: 14 }} size={26} color='rgba(180, 180, 180,4)' name='chevron-down-outline' />}
+    inputStyles={{ fontSize: 18.5, top: 1, fontFamily: 'Poppins-Regular', color: 'rgba(140, 140, 140,4)' }}
+    dropdownTextStyles={{ color: 'rgba(140, 140, 140,4)' }}
+/>
+
         </View>
         {loading ? (
           <View style={{flex:1,backgroundColor:'white',justifyContent:'center',paddingHorizontal:25}}>
@@ -165,30 +162,29 @@ const getUsersByStoreId = /* GraphQL */ `
        </View>
         ) : (
           <ScrollView>
-            {users.map(user => (
-              !selected || selected === user.role ? (
-                <TouchableOpacity key={user.id} style={styles.billContainer} onPress={() => navigation.navigate('Profile', { userId: user.userId })}>
+          {users.filter(user => !selected || selected === 'ALL' || user.role === selected).map(user => (
+              <TouchableOpacity key={user.id} style={styles.billContainer} onPress={() => navigation.navigate('Profile', { userId: user.userId })}>
                   <Image style={styles.logoStyles} source={user.image ? { uri: user.image } : require("../assets/images/person.jpg")} />
                   <View style={styles.billText}>
-                    <View style={styles.intro}>
-                      <View style={styles.cashierName}>
-                        <Text style={styles.cashierText}>{user.username}</Text>
-                        <Text style={styles.billTime}>Joined: {new Date(user.createdAt).toLocaleDateString()}</Text>
+                      <View style={styles.intro}>
+                          <View style={styles.cashierName}>
+                              <Text style={styles.cashierText}>{user.username}</Text>
+                              <Text style={styles.billTime}>Joined: {new Date(user.createdAt).toLocaleDateString()}</Text>
+                          </View>
                       </View>
-                    </View>
-                    <View>
-                      <View style={styles.billBottomText}>
-                        <TouchableOpacity style={styles.billViewButton} onPress={() => navigation.navigate('Profile', { userId: user.userId })}>
-                          <Ionic size={26} color={COLORS.primary} name='chevron-forward-outline' />
-                        </TouchableOpacity>
+                      <View>
+                          <View style={styles.billBottomText}>
+                              <TouchableOpacity style={styles.billViewButton} onPress={() => navigation.navigate('Profile', { userId: user.userId })}>
+                                  <Ionic size={26} color={COLORS.primary} name='chevron-forward-outline' />
+                              </TouchableOpacity>
+                          </View>
                       </View>
-                    </View>
                   </View>
-                </TouchableOpacity>
-              ) : null
-            ))}
-          </ScrollView>
-        )}
+              </TouchableOpacity>
+          ))}
+      </ScrollView>
+  )}
+        
         <TouchableOpacity style={styles.confirmButton} onPress={handleAddAccount}>
           <Text style={styles.confirmText}>Add Account</Text>
         </TouchableOpacity>

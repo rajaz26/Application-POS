@@ -26,5 +26,14 @@
     "EMAIL"
   ],
   "aws_user_files_s3_bucket": "fypimages234005-zaif",
-  "aws_user_files_s3_bucket_region": "ap-south-1"
+  "aws_user_files_s3_bucket_region": "ap-south-1",
+  "aws_mobile_analytics_app_id": "86bac303675245cda4a5a50c7054f273",
+  "aws_mobile_analytics_app_region": "ap-south-1",
+  "Analytics": {
+    "AWSPinpoint": {
+      "appId": "86bac303675245cda4a5a50c7054f273",
+      "region": "ap-south-1"
+    }
+  },
+  "AWS_SDK_LOAD_CONFIG": "1"
 }

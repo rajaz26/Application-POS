@@ -5,13 +5,14 @@ import Ionic from 'react-native-vector-icons/Ionicons';
 import { COLORS } from '../assets/theme/index.js';
 import { Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native'; 
-// import RNFetchBlob from 'rn-fetch-blob';
 import { BluetoothEscposPrinter } from 'react-native-bluetooth-escpos-printer';
 import { generateClient } from 'aws-amplify/api';
 import { deleteBill, deleteBillItem, updateBill, updateProduct,createNotifications } from '../src/graphql/mutations';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { getProduct, getStore } from '../src/graphql/queries.js';
 import { useSelector } from 'react-redux';
+import Sound from 'react-native-sound';
+import notifee from '@notifee/react-native';
 
 const { width, height } = Dimensions.get('window');
 
@@ -65,7 +66,51 @@ const ConfirmBill = ({route}) => {
       }
     }, [billStatus]);
   
-    const printReceipt = async () => {
+    const showPopupNotification = async (productName,productQuantity) => {
+      console.log("Notification on its way");
+      try {
+        await notifee.requestPermission();
+    
+        const channelId = await notifee.createChannel({
+          id: 'default',
+          name: 'Default Channel',
+        });
+          notifee.displayNotification({
+            title: 'Low Shelf Quantity Alert',
+            body: `${productName} | Shelf quantity: ${productQuantity}`,
+            android: {
+              channelId,
+              pressAction: {
+                id: 'default',
+              },
+            },
+          });
+          Playsound();  
+          setPopupVisible(true);
+        
+      } catch (error) {
+        console.log('Error displaying notification:', error);
+      }
+    };
+    
+    const Playsound = ()=>{
+      var beep = new Sound('paid.mp3', Sound.MAIN_BUNDLE, (error) => {
+        if (error) {
+          console.log('failed to load the sound', error);
+          return;
+        }
+        console.log('duration in seconds: ' + beep.getDuration() + 'number of channels: ' + beep.getNumberOfChannels());
+        beep.play((success) => {
+          if (success) {
+            console.log('successfully finished playing');
+          } else {
+            console.log('playback failed due to audio decoding errors');
+          }
+        });
+      });
+    }
+    
+const printReceipt = async () => {
         setLoading(true);
         try {
             const updateBillInput = {
@@ -135,6 +180,7 @@ const ConfirmBill = ({route}) => {
         }
         
       };
+
       const updateProductShelfQuantity = async () => {
         try {
           for (const product of scannedProducts) {
@@ -143,20 +189,20 @@ const ConfirmBill = ({route}) => {
               variables: { id: product.productId },
               authMode: 'apiKey',
             });
-            console.log("Product Fetched");
           const currentShelfQuantity = currentProductDetails.data.getProduct.shelfQuantity;
           const newShelfQuantity = currentShelfQuantity - product.quantity;
           const updatedProduct= await client.graphql({
               query: updateProduct,
               variables: {
                 input: {
-                  _version:product._version,
-                  id: product.productId,
+                  id: currentProductDetails.data.getProduct.id,
                   shelfQuantity: newShelfQuantity,
+                  _version:currentProductDetails.data.getProduct._version,
                 },
               },
               authMode: 'apiKey',
             });
+            console.log("Updated Product",updatedProduct.data.updateProduct);
             const up=updatedProduct.data.updateProduct;
             if (up && up.shelfQuantity <= up.shelfInventoryLimit) {
               const notificationInput = {
@@ -174,9 +220,19 @@ const ConfirmBill = ({route}) => {
               try {
                 const newNotification = await client.graphql({
                   query: createNotifications,
-                  variables: notificationInput,
+                  variables: { input: {
+                    warehousequanity: up.warehouseQuantity,
+                    shelfquantity: up.shelfQuantity, 
+                    productID: up.id,
+                    productname: up.name, 
+                    isRead: false,
+                    isWarehouseNotification: false, 
+                    isShelfNotification: true,
+                    storeNotificationsId:storeID, 
+                  }},
+                  authMode: 'apiKey',
                 });
-              
+                showPopupNotification(up.name,up.shelfQuantity);
                 console.log('New Notification:', newNotification);
               } catch (error) {
                 console.error('Error creating notification:', error);
@@ -251,8 +307,7 @@ const ConfirmBill = ({route}) => {
         </View>
         <View style={styles.mainLogo}>
     <Text style={styles.totalBill}>{`${storeCurrency || '$'}${totalBillAmount.toFixed(2)}`}</Text>
-   
-</View>
+  </View>
 
         <View style={styles.columnHeadingContainer}>
             <View  style={styles.columnHeading}>

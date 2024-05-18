@@ -389,6 +389,7 @@ export const onCreateUser = /* GraphQL */ `
       userId
       username
       phonenumber
+      password
       image
       role
       idcardimage
@@ -424,6 +425,7 @@ export const onUpdateUser = /* GraphQL */ `
       userId
       username
       phonenumber
+      password
       image
       role
       idcardimage
@@ -459,6 +461,7 @@ export const onDeleteUser = /* GraphQL */ `
       userId
       username
       phonenumber
+      password
       image
       role
       idcardimage
@@ -1014,11 +1017,6 @@ export const onCreatePurchaseOrder = /* GraphQL */ `
       }
       totalAmount
       status
-      purchaseItems {
-        nextToken
-        startedAt
-        __typename
-      }
       createdAt
       updatedAt
       _version
@@ -1058,11 +1056,6 @@ export const onUpdatePurchaseOrder = /* GraphQL */ `
       }
       totalAmount
       status
-      purchaseItems {
-        nextToken
-        startedAt
-        __typename
-      }
       createdAt
       updatedAt
       _version
@@ -1102,11 +1095,6 @@ export const onDeletePurchaseOrder = /* GraphQL */ `
       }
       totalAmount
       status
-      purchaseItems {
-        nextToken
-        startedAt
-        __typename
-      }
       createdAt
       updatedAt
       _version
@@ -1146,6 +1134,7 @@ export const onCreatePurchaseItem = /* GraphQL */ `
       }
       productName
       productPrice
+      productTag
       quantityOrdered
       quantityReceived
       purchaseOrder {
@@ -1170,7 +1159,6 @@ export const onCreatePurchaseItem = /* GraphQL */ `
       _lastChangedAt
       productPurchaseItemsId
       purchaseOrderItemsId
-      purchaseOrderPurchaseItemsId
       __typename
     }
   }
@@ -1204,6 +1192,7 @@ export const onUpdatePurchaseItem = /* GraphQL */ `
       }
       productName
       productPrice
+      productTag
       quantityOrdered
       quantityReceived
       purchaseOrder {
@@ -1228,7 +1217,6 @@ export const onUpdatePurchaseItem = /* GraphQL */ `
       _lastChangedAt
       productPurchaseItemsId
       purchaseOrderItemsId
-      purchaseOrderPurchaseItemsId
       __typename
     }
   }
@@ -1262,6 +1250,7 @@ export const onDeletePurchaseItem = /* GraphQL */ `
       }
       productName
       productPrice
+      productTag
       quantityOrdered
       quantityReceived
       purchaseOrder {
@@ -1286,7 +1275,6 @@ export const onDeletePurchaseItem = /* GraphQL */ `
       _lastChangedAt
       productPurchaseItemsId
       purchaseOrderItemsId
-      purchaseOrderPurchaseItemsId
       __typename
     }
   }

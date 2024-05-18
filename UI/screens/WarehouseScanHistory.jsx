@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, SafeAreaView, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import Ionic from 'react-native-vector-icons/Ionicons';
 import { COLORS } from '../assets/theme/index.js';
-import { useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { generateClient } from 'aws-amplify/api';
 import { listUsers, listWarehouseScans } from '../src/graphql/queries.js';
 import { SelectList } from 'react-native-dropdown-select-list';
@@ -14,12 +14,22 @@ const WarehouseScanHistory = () => {
   const [value, setValue] = useState('');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [scans, setScans] = useState([]);
+  const [filteredScans, setFilteredScans] = useState([]);
   const client = generateClient();
   const storeID = useSelector((state) => state.user.storeId);
-  const formatDate = (dateString) => {
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return new Date(dateString).toLocaleDateString(undefined, options);
-  };
+  // const formatDate = (dateString) => {
+  //   const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  //   return new Date(dateString).toLocaleDateString(undefined, options);
+  // };
+
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (isFocused) {
+      fetchAllScans();
+    }
+  }, [isFocused,storeID]);
 
   const groupScansByDate = (scans) => {
     return scans.reduce((groups, scan) => {
@@ -65,34 +75,48 @@ const WarehouseScanHistory = () => {
 `;
 
 
-  const fetchAllScans = async () => {
-    setLoading(true);
-    try {
-      console.log("WARE");
-      const { data } = await client.graphql({
-        query: getWarehouseScansByStoreId,
-        variables: {  storeId: storeID },
-        filter: {
-            _deleted: {
-                ne: true
-            }
-        },
-        authMode: 'apiKey',
-      });
-      console.log("WARE",data);
-      const { items } = data.listWarehouseScans
-      console.log("WAS",items);
-      const groupedScans = groupScansByDate(data.listWarehouseScans.items);
-      const sortedGroupedScans = Object.entries(groupedScans).sort(
-        (a, b) => new Date(a[0]) - new Date(b[0])
-      ).reduce((acc, [date, scans]) => ({ ...acc, [date]: scans }), {});
-      setUsers(sortedGroupedScans);
-    } catch (error) {
-      console.log('Error fetching scans:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchAllScans = async () => {
+  setLoading(true);
+  try {
+    const { data } = await client.graphql({
+      query: getWarehouseScansByStoreId,
+      variables: { storeId: storeID },
+      authMode: 'apiKey',
+    });
+    const formattedData = formatScans(data.listWarehouseScans.items);
+    setScans(formattedData);
+    setFilteredScans(formattedData);
+  } catch (error) {
+    console.log('Error fetching scans:', error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toISOString().split('T')[0];
+};
+
+const formatDate2 = (dateString) => {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+};
+
+const formatScans = (scans) => {
+  const groupedByDate = scans.reduce((acc, scan) => {
+    const scanDate = formatDate(scan.createdAt);
+    if (!acc[scanDate]) acc[scanDate] = [];
+    acc[scanDate].push(scan);
+    return acc;
+  }, {});
+
+  const sortedDates = Object.entries(groupedByDate).sort((a, b) => new Date(b[0]) - new Date(a[0]));
+  return sortedDates.map(([date, scans]) => ({
+    date,
+    items: scans.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+  }));
+};
 
   useEffect(() => {
     fetchAllScans();
@@ -183,13 +207,12 @@ const WarehouseScanHistory = () => {
             justifyContent: 'center', 
      
           }}>
-              {Object.entries(users).map(([date, scans]) => {
-  return (
-    <View key={date}>
+             {filteredScans.map((day, index) => (
+          <View key={index}>
             <View style={styles.dateContainer}>
-                <Text style={styles.dateText}>{date}</Text>
+                <Text style={styles.dateText}>{formatDate2(day.date)}</Text>
               </View>
-      {scans.map(scan => (
+              {day.items.map((scan, id) => (
         <TouchableOpacity key={scan.id} style={styles.billContainer}>
           <View style={styles.billText}>
             <View style={styles.intro}>
@@ -209,9 +232,8 @@ const WarehouseScanHistory = () => {
         </TouchableOpacity>
       ))}
     </View>
-  );
-})}
 
+             ))}
 
           </ScrollView>
           

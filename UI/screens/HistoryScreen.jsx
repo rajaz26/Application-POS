@@ -84,6 +84,64 @@ const HistoryScreen = ({ route }) => {
     }
   };
 
+  const formatBillsData = (bills) => {
+    let groupedByDate = bills.reduce((acc, bill) => {
+      const billDate = new Date(bill.createdAt);
+      const formattedDate = formatDateToDDMMYYYY(bill.createdAt);
+      if (!acc[formattedDate]) {
+        acc[formattedDate] = [];
+      }
+      acc[formattedDate].push({
+        ...bill,
+        rawDate: billDate // Storing raw date for sorting
+      });
+      return acc;
+    }, {});
+  
+    // Sort bills by date in descending order, considering year, month, and day
+    let formattedBills = Object.entries(groupedByDate)
+      .sort((a, b) => {
+        // Split the date strings to compare year, month, and day individually
+        const datePartsA = a[0].split('-').map(part => parseInt(part, 10));
+        const datePartsB = b[0].split('-').map(part => parseInt(part, 10));
+        // Compare year, month, and day in that order
+        if (datePartsB[2] !== datePartsA[2]) return datePartsB[2] - datePartsA[2]; // Year comparison
+        if (datePartsB[1] !== datePartsA[1]) return datePartsB[1] - datePartsA[1]; // Month comparison
+        return datePartsB[0] - datePartsA[0]; // Day comparison
+      })
+      .map(([date, bills]) => {
+        // Sort bills within the same date by time in descending order
+        const sortedBills = bills.sort((a, b) => b.rawDate - a.rawDate);
+        return {
+          date,
+          items: sortedBills.map(bill => ({
+            cashier: bill.cashierName,
+            total: bill.totalAmount,
+            id: bill.id,
+            version: bill._version,
+            time: formatTime(bill.rawDate)
+          }))
+        };
+      });
+  
+    return formattedBills;
+  };
+  
+  const formatDateToDDMMYYYY = (dateString) => {
+    const date = new Date(dateString);
+    return `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
+  };
+  
+  const formatTime = (date) => {
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // Adjust hour for AM/PM
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    return `${hours}:${minutes} ${ampm}`;
+  };
+  
   useEffect(() => {
     if (route.params?.bills) {
       const formattedData = formatBillsData(route.params.bills);
@@ -92,49 +150,7 @@ const HistoryScreen = ({ route }) => {
       fetchAllBills();
     }
   }, [storeID]);
-
-  const formatDateToDDMMYYYY = (dateString) => {
-    const date = new Date(dateString);
-    return `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
-  };
-
-  const formatBillsData = (bills) => {
-    let groupedByDate = bills.reduce((acc, bill) => {
-      const billDate = formatDateToDDMMYYYY(bill.createdAt); // Use the new format here
-      if (!acc[billDate]) acc[billDate] = [];
-      acc[billDate].push({
-        ...bill,
-        formattedDate: billDate, 
-      });
-      return acc;
-    }, {});
-  
-    
-    let formattedBills = Object.entries(groupedByDate).map(([date, bills]) => ({
-      date: date,
-      items: bills.map(bill => ({
-        cashier: bill.cashierName,
-        total: bill.totalAmount,
-        id: bill.id,
-        version: bill._version,
-        time: formatTime(new Date(bill.createdAt)), // Assuming formatTime function exists
-      })).sort((a, b) => new Date('1970/01/01 ' + a.time) - new Date('1970/01/01 ' + b.time)), // Sorting items by time if necessary
-    })).sort((a, b) => new Date(b.date) - new Date(a.date)); // This sort might need adjustment based on your date format
-  
-    return formattedBills;
-  };
-  
-  const formatTime = (date) => {
-    let hours = date.getHours();
-    let minutes = date.getMinutes();
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
-    hours = hours ? hours : 12;
-    minutes = minutes < 10 ? '0' + minutes : minutes;
-    const strTime = hours + ':' + minutes + ' ' + ampm;
-    return strTime;
-  };
-    
+   
   const getMonthName = (monthIndex) => {
     const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     return monthNames[monthIndex];
@@ -247,7 +263,7 @@ const HistoryScreen = ({ route }) => {
               {bill.items.map((item, itemIndex) => (
                 <View style={styles.billSection} key={itemIndex}>
                   <View style={styles.billContainer}>
-                    <Image style={styles.logoStyles} source={require("../assets/images/logo7.png")} />
+                    <Image style={styles.logoStyles} source={require("../assets/images/logo1.png")} />
                     <View style={styles.billText}>
                       <View style={styles.cashierName}>
                         <Text style={styles.cashierText}>Cashier: {item.cashier}</Text>
@@ -301,6 +317,7 @@ const styles = StyleSheet.create({
     arrowBackIcon: {
         position: 'absolute',
         left: 8,
+        padding:20,
     },
     accountText: {
         fontSize: 20,
@@ -376,7 +393,7 @@ const styles = StyleSheet.create({
         fontSize: 13,
     },
     logoStyles: {
-        height: 35,
+        height: 45,
         width: 35,
     },
     optionContainer: {

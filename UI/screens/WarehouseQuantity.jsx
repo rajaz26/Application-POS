@@ -5,6 +5,7 @@ import { listProducts, listWarehouseScans } from '../src/graphql/queries.js';
 import { COLORS } from '../assets/theme/index.js';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import { useSelector } from 'react-redux';
+import { useIsFocused } from '@react-navigation/native';
 
 const  WarehouseQuantity = () => {
   const [products, setProducts] = useState([]);
@@ -43,27 +44,38 @@ const  WarehouseQuantity = () => {
   }
 `;
 
+const isFocused = useIsFocused();
 
-  const fetchAllProducts = async () => {
-    setLoading(true);
-    try {
-      const { data } = await client.graphql({
-        query: getProductsByStoreIdQuery,
-        variables: {  storeId: storeID },
-        filter: {
-            _deleted: {
-                ne: true
-            }
-        },
-        authMode: 'apiKey',
-      })
-      setProducts(data.listProducts.items);
-    } catch (error) {
-      console.log('Error fetching products:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+useEffect(() => {
+  if (isFocused) {
+    fetchAllProducts();
+  }
+}, [isFocused,storeID]);
+
+const fetchAllProducts = async () => {
+  setLoading(true);
+  try {
+    const { data } = await client.graphql({
+      query: getProductsByStoreIdQuery,
+      variables: { storeId: storeID },
+      filter: {
+        _deleted: {
+            ne: true
+        }
+      },
+      authMode: 'apiKey',
+    });
+
+    const sortedProducts = data.listProducts.items.sort((a, b) => a.warehouseQuantity - b.warehouseQuantity);
+
+    setProducts(sortedProducts);
+  } catch (error) {
+    console.log('Error fetching products:', error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   useEffect(() => {
     fetchAllProducts();

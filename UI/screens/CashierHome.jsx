@@ -20,6 +20,7 @@ const CashierHome = () => {
   const userRole = useSelector((state) => state.user.role);
   const storeID = useSelector((state) => state.user.storeId);
   const [loading, setLoading] = useState(false); 
+  const [isLoading, setIsLoading] = useState(false); 
   const [bills, setBills] = useState([]);
   const [latestBill, setLatestBill] = useState(null); 
   const navigation = useNavigation();
@@ -105,9 +106,6 @@ useEffect(() => {
   }
 }, [isFocused,storeID]);
 
-// useEffect(() => {
-//   fetchAllBills();
-// }, [storeID]);
 
 const listBillsByStoreAndStatus = /* GraphQL */ `
   query ListBillsByStoreAndStatus($storeId: ID!, $status: BillStatus!, $limit: Int, $nextToken: String) {
@@ -146,6 +144,7 @@ const listBillsByStoreAndStatus = /* GraphQL */ `
 `;
 
   const fetchAllBills = async () => {
+    setIsLoading(true); 
     try {
       const { data } = await client.graphql({
         query: listBillsByStoreAndStatus,
@@ -165,8 +164,7 @@ const listBillsByStoreAndStatus = /* GraphQL */ `
       const billsWithDetails = await Promise.all(items.map(async (bill) => {
         // const billItems = await fetchBillItems(bill.id);
         let cashierDetails = { cashierUsername: 'Unknown', cashierRole: 'Unknown' };
-  
-        // Fetch cashier details for each bill, if cashier ID is present
+
         if (bill.cashier) {
           const cashierData = await fetchUserByUserId(bill.cashier);
           if (cashierData) {
@@ -182,6 +180,8 @@ const listBillsByStoreAndStatus = /* GraphQL */ `
       setBills(billsWithDetails);
     } catch (error) {
       console.log('Error fetching bills:', error);
+    }finally {
+      setIsLoading(false); 
     }
   };
   const fetchBillItems = async (billId) => {
@@ -268,6 +268,8 @@ const listBillsByStoreAndStatus = /* GraphQL */ `
 
 };
 
+
+
   return (
     <View style={{flex:1,backgroundColor:COLORS.primary}}>
       {loading && 
@@ -314,10 +316,12 @@ const listBillsByStoreAndStatus = /* GraphQL */ `
                     <Ionic name="person" size={25} color={COLORS.primary} style={styles.homeIcon} />
                     <Text style={styles.iconText}>Profile</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('Bluetooth')}>
-                    <Ionic name="bluetooth" size={25} color={COLORS.primary} style={styles.homeIcon} />
-                    <Text style={styles.iconText}>Bluetooth</Text>
-                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('ShelfQuantity')}>
+                
+                  
+                <Ionic name="library-outline" size={25} color={COLORS.primary} style={styles.homeIcon} />
+                <Text style={styles.iconText}>Shelf</Text>
+              </TouchableOpacity>
                 </View>
               
                 <View style={[styles.icons,styles.lastIcons]}>
@@ -435,11 +439,21 @@ const listBillsByStoreAndStatus = /* GraphQL */ `
   </View>
 ) : (
   <View style={styles.billSection}>
-    <View style={styles.noDeviceContainer}>
-      <Text style={styles.noDeviceText}>Fetching the last bill</Text>
-      <Text style={styles.noDeviceText}>. . . . . . . . . . . . . .</Text>
+  <View style={styles.billContainer}>
+  
+    
+    <Image style={styles.logoStyles} source={require("../assets/images/logo1.png")} />
+   
+    <View style={styles.billText}>
+      <View style={styles.cashierName}>
+        <Text style={styles.cashierText}>{isLoading ? 'Fetching...' : 'No Bills Created'}</Text>
+      </View>
+      <View style={styles.billBottomText}>
+      
+      </View>
     </View>
   </View>
+</View>
 )}
 </View>
             </View>

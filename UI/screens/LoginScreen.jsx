@@ -6,14 +6,8 @@ import { COLORS } from '../assets/theme/index.js';
 import Animated, { FadeIn, Easing, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import { useForm, Controller } from 'react-hook-form';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-import { signIn,getCurrentUser } from 'aws-amplify/auth';
+import { signIn,getCurrentUser, resetPassword } from 'aws-amplify/auth';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
-// import config from '../src/aws-exports.js';
-// Amplify.configure(config);
-import {
-  withAuthenticator,
-  useAuthenticator
-} from '@aws-amplify/ui-react-native';
 import { signOut } from 'aws-amplify/auth';
 import { setUserDetails } from '../store/userSlice.js';
 import { useDispatch } from 'react-redux';
@@ -25,7 +19,9 @@ const LoginScreen = () => {
   const [loading, setLoading] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
+  const [username,setUsername]=useState('');
   const client = generateClient();
+
 const handleSignOut = async () => {
   console.log('signed out')
   try {
@@ -37,7 +33,6 @@ const handleSignOut = async () => {
 }
 const toggleShowPassword = () => { 
   setShowPassword(!showPassword); 
-  console.log(showPassword);
 }; 
 const userByIdQuery = /* GraphQL */ `
 query UserById($userId: ID!) {
@@ -72,80 +67,214 @@ query UserById($userId: ID!) {
   }
 }
 `;
-
-  const onSubmit = async (data) => {
-    Keyboard.dismiss();
-    if(loading){
-      return;
+const UserByUsername = /* GraphQL */ `
+query UserByUsername($username: String!) {
+  userByName(username: $username) {
+    items {
+      id
+      userId
+      username
+      phonenumber
+      image
+      role
+      idcardimage
+      store {
+        id
+        name
+        currency
+        address
+        contact
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        __typename
+      }
+      bills
+      purchaseOrders
+      createdAt
+      updatedAt
+      _version
+      _deleted
+      _lastChangedAt
+      storeUsersId
+      __typename
     }
-    setLoading(true);
-    console.log('Data:', data);
-    const username='RajaZain'
-    console.log('username:', username);
-    try {
-      console.log('Data:', data);
-      const username=data.username
-      const password=data.password
-      const user = await signIn({
-          username,password
-      });
-      console.log('Login success', user);
-      reset();
-      console.log(data);
-       const authUser = await getCurrentUser({bypassCache: true});
-       const idUser=authUser.userId;
-        console.log('User just logged in',idUser);
-        const userData  = await client.graphql({
-          query: userByIdQuery,
-          variables: { userId: idUser },
-          authMode: 'apiKey',
-        });
-        
-        const userDetails = userData.data.userById.items;
-        console.log("DETAILS",userDetails);
-        if (userDetails && userDetails.length > 0) {
-          const userDetail = userDetails[0]; // Access the first user detail since userDetails is an array
-        
-          console.log("SETUP",
-            userDetail.userId, userDetail.username, userDetail.role, userDetail.storeUsersId, userDetail.store.name);
-        
-         
-          dispatch(setUserDetails({
-            userId: userDetail.userId,
-            username: userDetail.username,
-            role: userDetail.role,
-            storeId: userDetail.storeUsersId,
-            storeName: userDetail.store.name, 
-          }));
-         console.log("Dispatch Done"); 
-        }
-        
-    setLoading(false);
+    nextToken
+    __typename
+  }
+}
+
+`;
+
+const onSubmit = async (data) => {
+  Keyboard.dismiss();
+  if (loading) {
+    return;
+  }
+  setLoading(true);
+
+  const trimmedUsername = data.username.trim();
   
-     
-    } catch (error) {
-      console.error('Login error has occurred', error);
-      Alert.alert('Login Error', error.message);
-      setLoading(false);
-    }
-    setLoading(false);
-  };
+  console.log('Data:', data);
+  console.log('Trimmed Username:', trimmedUsername);
+  
+  const username = trimmedUsername;
+  
+  try {
+    const password = data.password;
+    const user = await signIn({
+      username,
+      password
+    });
+    console.log('Login success', user);
+    reset();
 
-  return (
+    const authUser = await getCurrentUser({
+      bypassCache: true
+    });
+    const idUser = authUser.userId;
+    console.log('User just logged in', idUser);
+    const userData = await client.graphql({
+      query: userByIdQuery,
+      variables: {
+        userId: idUser
+      },
+      authMode: 'apiKey',
+    });
+
+    const userDetails = userData.data.userById.items;
+    console.log("DETAILS", userDetails);
+    if (userDetails && userDetails.length > 0) {
+      const userDetail = userDetails[0];
+
+      console.log("SETUP",
+        userDetail.userId, userDetail.username, userDetail.role, userDetail.storeUsersId, userDetail.store.name);
+
+
+      dispatch(setUserDetails({
+        userId: userDetail.userId,
+        username: userDetail.username,
+        role: userDetail.role,
+        storeId: userDetail.storeUsersId,
+        storeName: userDetail.store.name,
+      }));
+      console.log("Dispatch Done");
+    }
+
+    setLoading(false);
+
+
+  } catch (error) {
+    console.error('Login error has occurred', error);
+    Alert.alert('Login Error', error.message);
+    setLoading(false);
+  }
+};
+
+// const updateUser = async (username) => {
+//   const trimmedUsername = username.trim();
+//   try {
+//     console.log("User",trimmedUsername);
+//     const response = await client.graphql({
+//       query: UserByUsername,
+//       variables: { username: trimmedUsername },
+//       authMode: 'apiKey',
+//     });
+//     if (response.data.userByName.items.length > 0) {
+//       const user = response.data.userByName.items[0];
+//       console.log('User ID:', user.id);
+//     } else {
+//       console.log('No user found with that username');
+//     }
+//   } catch (error) {
+//     console.error(error);
+//   }
+//   try {
+//       const response = await client.graphql({
+//         query: updateUser,
+//         variables: { input: userInput },
+//         authMode: 'apiKey',
+//       });
+//       console.log('User updated:', response.data.updateUser);
+//       setUser((prevState) => ({
+//         ...prevState,
+//         ...response.data.updateUser,
+//         originalProfileImage: newProfileImage,
+//         originalIdCardImage: newIdCardImage,
+//       }));
+//       Alert.alert('Profile updated successfully!');
+//       setEditing(false);
+//     } catch (error) {
+//       console.error('Error updating user:', error);
+//       Alert.alert('Failed to update profile.');
+//     }
+// }
+
+
+const handleForgotPassword = async (username) => {
+  if (!username) {
+    console.log(username);
+    Alert.alert("Input Required", "Please enter your username to receive reset instructions.");
+    return;
+  }
+  
+  const trimmedUsername = username.trim();
+  setLoading(true);
+  try {
+    handleResetPassword(trimmedUsername);
+    Alert.alert("General Manager's Email", "A password reset code has been sent to your GM's email.");
+    setLoading(false);
+    navigation.navigate('ResetPassword', { username: trimmedUsername });
+  } catch (error) {
+    Alert.alert(`Reset Failed ${trimmedUsername}`, error.message);
+    setLoading(false);
+  }
+};
+async function handleResetPassword(username) {
+  try {
+    const output = await resetPassword({ username });
+    handleResetPasswordNextSteps(output);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+function handleResetPasswordNextSteps(output) {
+  const { nextStep } = output;
+  switch (nextStep.resetPasswordStep) {
+    case 'CONFIRM_RESET_PASSWORD_WITH_CODE':
+      const codeDeliveryDetails = nextStep.codeDeliveryDetails;
+      console.log(
+        `Confirmation code was sent to ${codeDeliveryDetails.deliveryMedium}`
+      );
+      navigation.navigate('ResetPassword', {
+        username: username,
+      });
+      break;
+    case 'DONE':
+      console.log('Successfully reset password.');
+      break;
+  }
+}
+
+return (
     <View style={styles.container}>
       {loading && (
       <View style={styles.loadingContainer}>
       <AnimatedCircularProgress
-  size={120}
-  width={15}
-  fill={100}
-  prefill={0} 
-  duration={3000} 
-  delay={0}
-  easing={Easing.inOut(Easing.ease)} 
-  tintColor={COLORS.secondary}
-  onAnimationComplete={() => console.log('onAnimationComplete')}
-  backgroundColor="#3d5875" />
+        size={120}
+        width={15}
+        fill={100}
+        prefill={0} 
+        duration={3000} 
+        delay={0}
+        easing={Easing.inOut(Easing.ease)} 
+        tintColor={COLORS.secondary}
+        onAnimationComplete={() => console.log('onAnimationComplete')}
+        backgroundColor="#3d5875" 
+  />
     <Text style={styles.loadingText}>Logging In</Text>
     </View>
      )}
@@ -165,16 +294,17 @@ query UserById($userId: ID!) {
           <Controller
             control={control}
             rules={{ required: true }}
-            render={({ field }) => <TextInput style={styles.formInput} onChangeText={field.onChange} value={field.value} />}
+            render={({ field }) => <TextInput style={styles.formInput}  onChangeText={(text) => {
+              field.onChange(text); 
+              setUsername(text);  
+            }} value={field.value} />}
             name="username"
             defaultValue=""
           />
           {errors.username && <Text style={{ color: 'red' }}>This field is required</Text>}
-
           <Text style={styles.formText}>Password</Text>
           <View style={styles.showPassword}>
 
-          
           <Controller
             control={control}
             rules={{ required: true }}
@@ -188,40 +318,39 @@ query UserById($userId: ID!) {
             )}
             name="password"
             defaultValue=""
-            // secureTextEntry={!showPassword}
           />
-          <TouchableOpacity style={styles.showPasswordButton} onPress={toggleShowPassword} >
+            <TouchableOpacity style={styles.showPasswordButton} onPress={toggleShowPassword} >
               <Ionic size={24} color='black' name={showPassword ? 'eye-off-outline' : 'eye-outline'} />
             </TouchableOpacity>
-            </View>
+            
+          </View>
           {errors.password && <Text style={{ color: 'red' }}>This field is required</Text>}
+        </View>
+         <View style={styles.noAccountContainer2}>
+          <TouchableOpacity onPress={()=>handleForgotPassword(username)}> 
+            <Text
+              style={{
+                color: '#ffc200',
+                marginLeft: 5,
+                fontWeight: '500',
+                fontFamily: 'Poppins-Medium',
+                fontSize: 13,
+              }}>
+              Forgot Password
+            </Text>
+          </TouchableOpacity>
         </View>
         <View style={styles.loginButtonContainer}>
           <TouchableOpacity style={styles.loginButton} onPress={handleSubmit(onSubmit)}>
             <Text style={styles.loginText}>{loading ? 'Loading':'Login'}</Text>
           </TouchableOpacity>
         </View>
-        {/* <View style={styles.orContainer}>
-          <Text style={styles.orText}>Or</Text>
-        </View>
-        <View style={styles.logosContainer}>
-          <TouchableOpacity style={styles.socialIcons}>
-            <Image style={styles.icon} source={require('../assets/icons/google.png')} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialIcons}>
-            <Image style={styles.icon} source={require('../assets/icons/apple.png')} />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialIcons}>
-            <Image style={styles.icon} source={require('../assets/icons/facebook.png')} />
-          </TouchableOpacity>
-        </View> */}
         <View style={styles.noAccountContainer}>
           <Text style={{ color: 'black', fontFamily: 'Poppins-Regular', fontSize: 13 }}>
             Don't have an account?
           </Text>
           <View>
-  </View>
-          {/* <TouchableOpacity onPress={() => navigation.navigate('SignUp')}> */}
+        </View>
           <TouchableOpacity onPress={() => navigation.navigate('SignUp') }> 
             <Text
               style={{
@@ -235,17 +364,6 @@ query UserById($userId: ID!) {
               Sign Up
             </Text>
           </TouchableOpacity>
-          {/* <TouchableOpacity onClick={handleSignOut}> <Text
-              style={{
-                color: '#ffc200',
-                marginLeft: 5,
-                fontWeight: '500',
-                fontFamily: 'Poppins-Medium',
-                fontSize: 13,
-              }}
-            >
-              Sign Out
-            </Text></TouchableOpacity> */}
         </View>
       </Animated.View>
     </View>
@@ -297,11 +415,11 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 50,
     borderTopLeftRadius: 50,
     zIndex:-1,
+    
   },
   form: {
     paddingTop: 30,
     paddingHorizontal: 30,
-    paddingBottom: 20,
   },
   formText: {
     color: 'black',
@@ -322,7 +440,6 @@ const styles = StyleSheet.create({
     height: 45,
     backgroundColor: 'rgba(180, 180, 180,0.4)',
     borderRadius: 10,
-    marginBottom: 22,
     paddingLeft: 10,
     bottom: 3,
     color: 'black',
@@ -336,9 +453,7 @@ const styles = StyleSheet.create({
     right:10,
     top:8,
    },
-  passwordInput: {
-    marginBottom: 15,
-  },
+
   loginButtonContainer: {
     flex: 0,
     alignItems: 'center',
@@ -389,5 +504,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop:20,
+  },
+  noAccountContainer2: {
+    flexDirection: 'row',
+    justifyContent:'flex-end',
+    paddingHorizontal: 30,
+    marginVertical: 10,
   },
 });

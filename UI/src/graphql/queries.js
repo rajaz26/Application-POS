@@ -313,6 +313,7 @@ export const getUser = /* GraphQL */ `
       userId
       username
       phonenumber
+      password
       image
       role
       idcardimage
@@ -353,6 +354,7 @@ export const listUsers = /* GraphQL */ `
         userId
         username
         phonenumber
+        password
         image
         role
         idcardimage
@@ -390,6 +392,7 @@ export const syncUsers = /* GraphQL */ `
         userId
         username
         phonenumber
+        password
         image
         role
         idcardimage
@@ -804,11 +807,6 @@ export const getPurchaseOrder = /* GraphQL */ `
       }
       totalAmount
       status
-      purchaseItems {
-        nextToken
-        startedAt
-        __typename
-      }
       createdAt
       updatedAt
       _version
@@ -908,6 +906,7 @@ export const getPurchaseItem = /* GraphQL */ `
       }
       productName
       productPrice
+      productTag
       quantityOrdered
       quantityReceived
       purchaseOrder {
@@ -932,7 +931,6 @@ export const getPurchaseItem = /* GraphQL */ `
       _lastChangedAt
       productPurchaseItemsId
       purchaseOrderItemsId
-      purchaseOrderPurchaseItemsId
       __typename
     }
   }
@@ -948,6 +946,7 @@ export const listPurchaseItems = /* GraphQL */ `
         id
         productName
         productPrice
+        productTag
         quantityOrdered
         quantityReceived
         createdAt
@@ -957,7 +956,6 @@ export const listPurchaseItems = /* GraphQL */ `
         _lastChangedAt
         productPurchaseItemsId
         purchaseOrderItemsId
-        purchaseOrderPurchaseItemsId
         __typename
       }
       nextToken
@@ -983,6 +981,7 @@ export const syncPurchaseItems = /* GraphQL */ `
         id
         productName
         productPrice
+        productTag
         quantityOrdered
         quantityReceived
         createdAt
@@ -992,7 +991,6 @@ export const syncPurchaseItems = /* GraphQL */ `
         _lastChangedAt
         productPurchaseItemsId
         purchaseOrderItemsId
-        purchaseOrderPurchaseItemsId
         __typename
       }
       nextToken
@@ -1153,6 +1151,49 @@ export const userById = /* GraphQL */ `
         userId
         username
         phonenumber
+        password
+        image
+        role
+        idcardimage
+        bills
+        purchaseOrders
+        createdAt
+        updatedAt
+        _version
+        _deleted
+        _lastChangedAt
+        storeUsersId
+        __typename
+      }
+      nextToken
+      startedAt
+      __typename
+    }
+  }
+`;
+export const userByName = /* GraphQL */ `
+  query UserByName(
+    $username: String!
+    $id: ModelIDKeyConditionInput
+    $sortDirection: ModelSortDirection
+    $filter: ModelUserFilterInput
+    $limit: Int
+    $nextToken: String
+  ) {
+    userByName(
+      username: $username
+      id: $id
+      sortDirection: $sortDirection
+      filter: $filter
+      limit: $limit
+      nextToken: $nextToken
+    ) {
+      items {
+        id
+        userId
+        username
+        phonenumber
+        password
         image
         role
         idcardimage

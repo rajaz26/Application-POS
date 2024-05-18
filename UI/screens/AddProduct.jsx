@@ -172,6 +172,7 @@ const handleLoading = () => {
     setLoading(false)
     setSuccessMessage(false);
     reset(); 
+    navigation.navigate("ProductsList")
   }
 
   const checkBarcodeExists = async (barcode) => {
@@ -266,12 +267,13 @@ const handleLoading = () => {
     {loading && (
       <View style={styles.loadingContainer}>
       <AnimatedCircularProgress
-  size={120}
-  width={15}
-  fill={100}
-  tintColor={COLORS.secondary}
-  onAnimationComplete={() => console.log('onAnimationComplete')}
-  backgroundColor="#3d5875" />
+        size={120}
+        width={15}
+        duration={2200} 
+        fill={100}
+        tintColor={COLORS.secondary}
+        onAnimationComplete={() => console.log('onAnimationComplete')}
+        backgroundColor="#3d5875" />
  {!successMessage ? (
     <Text style={styles.loadingText}>Adding Product</Text>
   ) : (
@@ -312,7 +314,7 @@ const handleLoading = () => {
         )}
           {/* <Ionic style={styles.plusImage} size={38} color={COLORS.primary} name='add-circle'/> */}
     </TouchableOpacity>
-    <TouchableOpacity>
+    <TouchableOpacity onPress={()=>handleChoosePhoto()}>
         <Text style={styles.addPictureText}>Add Picture</Text>
     </TouchableOpacity>
 </View>

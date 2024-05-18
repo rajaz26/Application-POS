@@ -1,4 +1,10 @@
 {
+  "analytics": {
+    "retailfyp": {
+      "providerPlugin": "awscloudformation",
+      "service": "Pinpoint"
+    }
+  },
   "api": {
     "retailfyp": {
       "dependsOn": [],

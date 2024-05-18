@@ -12,5 +12,5 @@ export const store = configureStore({
     bluetooth: bluetoothReducer,
     currency: currencySlice,  
   },
-  middleware: (getDefaultMiddleware) => [...getDefaultMiddleware(), logger],
+  middleware: (getDefaultMiddleware) => [...getDefaultMiddleware()],
 });

@@ -131,10 +131,6 @@
           {
             "AttributeName": "purchaseOrderItemsId",
             "AttributeType": "S"
-          },
-          {
-            "AttributeName": "purchaseOrderPurchaseItemsId",
-            "AttributeType": "S"
           }
         ],
         "BillingMode": {
@@ -180,34 +176,6 @@
             "KeySchema": [
               {
                 "AttributeName": "purchaseOrderItemsId",
-                "KeyType": "HASH"
-              }
-            ],
-            "Projection": {
-              "ProjectionType": "ALL"
-            },
-            "ProvisionedThroughput": {
-              "Fn::If": [
-                "ShouldUsePayPerRequestBilling",
-                {
-                  "Ref": "AWS::NoValue"
-                },
-                {
-                  "ReadCapacityUnits": {
-                    "Ref": "DynamoDBModelTableReadIOPS"
-                  },
-                  "WriteCapacityUnits": {
-                    "Ref": "DynamoDBModelTableWriteIOPS"
-                  }
-                }
-              ]
-            }
-          },
-          {
-            "IndexName": "gsi-PurchaseOrder.purchaseItems",
-            "KeySchema": [
-              {
-                "AttributeName": "purchaseOrderPurchaseItemsId",
                 "KeyType": "HASH"
               }
             ],

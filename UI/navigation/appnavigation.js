@@ -53,11 +53,12 @@ import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 import Loading from "../screens/Loading";
 import ShowBill from "../screens/ShowBill";
 import ScanPurchaseOrder from "../screens/ScanPurchaseOrder";
-import ScanPurchaseOrder2 from "../screens/ScanPurchaseOrder2";
 import WarehouseScanHistory from "../screens/WarehouseScanHistory";
 import Reports from "../screens/Reports";
 import WarehouseQuantity from "../screens/WarehouseQuantity";
 import Store from "../screens/Store";
+import ResetPassword from "../screens/ResetPassword";
+import ShelfQuantity from "../screens/ShelfQuantity";
 const Drawer = createDrawerNavigator();
 const GeneralManagerStack = createStackNavigator();
 const WarehouseManagerStack = createStackNavigator();
@@ -80,6 +81,7 @@ function GeneralManagerStackNavigator() {
       <GeneralManagerStack.Screen name="Product" component={Product} />
       <GeneralManagerStack.Screen name="Notifications" component={Notifications} />
       <GeneralManagerStack.Screen name="PurchaseHistory" component={PurchaseHistory} />
+      <GeneralManagerStack.Screen name="PurchaseOrder" component={PurchaseOrder} />
       <GeneralManagerStack.Screen name="AddAccount" component={AddAccount} />
       <GeneralManagerStack.Screen name="ConfirmSignUp2" component={ConfirmSignUp2} />
       <GeneralManagerStack.Screen name="Categories" component={Categories} />
@@ -109,6 +111,7 @@ function CashierStackNavigator() {
       <CashierStack.Screen name="Scan" component={Scan} />
       <CashierStack.Screen name="Settings" component={SettingsScreen} />
       <CashierStack.Screen name= "ConfirmBill" component={ConfirmBill} />
+      <CashierStack.Screen name="ShelfQuantity" component={ShelfQuantity} />
     </CashierStack.Navigator>
   );
 }
@@ -131,7 +134,8 @@ function WarehouseManagerStackNavigator() {
       <WarehouseManagerStack.Screen name="WarehouseScan" component={WarehouseScanHistory} />
       <WarehouseManagerStack.Screen name="Settings" component={SettingsScreen} />
       <WarehouseManagerStack.Screen name="WarehouseQuantity" component={WarehouseQuantity} />
-      <WarehouseManagerStack.Screen name="Bluetooth" component={BluetoothConnectivity} />
+      <WarehouseManagerStack.Screen name="ShelfQuantity" component={ShelfQuantity} />
+
     </WarehouseManagerStack.Navigator>
   );
 }
@@ -154,7 +158,7 @@ function PurchaserStackNavigator() {
       <PurchaserStack.Screen name="UploadPurchase" component={UploadPurchase} />
       <PurchaserStack.Screen name="PurchaseOrder" component={PurchaseOrder} />
       <PurchaserStack.Screen name="ScanPurchaseOrder" component={ScanPurchaseOrder} />
-      <PurchaserStack.Screen name="ScanPurchaseOrder2" component={ScanPurchaseOrder2} />
+      <PurchaserStack.Screen name="WarehouseQuantity" component={WarehouseQuantity} />
       <PurchaserStack.Screen name="Bluetooth" component={BluetoothConnectivity} />
     </PurchaserStack.Navigator>
   );
@@ -273,7 +277,7 @@ useEffect(() => {
 
   return (
     <NavigationContainer>
-      <Drawer.Navigator drawerContent={props => <CustomDrawer {...props} />} screenOptions={{ headerShown: false }} >
+      <Drawer.Navigator drawerContent={props => <CustomDrawer {...props} />} screenOptions={{ headerShown: false, swipeEnabled:false }} >
         {user ? (
           <>
         {userRole === 'GENERAL_MANAGER' ? (
@@ -287,44 +291,6 @@ useEffect(() => {
             ):(
               <Drawer.Screen name="Loading" component={Loading} />
             )}
- 
-            {/* <Drawer.Screen name="Home" component={TopTabNavigator} /> */}
-           
-            {/* <Drawer.Screen name="Home4" component={POHome} />
-            <Drawer.Screen name="Home1" component={TopTabNavigator3} />
-            <Drawer.Screen name="Home2" component={TopTabNavigator} />
-            <Drawer.Screen name="Home3" component={TopTabNavigator2} /> */}
-            {/* <Drawer.Screen name="Bluetooth" component={BluetoothConnectivity} />
-            <Drawer.Screen name="Bluetooth2" component={BluetoothConnectivity2} />
-            <Drawer.Screen name="Settings" component={SettingsScreen} />
-            <Drawer.Screen name="History" component={HistoryScreen} />
-            <Drawer.Screen name="Navigator" component={Navigator} />
-            <Drawer.Screen name="Staff" component={StaffListScreen} />
-            <Drawer.Screen name="AddProduct" component={AddProduct} />
-            <Drawer.Screen name= "ConfirmBill" component={ConfirmBill} />
-            <Drawer.Screen name="Receipt" component={Receipt} />
-            <Drawer.Screen name="ImageView" component={ImageViewScreen} />
-            <Drawer.Screen name="About" component={AboutScreen} />
-            <Drawer.Screen name="ProductsList" component={ProductsScreen} />
-            <Drawer.Screen name="Dashboard" component={Dashboard} />
-            <Drawer.Screen name="Profile" component={Profile} />
-            <Drawer.Screen name="Stats" component={Stats} />
-            <Drawer.Screen name="Product" component={Product} />
-            <Drawer.Screen name="Scan" component={Scan} />
-            <Drawer.Screen name="Scan2" component={Scan2} />
-            <Drawer.Screen name="Upload" component={UploadPurchase} />
-            <Drawer.Screen name="Notifications" component={Notifications} />
-            <Drawer.Screen name="PurchaseHistory" component={PurchaseHistory} />
-            <Drawer.Screen name="AddAccount" component={AddAccount} />
-            <Drawer.Screen name="ConfirmSignUp2" component={ConfirmSignUp2} />
-            <Drawer.Screen name="UploadPurchase" component={UploadPurchase} />
-            <Drawer.Screen name="PurchaseOrder" component={PurchaseOrder} />
-            <Drawer.Screen name="Categories" component={Categories} />
-            <Drawer.Screen name="ShowBill" component={ShowBill} />
-            <Drawer.Screen name="ScanPurchaseOrder" component={ScanPurchaseOrder} />
-            <Drawer.Screen name="ScanPurchaseOrder2" component={ScanPurchaseOrder2} />
-            <Drawer.Screen name="WarehouseScan" component={WarehouseScanHistory} />
-            <Drawer.Screen name="Reports" component={Reports} /> */}
           </>
         ) : (
           <>
@@ -332,6 +298,7 @@ useEffect(() => {
             <Drawer.Screen name="Login" component={LoginScreen} />
             <Drawer.Screen name="SignUp" component={SignUpScreen} />
             <Drawer.Screen name="ConfirmSignUp" component={ConfirmSignUp} />
+            <Drawer.Screen name="ResetPassword" component={ResetPassword} />
           </>
         )}
       </Drawer.Navigator>

@@ -18,7 +18,7 @@ import { SelectList } from 'react-native-dropdown-select-list'
 import { useNavigation } from '@react-navigation/native'; 
 import {generateClient} from 'aws-amplify/api';
 import {getUser} from '../src/graphql/queries';
-import { fetchUserAttributes, getCurrentUser } from 'aws-amplify/auth';
+import { fetchUserAttributes, getCurrentUser, updateUserAttribute } from 'aws-amplify/auth';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { deleteUser, updateUser } from '../src/graphql/mutations';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
@@ -29,6 +29,7 @@ const Profile = ({route}) => {
   const client = generateClient();
   const userRole = useSelector((state) => state.user.role);
   const [loading, setLoading] = useState(false);
+  const [id,setId] = useState('');
   const defaultIdCardImage = require('../assets/images/profile.png');
   const defaultProfileImageUrl = require('../assets/images/profile.png');
   const [originalProfileImage, setOriginalProfileImage] = useState('');
@@ -117,6 +118,20 @@ if (user.idcardimage[0] !== originalIdCardImage && originalIdCardImage) {
     }
   };
   
+  const handleChangeAttributes = async () => {
+    const user=id;
+    const newAttributes = {
+        'name': 'New Name'
+    };
+    try{
+      await updateUserAttribute(user, newAttributes);
+    }
+    catch(error){
+      console.log(error);
+    }
+    
+};
+
   const handleImageUpload = async (imageUri) => {
     const fileName = `user-${Date.now()}.jpeg`; 
     const fileKey = await uploadImageToS3(imageUri, fileName);
@@ -167,38 +182,25 @@ if (user.idcardimage[0] !== originalIdCardImage && originalIdCardImage) {
     const fetchUserData = async () => {
       try {
   
-      let id = route?.params?.userId;
-      console.log("id1",id);
-      //   const effectiveUserId = await getCurrentUserId();
-      //   console.log("************");
-      //   console.log("effectiveid",effectiveUserId);
-      //   console.log("id from routes",route?.params?.userId);
-      //   console.log("id from function",await getCurrentUserId());
-      //   console.log("************");
-      //   const { data } = await client.graphql({
-      //     query: userByIdQuery,
-      //     variables: { userId: id },
-      //     authMode: 'apiKey',
-      // });
-      //   if (response.data.getUser) {
-      //     setUser({
-      //       ...response.data.getUser,
-      //       joined: new Date(response.data.getUser.createdAt).toLocaleDateString(),
-      //     });
-      //   }
-      if(!id){
-        id = await fetchUserAttributes();
-        id=id.sub;
+      let ide = route?.params?.userId;
+      console.log("id1",ide);
+    
+      if(!ide){
+        ide = await fetchUserAttributes();
+        setId(ide);
+        ide=ide.sub;
+        
       }
-      if(!id){
-        id = await getCurrentUser();
-        id=id.sub;
+      if(!ide){
+        ide = await getCurrentUser();
+        setId(ide);
+        ide=ide.sub;
       }
-      // id=id.sub;
-      console.log("id",id);
+      console.log("ide",ide);
+      
       const { data } = await client.graphql({
         query: userByIdQuery,
-        variables: { userId: id },
+        variables: { userId: ide },
         authMode: 'apiKey',
     });
     const userItems=data.userById.items;
@@ -222,7 +224,6 @@ if (user.idcardimage[0] !== originalIdCardImage && originalIdCardImage) {
       }else{
         setOriginalProfileImage('../assets/images/profile.png');
       }
-  
       setOriginalIdCardImage(userData.idcardimage);
     }
   } catch (error) {
@@ -425,21 +426,20 @@ const extractFileNameFromUrl = (url) => {
 
   return (
     <View style={styles.container}>
-      {/* Upper View */}
       {loading && (
       <View style={styles.loadingContainer}>
       <AnimatedCircularProgress
-  size={120}
-  width={15}
-  fill={100}
-  prefill={0} 
-  duration={2000} 
-  delay={0}
-  tintColor={COLORS.secondary}
-  onAnimationComplete={() => console.log('onAnimationComplete')}
-  backgroundColor="#3d5875" />
+        size={120}
+        width={15}
+        fill={100}
+        prefill={0} 
+        duration={2000} 
+        delay={0}
+        tintColor={COLORS.secondary}
+        onAnimationComplete={() => console.log('onAnimationComplete')}
+        backgroundColor="#3d5875" />
     <View style={styles.successMessageContainer}>
-      <Text style={styles.loadingText}>updating Product</Text>
+      <Text style={styles.loadingText}>Updating Profile</Text>
       <TouchableOpacity
         style={styles.successButton}
         onPress={handleSuccessButtonPress}>
@@ -449,10 +449,6 @@ const extractFileNameFromUrl = (url) => {
       </View>
      )}
       <View style={styles.upperView}>
-        {/* <Image
-          source={require('../assets/images/profile.png')}
-          style={styles.profileImage}
-        /> */}
         <TouchableOpacity style={styles.arrowBackIcon}  onPress={()=> navigation.goBack()}>
             <Ionic size={24} color='white' name ='chevron-back-outline'/>
         </TouchableOpacity>
@@ -462,12 +458,7 @@ const extractFileNameFromUrl = (url) => {
         </View>
       </View>
 
-      {/* Lower View */}
       <View style={styles.lowerView}>
-      {/* <Image
-          source={require('../assets/images/profile.png')}
-          style={styles.profileImage}
-        /> */}
         {!editing && (
     <View style={styles.profileImageHeader}>
       <Image
@@ -482,7 +473,7 @@ const extractFileNameFromUrl = (url) => {
         source={user.image ? { uri: user.image } : require("../assets/images/person.jpg")}
         style={styles.profileImage}
       />
-      <Ionic style={styles.iconStyle} name='camera' />
+      {/* <Ionic style={styles.iconStyle} name='camera' /> */}
     </TouchableOpacity>
   )}
 
@@ -493,20 +484,12 @@ const extractFileNameFromUrl = (url) => {
                <View style={styles.imageContainer}>
                     <Ionic size={30} color={COLORS.primary} name ='person-outline'/>
                 </View>
-                <View style={styles.inputContainer}>
-                {editing ? (
-                 <TextInput
-                 value={user.username}
-                 onChangeText={(text) => handleInputChange('username', text)}
-                 style={styles.formInput}
-                 placeholder="Username"
-                 editable={editing}
-               />
                
-                ) : (
+                     <View style={styles.inputContainer}>
+                
             <Text style={styles.formInput}>{user.username}</Text>
 
-                )}
+                
                 </View>
             </View>
         </View>
@@ -516,7 +499,6 @@ const extractFileNameFromUrl = (url) => {
                     <Ionic size={30} color={COLORS.primary} name ='bag-remove-outline'/>
                 </View>
                 <View style={styles.inputContainer}>
-                    {/* <TextInput style={styles.formInput}  placeholder='Product ID'  placeholderTextColor='rgba(170, 170, 170,4)'/> */}
                     {editing ? (
   <SelectList
   setSelected={setSelectedRole} 
@@ -591,7 +573,7 @@ const extractFileNameFromUrl = (url) => {
                
                 <View style={styles.inputContainer}>
                     {/* <TextInput style={styles.formInput}  placeholder='Product ID'  placeholderTextColor='rgba(170, 170, 170,4)'/> */}
-                {editing ? (
+                {/* {editing ? (
                    <TextInput
                    value={password}
                    onChangeText={setPassword}
@@ -601,7 +583,10 @@ const extractFileNameFromUrl = (url) => {
                 ) : (
                   
                   <Text style={styles.formInput}>{showPassword ? password : '*********'}</Text>
-                )}
+                )} */}
+            
+                  <Text style={styles.formInput}>{showPassword ? password : '*********'}</Text>
+              
                 </View>
             </View>
             
@@ -611,17 +596,20 @@ const extractFileNameFromUrl = (url) => {
     <View style={styles.imageContainer}>
       <FontAwesome name="address-card" size={28} color={COLORS.primary} />
     </View>
-    <TouchableOpacity onPress={() => selectImage('idcard')} style={styles.idCardImageContainer}>
+    
+    {editing && (
+  <TouchableOpacity onPress={() => selectImage('idcard')} style={styles.idCardImageContainer}>
     {user.idcardimage && user.idcardimage.length > 0 ? (
-    <Image source={{ uri: user.idcardimage[0] }} style={styles.idCardImage} />
-  ) : (
-  
-    <View style={styles.idCardImagePlaceholder}>
-      <Text style={styles.idCardImagePlaceholderText}>ID Card Image</Text>
-    </View>
-  )}
-  {editing && <Ionic style={styles.iconStyle} name='camera' />}
-</TouchableOpacity>
+      <Image source={{ uri: user.idcardimage[0] }} style={styles.idCardImage} />
+    ) : (
+      <View style={styles.idCardImagePlaceholder}>
+        <Text style={styles.idCardImagePlaceholderText}>ID Card Image</Text>
+      </View>
+    )}
+ 
+  </TouchableOpacity>
+)}
+
   </View>
 </View>
 
@@ -629,22 +617,30 @@ const extractFileNameFromUrl = (url) => {
         </ScrollView>
         </View>
       
-        <View style={styles.saveWrapper}>
-      {userRole === 'GENERAL_MANAGER' && (
-        <>
-          <TouchableOpacity style={styles.saveButton} onPress={toggleEdit}>
-              <Ionic size={18} color={COLORS.primary} name ={editing ? 'save-outline' : 'brush-outline'}/>
-              <Text style={styles.saveText}>{editing ? 'Save' : 'Edit'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.deleteButton} onPress={showConfirmationDialog}>
-              <Ionic size={18} color='white' name ={'trash-outline'}/>
-              <Text style={styles.deleteText}>{'Delete'}</Text>
-          </TouchableOpacity>
-        </>
+        <View style={{
+  ...styles.saveWrapper, 
+  justifyContent: (userRole === 'GENERAL_MANAGER' && !(editing || user.role !== 'GENERAL_MANAGER')) ? 'flex-start' : 'space-around'
+}}>
+  {userRole === 'GENERAL_MANAGER' && (
+    <>
+      <TouchableOpacity style={styles.saveButton} onPress={toggleEdit}>
+        <Ionic size={18} color={COLORS.primary} name={editing ? 'save-outline' : 'brush-outline'}/>
+        <Text style={styles.saveText}>{editing ? 'Save' : 'Edit'}</Text>
+      </TouchableOpacity>
+      {(editing || user.role !== 'GENERAL_MANAGER') && (
+        <TouchableOpacity 
+          style={styles.deleteButton} 
+          onPress={editing ? () => setEditing(false) : () => showConfirmationDialog()}
+        >
+          <Ionic size={18} color='white' name={'trash-outline'}/>
+          <Text style={styles.deleteText}>{editing ? 'Cancel' : 'Delete'}</Text>
+        </TouchableOpacity>
       )}
-    </View>
-      
-      </View>
+    </>
+  )}
+</View>
+
+  </View>
   );
 };
 
@@ -707,7 +703,7 @@ headerData:{
   },
 
   name: {
-    fontSize: 25,
+    fontSize: 22,
     color: 'white',
     fontFamily:'Poppins-Regular',
     // bottom:20,
@@ -807,7 +803,7 @@ formInputWrapper:{
 formInput:{
   width:'100%',
     flex:0,
-    fontSize:18.5,
+    fontSize:16.5,
     top:6,
     right:10,
     fontFamily:'Poppins-Regular',
@@ -815,6 +811,11 @@ formInput:{
     alignItems:'center',
     color:'rgba(140, 140, 140,4)',
     textAlign:'center',
+},
+iconStyle:{
+  position:"absolute",
+  bottom:6,
+  right:1,
 },
 formInputRole:{
   flex:0,
@@ -855,10 +856,11 @@ saveContainer:{
 },
 saveWrapper:{
   flex:0,
-paddingVertical:5,
+paddingVertical:10,
 flexDirection:'row',
 justifyContent:'space-around',
-alignItems:'center'
+alignItems:'center',
+marginLeft:10
 },
 saveButton:{
   backgroundColor:COLORS.secondary,

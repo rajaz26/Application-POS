@@ -38,13 +38,63 @@ export default function Scan({route}) {
   const [zoom, setZoom] = useState(device?.neutralZoom ?? 0);
   const [version, setVersion] = useState(null);
   const devices = useCameraDevices();
-  
+  const [existingProduct, setExistingProduct] = useState(null);
   const device = devices.back;
   const client = generateClient();
 
    const [fadeAnim] = useState(new Animated.Value(0));
 
-   // Function to handle zoom in
+
+   const [quantityModalVisible, setQuantityModalVisible] = useState(false);
+   const [quantity, setQuantity] = useState('');
+ 
+
+   const handleAddQuantity = async () => {
+    const quantityToAdd = parseInt(quantity);
+    if (!isNaN(quantityToAdd) && quantityToAdd > 0) {
+      if (existingProduct) {
+        console.log("Existing barcode");
+        console.log("Bill item before updating:", existingProduct);
+
+        const updatedProduct = { ...existingProduct };
+        updatedProduct.quantity += quantityToAdd;
+        updatedProduct.subtotal = updatedProduct.quantity * updatedProduct.price;
+
+        const updatedProducts = scannedProducts.map((product) =>
+          product.id === updatedProduct.id ? updatedProduct : product
+        );
+        setScannedProducts(updatedProducts);
+
+        try {
+          const response = await client.graphql({
+            query: updateBillItem,
+            variables: {
+              input: {
+                id: updatedProduct.id,
+                quantity: updatedProduct.quantity,
+                subtotal: updatedProduct.subtotal,
+                _version: updatedProduct._version,
+              },
+            },
+            authMode: 'apiKey',
+          });
+
+          updatedProduct._version = response.data.updateBillItem._version;
+          console.log("Bill item after updating:", updatedProduct);
+          playAnimation();
+          Playsound();
+        } catch (error) {
+          console.error("Error updating bill item:", error);
+        }
+
+        setQuantityModalVisible(false);
+        setExistingProduct(null);
+      }
+    } else {
+      Alert.alert('Invalid Quantity', 'Please enter a valid quantity.');
+    }
+  };
+
 
 const zoomIn = () => {
   console.log("Zoming In");
@@ -53,7 +103,7 @@ const zoomIn = () => {
   setZoom((prevZoom) => Math.min(prevZoom + 0.1, device?.maxZoom ?? 1));
 };
 
-// Function to handle zoom out
+
 const zoomOut = () => {
   // Decrement zoom level, ensuring it doesn't go below 1
   console.log("Zoming Out");
@@ -196,119 +246,89 @@ toggleBillModal();
   };
   
   const handleBarcodeScanned = async (barcode) => {
- 
     if (!isScanning && manualBarcode === '') return;
     setIsScanning(false);
   
     try {
-      
-        const barcodeValue = barcode.displayValue || manualBarcode;
-        console.log("Scanned barcode:", barcodeValue);
+      const barcodeValue = barcode.displayValue || manualBarcode;
+      console.log("Scanned barcode:", barcodeValue);
   
-        const existingProductIndex = scannedProducts.findIndex(p => p.barcode === barcodeValue);
+      const existingProductIndex = scannedProducts.findIndex(p => p.barcode === barcodeValue);
   
-        if (existingProductIndex !== -1) {
-          console.log("Existing barcode");
-          console.log("Bill item before updating:", scannedProducts[existingProductIndex]);
-          
-          const updatedProduct = {...scannedProducts[existingProductIndex]};
-          updatedProduct.quantity += 1;
-          updatedProduct.subtotal = updatedProduct.quantity * updatedProduct.price;
-          const updatedProducts = scannedProducts.map((product, index) =>
-            index === existingProductIndex ? updatedProduct : product
-          );
-          setScannedProducts(updatedProducts);
-
-
-          // let updatedScannedProducts = [...scannedProducts];
-          // let productToUpdate = {...updatedScannedProducts[existingProductIndex]};
-          
-          // productToUpdate.quantity += 1;
-          // productToUpdate.subtotal = productToUpdate.quantity * productToUpdate.price; 
-          try {
-              const response = await client.graphql({
-                  query: updateBillItem,
-                  variables: {
-                      input: {
-                          id: updatedProduct.id,
-                          quantity: updatedProduct.quantity,
-                          subtotal: updatedProduct.subtotal,
-                          _version: updatedProduct._version,
-                          
-                      },
-                  },
-                  authMode: 'apiKey',
-              });
-
-
-	      // productToUpdate._version = response.data.updateBillItem._version;
-  	    // console.log("Bill item after updating:", productToUpdate);
-        // updatedScannedProducts[existingProductIndex] = productToUpdate;
-        // setScannedProducts(updatedScannedProducts);
-        updatedProduct._version = response.data.updateBillItem._version;
-  	    console.log("Bill item after updating:", updatedProduct);
-        // updatedScannedProducts[existingProductIndex] = productToUpdate;
-        // setScannedProducts(updatedScannedProducts);
-        playAnimation();
-        Playsound();
-          } catch (error) {
-              console.error("Error updating bill item:", error);
-          }
-      } else {
-          console.log("New barcode");
+      if (existingProductIndex !== -1) {
+        const existingProduct = scannedProducts[existingProductIndex];
+        const shelfQuantity = existingProduct.shelfQuantity;
+        const scannedQuantity = existingProduct.quantity;
   
-            const productDetailsResponse = await client.graphql({
-                query: ProductByBarcodeAndStoreId,
-                variables: { barcode: barcodeValue, storeId:storeID },
-                authMode: 'apiKey',
-            });
-  
-            if (productDetailsResponse.data.productByBarcode.items.length > 0) {
-                const productDetails = productDetailsResponse.data.productByBarcode.items[0]; 
-                const billId = await ensureBillCreated(); 
-                const billItemResponse = await client.graphql({
-                    query: createBillItem,
-                    variables: {
-                        input: {
-                            productBillItemsId: productDetails.id,
-                            quantity: 1,
-                            productPrice: productDetails.price,
-                            subtotal: productDetails.price, 
-                            billItemsId: billId, 
-                            manufacturer:productDetails.manufacturer,
-                            category:productDetails.category,
-                            productName:productDetails.name,
-                            storeBillItemsId: storeID
-                        },
-                    },
-                    authMode: 'apiKey',
-                });
-                console.log("New Bill Item created ", billItemResponse );
-           
-                const newProductDetails = {
-                    productId:productDetails.id,
-                    price:productDetails.price,
-                    quantity: 1,
-                    id: billItemResponse.data.createBillItem.id,
-                    _version: billItemResponse.data.createBillItem._version,
-                    subtotal: productDetails.price,
-                    barcode: barcodeValue,
-                    _deleted: billItemResponse.data.createBillItem._deleted,
-                    name: productDetails.name,
-                    barcode:productDetails.barcode,
-                    storeBillItemsId: storeID
-                };
-                Playsound();
-                playAnimation();
-                setScannedProducts([...scannedProducts, newProductDetails]);
-            }
-            else {
-            console.log("barcode" + barcodeValue + " not found");
-              Alert.alert("Product Not Found", "No product found for the scanned barcode. Please try again.");
-            }
+        if (scannedQuantity >= shelfQuantity) {
+        
+          Alert.alert("No More Products", "There are no more products available on the shelf.");
+        } else {
+          setQuantityModalVisible(true);
+          setExistingProduct(existingProduct);
         }
+      } else {
+        console.log("New barcode");
+        const productDetailsResponse = await client.graphql({
+          query: ProductByBarcodeAndStoreId,
+          variables: { barcode: barcodeValue, storeId: storeID },
+          authMode: 'apiKey',
+        });
+  
+        if (productDetailsResponse.data.productByBarcode.items.length > 0) {
+          const productDetails = productDetailsResponse.data.productByBarcode.items[0];
+          console.log("P",productDetails.shelfQuantity);
+          if (productDetails.shelfQuantity <=0) {
+            Alert.alert("No More Products", "There are no more of this product available on the shelf.");
+            return;
+          } 
+          const billId = await ensureBillCreated();
+          const billitemInput = {
+            productBillItemsId: productDetails.id,
+            quantity: 1,
+            productPrice: productDetails.price,
+            subtotal: productDetails.price,
+            billItemsId: billId,
+            manufacturer: productDetails.manufacturer,
+            category: productDetails.category,
+            productName: productDetails.name,
+            storeBillItemsId: storeID
+          };
+  
+          const billItemResponse = await client.graphql({
+            query: createBillItem,
+            variables: { input: billitemInput },
+            authMode: 'apiKey',
+          });
+  
+          console.log("New Bill Item created ", billItemResponse);
+          console.log("New Bill Item Created", billitemInput);
+          console.log("Bill ID ", billItemResponse.data.createBillItem.bill);
+  
+          const newProductDetails = {
+            productId: productDetails.id,
+            price: productDetails.price,
+            quantity: 1,
+            id: billItemResponse.data.createBillItem.id,
+            _version: billItemResponse.data.createBillItem._version,
+            subtotal: productDetails.price,
+            barcode: barcodeValue,
+            _deleted: billItemResponse.data.createBillItem._deleted,
+            name: productDetails.name,
+            barcode: productDetails.barcode,
+            storeBillItemsId: storeID
+          };
+  
+          Playsound();
+          playAnimation();
+          setScannedProducts([...scannedProducts, newProductDetails]);
+        } else {
+          console.log("barcode" + barcodeValue + " not found");
+          Alert.alert("Product Not Found", "No product found for the scanned barcode. Please try again.");
+        }
+      }
     } catch (error) {
-        console.error("Error handling barcode scan:", error);
+      console.error("Error handling barcode scan:", error);
     }
   
     if (manualBarcode !== '') setManualBarcode('');
@@ -326,7 +346,6 @@ toggleBillModal();
                     totalAmount: 0,
                     status: 'PENDING',
                     storeBillsId: storeID
-            
                 },
             },
             authMode: 'apiKey',
@@ -334,7 +353,9 @@ toggleBillModal();
         const newBillId = billResponse.data.createBill.id;
         setCurrentBillId(newBillId);
         setVersion(billResponse.data.createBill._version);
+        console.log("New Bill Id",newBillId);
         return newBillId;
+        
     }
     return currentBillId;
   };
@@ -475,11 +496,11 @@ const handleConfirmPressed = () => {
  
         </TouchableOpacity>
 
-<TouchableOpacity onPress={refreshCamera} style={styles.confirmButton}>
-<Ionic size={25} color={'white'} name="camera-outline" />
-  <Text style={styles.buttonTextShow}>Refresh</Text>
-  <Text style={styles.buttonTextShow}>Camera</Text>
-</TouchableOpacity>
+        <TouchableOpacity onPress={refreshCamera} style={styles.confirmButton}>
+        <Ionic size={25} color={'white'} name="camera-outline" />
+          <Text style={styles.buttonTextShow}>Refresh</Text>
+          <Text style={styles.buttonTextShow}>Camera</Text>
+        </TouchableOpacity>
 
        </View>
         <Modal
@@ -515,6 +536,33 @@ const handleConfirmPressed = () => {
         >
           {renderScannedBarcodes()}
         </Modal>
+
+        <Modal
+          visible={quantityModalVisible}
+          animationType="fade"
+          transparent={true}
+          onRequestClose={() => setQuantityModalVisible(false)}
+        >
+  <View style={styles.modalContainer}>
+    <Text style={styles.modalTitle}>Enter Quantity To Add:</Text>
+    <TextInput
+      style={styles.input}
+      placeholder="Quantity"
+      keyboardType="number-pad"
+      onChangeText={(text) => setQuantity(text)}
+      value={quantity.toString()}
+    />
+
+    <View style={styles.modalButtonContainer}>
+      <TouchableOpacity onPress={handleAddQuantity} style={styles.modalButton}>
+        <Text style={styles.modalButtonText}>Add</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => setQuantityModalVisible(false)} style={styles.modalButton}>
+        <Text style={styles.modalButtonText}>Cancel</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
       </View>
     )
   );

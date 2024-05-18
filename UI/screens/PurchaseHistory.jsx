@@ -3,11 +3,12 @@ import React, { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import Ionic from 'react-native-vector-icons/Ionicons';
 import { COLORS } from '../assets/theme/index.js';
-import { useNavigation } from '@react-navigation/native'; 
+import { useIsFocused, useNavigation } from '@react-navigation/native'; 
 import { generateClient } from 'aws-amplify/api';
 import { getPurchaseOrder, listPurchaseOrders } from '../src/graphql/queries.js';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
 import { useSelector } from 'react-redux';
+import { SelectList } from 'react-native-dropdown-select-list';
 
 
 const PurchaseHistory = () => {
@@ -17,7 +18,17 @@ const PurchaseHistory = () => {
   const [purchaseOrders, setPurchaseOrders] = useState([]);
   const storeID = useSelector((state) => state.user.storeId);
   const storeCurrency  = useSelector(state => state.currency.value);  
-    
+  const [filteredPurchaseOrders, setFilteredPurchaseOrders] = useState([]);
+  const [selectedFilter, setSelectedFilter] = useState(null); // State to store the selected filter
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (isFocused) {
+      fetchAllPOs();
+    }
+  }, [isFocused,storeID]);
+
+
   const getPurchaseOrdersByStoreId = /* GraphQL */ `
   query GetPurchaseOrdersByStoreId($storeId: ID!) {
     listPurchaseOrders(filter: { 
@@ -50,41 +61,100 @@ const PurchaseHistory = () => {
 
 
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const options = { year: 'numeric', month: 'long', day: 'numeric' };
-    return date.toLocaleDateString('en-US', options);
-  };
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  return date.toISOString().split('T')[0];
+};
+
 
   
   useEffect(() => {
     fetchAllPOs();
   }, [storeID]);
+
+  
+  const formatTime = (dateString) => {
+    const date = new Date(dateString);
+    let hours = date.getHours();
+    let minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    return `${hours}:${minutes} ${ampm}`;
+  };
+  
+  const formatPurchaseOrders = (orders) => {
+    const groupedByDate = orders.reduce((acc, order) => {
+      const orderDate = formatDate(order.createdAt);
+      if (!acc[orderDate]) acc[orderDate] = [];
+      acc[orderDate].push({
+        ...order,
+        formattedDate: orderDate,
+        formattedTime: formatTime(order.createdAt)
+      });
+      return acc;
+    }, {});
+  
+    const sortedDates = Object.entries(groupedByDate).sort((a, b) => {
+      const dateA = new Date(a[0]);
+      const dateB = new Date(b[0]);
+      return dateB - dateA;
+    });
+  
+    return sortedDates.map(([date, orders]) => ({
+      date,
+      items: orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+    }));
+  };
+  
   
   const fetchAllPOs = async () => {
+    setLoading(true);
     try {
       const { data } = await client.graphql({
         query: getPurchaseOrdersByStoreId, 
-          variables: {  storeId: storeID },
-          filter: {
-              _deleted: {
-                  ne: true
-              },
-          },    
-          authMode: 'apiKey',
+        variables: { storeId: storeID },
+        authMode: 'apiKey',
       });
-      setPurchaseOrders(data.listPurchaseOrders.items);
+      const formattedData = formatPurchaseOrders(data.listPurchaseOrders.items);
+     
+      setPurchaseOrders(formattedData);
+      setFilteredPurchaseOrders(formattedData);
     } catch (error) {
       console.error('Error fetching purchase orders:', error);
     } finally {
       setLoading(false);
     }
   };
-
+  
+  const formatDate2 = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+  };
+  
   const handleRefresh = () => {
     fetchAllPOs();
   };
 
+  const applyFilter = () => {
+    if (selectedFilter === 'ALL' || !selectedFilter ) {
+      setFilteredPurchaseOrders(purchaseOrders);
+    } else {
+      const filteredOrders = purchaseOrders.flatMap(day => ({
+        date: day.date,
+        items: day.items.filter(po => po.status === selectedFilter)
+      })).filter(day => day.items.length > 0);
+  
+      setFilteredPurchaseOrders(filteredOrders);
+    }
+  };
+  
+  useEffect(() => {
+    applyFilter();
+  }, [selectedFilter]);
+
+  
   return (
     <View  style={{flex:1,backgroundColor:'white'}}>
     {loading ? 
@@ -183,34 +253,75 @@ const PurchaseHistory = () => {
           </TouchableOpacity>
           <Text style={styles.settingsText}>Purchase History</Text>
       </View>
-          <ScrollView style={styles.scrollviewContainer}>
-            {purchaseOrders.map((po, index) => (
-              <View key={index} style={styles.dateHistoryContainer}>
-            <View style={styles.dateContainer}>
-              <Text style={styles.dateText}>{formatDate(po.createdAt)}</Text>
-            </View>
-              <View style={styles.billSection}>
-                <View style={styles.billContainer}>
-                  <Image style={styles.logoStyles} source={require("../assets/images/logo7.png")} />
-                  <View style={styles.billText}>
-                    <View style={styles.cashierName}>
-                      <Text style={styles.cashierText}>Vendor: {po.vendor}</Text>
-                      <Text style={styles.billTotal}>{`${storeCurrency || '$'} ${po.totalAmount}`}</Text>
-                    </View>
-                    <View style={styles.billBottomText}>
+      <View style={styles.selectedContainer}>
+        <SelectList
+          setSelected={(selectedValue) => {
+            setSelectedFilter(selectedValue);
+          }}
+          data={[
+            { key: '1', value: 'PENDING' },
+            { key: '2', value: 'RECEIVED' },
+            { key: '3', value: 'ALL' },
+          ]}
+          search={false}
+          save="value"
+          placeholder="Select Status"
+          boxStyles={{ borderWidth: 2 ,marginHorizontal:30}}
+          arrowicon={<Ionic style={{ position: 'absolute', right: 10, top: 14 }} size={26} color='rgba(180, 180, 180,4)' name='chevron-down-outline' />}
+          inputStyles={{ fontSize: 18.5, top: 1, fontFamily: 'Poppins-Regular', color: 'rgba(140, 140, 140,4)' }}
+          dropdownTextStyles={{ width:'80%',color: 'rgba(140, 140, 140,4)' }}
+          dropdownStyles={{marginHorizontal:30}}
+        />
+    </View>
+      <ScrollView style={styles.scrollviewContainer}>
+      {filteredPurchaseOrders.map((day, index) => (
+       
+        <View key={index}>
+          <View style={styles.dateContainer}>
+          <Text style={styles.dateText}>{formatDate2(day.date)}</Text> 
+          </View>
+          {day.items.map((po, idx) => (
+            <View key={idx} style={styles.billSection}>
+              <View style={styles.billContainer}>
+                <Image style={styles.logoStyles} source={require("../assets/images/logo1.png")} />
+                <View style={styles.billText}>
+                  <View style={styles.cashierName}>
+                    <Text style={styles.cashierText}>Vendor: {po.vendor}</Text>
+                    <Text style={styles.billTotal}>{`${storeCurrency || '$'}${po.totalAmount}`}</Text>
+                  </View>
+
+                  <View style={styles.cashierName2}>
+                    <Text style={styles.cashierText2}>{po.formattedTime}</Text>
+                   
+                  </View>
+                  
+                  <View style={styles.billBottomText}>
+                    {/* <Text style={[styles.billTime, { color: po.status === 'PENDING' ? 'orange' : 'green' }]}>{po.formattedTime}</Text> */}
                     <Text style={[styles.billTime, { color: po.status === 'PENDING' ? 'orange' : 'green' }]}>{po.status}</Text>
-                      <TouchableOpacity style={styles.billViewButton} onPress={()=>navigation.navigate('PurchaseOrder',{purchaseOrderId:po.id,purchaseOrderAmount:po.totalAmount,purchaseOrderVendor:po.vendor,purchaseOrderVersion:po._version,purchaserName:po.purchaserName,purchaseStatus:po.status})} >
-                        <Text style={styles.billViewText}>View</Text>
-                      </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity 
+  style={styles.billViewButton} 
+  onPress={() => navigation.navigate('PurchaseOrder', {
+    purchaseOrderId: po.id,
+    purchaseOrderAmount: po.totalAmount,
+    purchaseOrderVendor: po.vendor,
+    purchaseOrderVersion: po._version,
+    purchaserName: po.purchaserName,
+    purchaseStatus: po.status,
+    dateCreated: po.createdAt,
+    dateUpdated: po.updatedAt
+  })} 
+>
+  <Text style={styles.billViewText}>View</Text>
+</TouchableOpacity>
+
                   </View>
                 </View>
               </View>
             </View>
-            
           ))}
-        
-        </ScrollView>
+        </View>
+      ))}
+    </ScrollView>
        <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
         <Text style={styles.refreshButtonText}>Refresh</Text>
       </TouchableOpacity>
@@ -244,9 +355,15 @@ const styles = StyleSheet.create({
         top:4,
         fontFamily:'Poppins-Regular'
     },
+    selectedContainer:{
+      flex:0,
+      flexDirection:'column',
+
+  },
     arrowBackIcon:{
         position:'absolute',
-        left:8
+        left:8,
+        padding:20,
     },
     accountText:{
         fontSize:20,
@@ -255,6 +372,7 @@ const styles = StyleSheet.create({
     },
     scrollviewContainer:{
       paddingHorizontal:12,
+      
       marginTop:20,
       backgroundColor:'rgba(180, 180, 180,0.25)',
     },
@@ -286,7 +404,6 @@ const styles = StyleSheet.create({
     },
     downloadText:{
       color:'rgb(73,204,148)',
-      // fontWeight:'600',
       fontSize:14,
       marginRight:5,
       fontFamily:'Poppins-Medium',
@@ -331,18 +448,31 @@ const styles = StyleSheet.create({
       fontSize:13,
       fontFamily:'Poppins-Regular',
     },
+    cashierName2:{
+      flex:0,
+      flexDirection:'row',
+      justifyContent:'space-between',
+      top:2,
+    },
+    cashierText2:{
+      fontWeight:'500',
+      color:'black',
+      fontSize:10,
+      left:1,
+      fontFamily:'Poppins-Regular',
+    },
     billTotal:{
       color:'hsl(0, 100%, 46%)',
       fontWeight:'700',
       fontSize:14.5,
-      
+      right:2,
     },
     billBottomText:{
       flex:1,
       flexDirection:'row',
       justifyContent:'space-between',
       alignItems:'center',
-      marginTop:25,
+      marginTop:5,
     },
     billTime:{
       color:'gray',
@@ -362,7 +492,7 @@ const styles = StyleSheet.create({
       fontSize:13,
     },
     logoStyles:{
-      height:35,
+      height:45,
       width:35,
     },
     refreshButton: {

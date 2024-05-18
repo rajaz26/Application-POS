@@ -25,7 +25,8 @@ const listNotificationsByStoreId = /* GraphQL */ `
   query ListNotificationsByStoreId($storeId: ID!) {
     listNotifications(filter: { 
       storeNotificationsId: { eq: $storeId },
-      _deleted: { ne: true } 
+      _deleted: { ne: true },
+      isRead:{ne:true}
     }) {
       items {
         id
@@ -93,7 +94,7 @@ try {
 const NotificationItem = ({ notification,unreadNotifications,setUnreadNotifications}) => (
 <View style={styles.billSection}>
   <View style={styles.billContainer}>
-    <Ionic name="notifications-outline" size={28} color={COLORS.primary} />
+    {notification.isShelfNotification ? (  <Image source={require('../assets/images/shelf.png')} style={styles.notificationImage} />):(  <Image source={require('../assets/images/warehouse.png')} style={styles.notificationImage} />)}
     <View style={styles.billText}>
       <View style={styles.cashierName}>
         <Text style={styles.cashierText}>{notification.productname}</Text>
@@ -110,7 +111,7 @@ const NotificationItem = ({ notification,unreadNotifications,setUnreadNotificati
       <View style={styles.billBottomText}>
       <Text style={styles.billTime}>{formatTime(notification.createdAt)}</Text>
         <TouchableOpacity style={styles.billViewButton} onPress={() => handleMarkRead(notification,unreadNotifications,setUnreadNotifications)} >
-          <Text style={styles.billViewText}>Done</Text>
+          <Text style={styles.billViewText}>Noted</Text>
           <View style={styles.mark}>
             <Ionic name="checkmark-outline" size={18} color={COLORS.primary} />
           </View>
@@ -139,13 +140,21 @@ const fetchUnreadNotifications = async () => {
       filter: {
           _deleted: {
               ne: true
+          },
+          isRead:{
+            ne: true
           }
       },
       authMode: 'apiKey',
     });
 
     const unreadNotificationsData = response.data.listNotifications.items;
-    setUnreadNotifications(unreadNotificationsData);
+    const sortedNotifications = unreadNotificationsData.sort((a, b) => {
+      return new Date(b.createdAt) - new Date(a.createdAt);
+    });
+
+    setUnreadNotifications(sortedNotifications);
+    
     setLoading(false);
   } catch (error) {
     setLoading(false);
@@ -328,6 +337,10 @@ const styles = StyleSheet.create({
     flexDirection:'row',
     justifyContent:'space-between',
   
+  },
+  notificationImage:{
+    height:50,
+    width:50
   },
   cashierText:{
     fontWeight:'500',

@@ -20,14 +20,16 @@ import Ionic from 'react-native-vector-icons/Ionicons';
 import {generateClient} from 'aws-amplify/api';
 import { fetchUserAttributes } from 'aws-amplify/auth';
 import { setUserDetails } from '../store/userSlice'; 
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Sound from 'react-native-sound';
 import { updateProduct,createWarehouseScan ,createNotifications } from '../src/graphql/mutations';
 export default function ScanPurchaseOrder({route}) {
     
-const [vendor, setVendor] = useState(route.params?.vendor || '');
+
 
   Sound.setCategory('Playback');
+  const storeID = useSelector((state) => state.user.storeId);
+  const [vendor, setVendor] = useState(route.params.vendor);
   const [hasPermission, setHasPermission] = React.useState(false);
   const [isScanning, setIsScanning] = React.useState(true);
   const [loading, setLoading] = useState(false);
@@ -47,7 +49,7 @@ const [vendor, setVendor] = useState(route.params?.vendor || '');
   const client = generateClient();
   const navigation = useNavigation();
   const [userIdW, setUserIdW] = useState(null);
-const [usernameW, setUsernameW] = useState('');
+  const [usernameW, setUsernameW] = useState('');
 
 
 const Playsound = ()=>{
@@ -79,9 +81,10 @@ const Playsound = ()=>{
       checkInverted: true,
     }
   );
-  const ProductByBarcode = /* GraphQL */ `
-  query ProductByBarcode($barcode: String!) {
-    productByBarcode(barcode: $barcode) {
+
+  const ProductByBarcodeAndStoreId = /* GraphQL */ `
+  query ProductByBarcodeAndStoreId($barcode: String!, $storeId: ID!) {
+    productByBarcode(barcode: $barcode, filter: {storeProductsId: {eq: $storeId}}) {
       items {
         id
         name
@@ -91,11 +94,14 @@ const Playsound = ()=>{
         category
         warehouseQuantity
         shelfQuantity
+        store {
+          id
+          name
+        }
         _version
       }
     }
   }
-  
 `;
 
   React.useEffect(() => {
@@ -161,7 +167,7 @@ toggleBillModal();
     );
   };
 
-const handleBarcodeScanned = async (barcode) => {
+  const handleBarcodeScanned = async (barcode) => {
     if (!isScanning && manualBarcode === '') return;
     setIsScanning(false);
   
@@ -170,29 +176,31 @@ const handleBarcodeScanned = async (barcode) => {
         console.log("Scanned barcode:", barcodeValue);
   
         const productDetailsResponse = await client.graphql({
-            query: ProductByBarcode,
-            variables: { barcode: barcodeValue },
-            authMode: 'apiKey',
+          query: ProductByBarcodeAndStoreId,
+          variables: { barcode: barcodeValue, storeId: storeID },
+          authMode: 'apiKey',
         });
-  
+
         if (productDetailsResponse.data.productByBarcode.items.length > 0) {
             const productDetails = productDetailsResponse.data.productByBarcode.items[0];
-            console.log("Reciieved product",productDetails);
+            console.log("Received product",productDetails);
             Playsound();
             setCurrentProduct(productDetails);
-            console.log("Current Product",currentProduct);
+            console.log("Current Product", currentProduct);
             setQuantityModalVisible(true);
+        } else {
+           
+            Alert.alert("No Product Found", "No such product exists in the inventory.");
         }
     } catch (error) {
         console.error("Error handling barcode scan:", error);
+        Alert.alert("Error", "Failed to retrieve product details.");
     }
   
     if (manualBarcode !== '') setManualBarcode('');
 };
-const handleAddScannedProduct = (product) => {
-    // Pass the scanned product data back to the UploadPurchase screen
-    navigation.navigate('UploadPurchase', { scannedProduct: product });
-}
+
+
   const handleAddQuantity = () => {
     if (!quantity) {
         Alert.alert("Please enter a quantity.");
@@ -222,13 +230,16 @@ const handleAddScannedProduct = (product) => {
     setQuantity('');
     setCurrentProduct(null);
     setQuantityModalVisible(false);
-    navigation.navigate('UploadPurchase', { scannedProducts: updatedScannedProducts });
+    console.log("Vendor rec",vendor);
+    navigation.navigate('UploadPurchase', { scannedProducts: updatedScannedProducts, vendor:vendor });
 };
 
 useEffect(() => {
   const total = scannedProducts.reduce((acc, curr) => acc + (curr.subtotal || 0), 0);
   setTotalBillAmount(total);
 }, [scannedProducts]);
+
+
 const userByIdQuery = /* GraphQL */ `
 query UserById($userId: ID!) {
   userById(userId: $userId) {
@@ -262,6 +273,7 @@ query UserById($userId: ID!) {
   }
 }
 `;
+
 const dispatch = useDispatch();
 
   useEffect(() => {
@@ -278,13 +290,6 @@ const dispatch = useDispatch();
 
         const userDetails = data.userById.items[0];
         if (userDetails) {
-          dispatch(
-            setUserDetails({
-              userId: userDetails.userId,
-              username: userDetails.username,
-              role: userDetails.role,
-            })
-          );
           setUserIdW(userDetails.userId);
           setUsernameW(userDetails.username);
         }
@@ -294,7 +299,7 @@ const dispatch = useDispatch();
     };
 
     fetchUserDetails();
-  }, [dispatch]);
+  }, []);
 
 
 
@@ -424,6 +429,12 @@ const handleGoBack = () => {
     }
   }, []);
   
+  useEffect(() => {
+    if (route.params?.vendor) {
+        setVendor(route.params.vendor);
+    }
+}, [route.params?.vendor]);
+
 
 
   return (
@@ -497,7 +508,7 @@ const handleGoBack = () => {
             </TouchableOpacity>
             
         )} */}
-                    <TouchableOpacity  style={styles.confirmButton} onPress={()=>navigation.navigate('UploadPurchase')}>
+                    <TouchableOpacity  style={styles.confirmButton} onPress={()=>navigation.navigate('UploadPurchase', { scannedProducts: scannedProducts, vendor:vendor })}>
               <Ionic size={25} color={'white'} name="arrow-back-circle-outline" />
               <Text style={styles.buttonTextShow}>Return</Text>
             </TouchableOpacity>

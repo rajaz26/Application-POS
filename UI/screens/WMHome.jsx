@@ -4,7 +4,7 @@ import SalesLineChart from '../components/SalesLineChart'
 import { COLORS } from '../assets/theme'
 import Ionic from 'react-native-vector-icons/Ionicons';
 import {productsObj} from '../assets/Products';
-import { useNavigation } from '@react-navigation/native'; 
+import { useIsFocused, useNavigation } from '@react-navigation/native'; 
 import { useDispatch, useSelector} from 'react-redux'; 
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import { selectConnectedDevice } from '../store/bluetoothReducer';
@@ -148,6 +148,7 @@ const getNotificationsByStoreId = /* GraphQL */ `
 
 const fetchLatestNotification = async () => {
   if (!storeID) return;
+  setLoadingNotification(true);
   try {
     const { data } = await client.graphql({
       query: getNotificationsByStoreId, 
@@ -156,21 +157,23 @@ const fetchLatestNotification = async () => {
     });
     const { items } = data.listNotifications;
     if (items.length > 0) {
-      const sortedNotifications = items.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+      const sortedNotifications = items.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       setLatestNotification(sortedNotifications[0]);
+      console.log("Latest ",latestNotification);
     }
   } catch (error) {
     console.log('Error fetching latest notification:', error);
+  }finally {
+    setLoadingNotification(false);
   }
 };
-
-
 
   const fetchLatestWarehouseScan = async () => {
     if (!storeID) {
       console.log('storeID:', storeID);
       return;
     }
+    setLoadingWarehouseScan(true);
     try {
       console.log('storeID:', storeID);
       const { data } = await client.graphql({
@@ -190,21 +193,31 @@ const fetchLatestNotification = async () => {
           return new Date(b.updatedAt) - new Date(a.updatedAt);
         });
   
-        const latestScan = sortedItems[0]; // Get the latest scan
-        setWarehouseScanObj(latestScan); // Store the latest scan in an object
+        const latestScan = sortedItems[0]; 
+        setWarehouseScanObj(latestScan);
       } else {
         console.log('No warehouse scans found.');
       }
     } catch (error) {
       console.log('Error fetching warehouse scans:', error);
+    }finally {
+      setLoadingWarehouseScan(false); 
     }
-  };
-  
+  }; 
   
   useEffect(() => {
     fetchLatestWarehouseScan();
     fetchLatestNotification(); 
   }, [storeID]);
+
+  const isFocused = useIsFocused();
+
+useEffect(() => {
+  if (isFocused) {
+    fetchLatestWarehouseScan();
+    fetchLatestNotification();
+  }
+}, [isFocused,storeID]);
 
   
 const formatUpdatedAt = (updatedAt) => {
@@ -215,6 +228,8 @@ const formatUpdatedAt = (updatedAt) => {
 const connectedDevice = useSelector(state => selectConnectedDevice(state)?.name);
  const userRole = useSelector((state) => state.user.role);
  const [loading, setLoading] = useState(false); 
+ const [loadingWarehouseScan, setLoadingWarehouseScan] = useState(true);
+ const [loadingNotification, setLoadingNotification] = useState(true);
 //const userRole = 'GENERAL_MANAGER';
   const navigation = useNavigation();
   const openDrawer = () => {
@@ -271,11 +286,11 @@ const connectedDevice = useSelector(state => selectConnectedDevice(state)?.name)
                      <Ionic name="archive" size={25} color={COLORS.primary} style={styles.homeIcon} />
                     <Text style={styles.iconText}>POs List</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('History')}>
+                  <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('ShelfQuantity')}>
                 
                   
-                    <Ionic name="newspaper-outline" size={25} color={COLORS.primary} style={styles.homeIcon} />
-                    <Text style={styles.iconText}>Bills</Text>
+                    <Ionic name="library-outline" size={25} color={COLORS.primary} style={styles.homeIcon} />
+                    <Text style={styles.iconText}>Shelf</Text>
                   </TouchableOpacity>
                 </View>
                 
@@ -314,7 +329,7 @@ const connectedDevice = useSelector(state => selectConnectedDevice(state)?.name)
                   {warehouseScanObj ? (
                   <View style={styles.billSection}>
                   <View style={styles.billContainer}>
-                    <Image style={styles.logoStyles} source={require("../assets/images/logo7.png")}/>
+                    <Image style={styles.logoStyles} source={require("../assets/images/logo1.png")}/>
                     <View style={styles.billText}>
                       <View style={styles.cashierName}>
                         <Text  style={styles.cashierText}>
@@ -335,39 +350,61 @@ const connectedDevice = useSelector(state => selectConnectedDevice(state)?.name)
                 ) : (
                   <View style={styles.billSection}>
                   <View style={styles.billContainer}>
-                  <View style={styles.noDeviceContainer}>
-      <Text style={styles.noDeviceText}>Fetching the last Scan item</Text>
-      <Text style={styles.noDeviceText}>. . . . . . . . . . . . . .</Text>
-    </View>
-    </View>
+                    <Image style={styles.logoStyles} source={require("../assets/images/logo1.png")}/>
+                    <View style={styles.billText}>
+                      <View style={styles.cashierName}>
+                        <Text style={styles.cashierText}>{loadingWarehouseScan ? 'Fetching Warehouse Scans...' : 'No Warehouse Scans'}</Text>
+                       
+                      </View>
+                      <View  style={styles.billBottomText}>
+                       
+                      </View>
+                    </View>
+                  </View>
                 </View>
-              
-
                 )}
                   <View style={styles.previousContainer}>
                     <Text style={styles.previousText}>Recent Notifications</Text>
                   </View>
                   {latestNotification ? (
         <View style={styles.billSection}>
-          <View style={styles.billContainer}>
-            {/* Display latest notification details here */}
-            <Text style={styles.cashierText}>
-              {latestNotification.productName} - {latestNotification.productQuantity} Piece/s
-            </Text>
-            <Text style={styles.billTime}>
-              {formatUpdatedAt(latestNotification.updatedAt)}
-            </Text>
+        <View style={styles.billContainer}>
+          <Image style={styles.logoStyles} source={require("../assets/images/logo1.png")}/>
+          <View style={styles.billText}>
+            <View style={styles.cashierName}>
+              <Text  style={styles.cashierText}>
+                {latestNotification.productname}
+              </Text>
+              <Text  style={styles.billTotal}>
+              {latestNotification.isWarehouseNotification
+            ? `${latestNotification.warehousequanity} Piece/s`
+            : `${latestNotification.shelfquantity} Piece/s`}
+        </Text>
+              
+            </View>
+            <View  style={styles.billBottomText}>
+              <Text  style={styles.billTime}>
+                {formatUpdatedAt(latestNotification.createdAt)}
+              </Text>
+            </View>
           </View>
         </View>
+      </View>
       ) : (
         <View style={styles.billSection}>
-        <View style={styles.billContainer1}>
-        <View style={styles.noDeviceContainer}>
-      <Text style={styles.noDeviceText}>No Recent Notifications</Text>
-</View>
-</View>
-      </View>
-    
+        <View style={styles.billContainer}>
+          <Image style={styles.logoStyles} source={require("../assets/images/logo1.png")}/>
+          <View style={styles.billText}>
+            <View style={styles.cashierName}>
+              <Text style={styles.cashierText}>{loadingNotification ? 'Fetching Notifications ...' : 'No Notifications'}</Text>
+             
+            </View>
+            <View  style={styles.billBottomText}>
+             
+            </View>
+          </View>
+        </View>
+      </View>    
       )}
               </View>
             </View>
@@ -652,7 +689,7 @@ billViewText:{
   fontSize:13,
 },
 logoStyles:{
-  height:30,
+  height:40,
   width:30,
   marginRight:10,
 },

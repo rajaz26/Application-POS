@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
-import { TextInput, Animated, StyleSheet, Text, View, TouchableOpacity, ScrollView, Keyboard, Picker } from 'react-native';
+import { TextInput, StyleSheet, Text, View, TouchableOpacity, ScrollView, Keyboard, Picker, KeyboardAvoidingView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context'
-
+import Animated, { FadeIn, Easing, FadeInDown, FadeInUp } from 'react-native-reanimated';
 import Ionic from 'react-native-vector-icons/Ionicons';
 import { COLORS } from '../assets/theme/index.js';
 import { Dimensions } from 'react-native';
@@ -28,6 +28,8 @@ const PurchaseOrder = ({route}) => {
     const purchaseOrderVendor = route.params.purchaseOrderVendor;
     const purchaseOrderAmount = route.params.purchaseOrderAmount;
     const purchaserName = route.params.purchaserName;
+    const dateCreated = route.params.dateCreated;
+    const dateUpdated = route.params.dateUpdated;
     const purchaseOrderVersion = route.params.purchaseOrderVersion;
     const [vendorName, setVendorName] = useState(route.params.purchaseOrderVendor);
     // const [vendor, setVendor] = useState(route.params.purchaseOrderVendor);
@@ -43,7 +45,29 @@ const PurchaseOrder = ({route}) => {
     const [totalAmount, setTotalAmount] = useState(0);
     const storeCurrency  = useSelector(state => state.currency.value); 
 
+    const [isTyping, setIsTyping] = useState(false);
 
+    useEffect(() => {
+      const keyboardDidShowListener = Keyboard.addListener(
+        'keyboardDidShow',
+        () => {
+          setIsTyping(true);
+        }
+      );
+  
+      const keyboardDidHideListener = Keyboard.addListener(
+        'keyboardDidHide',
+        () => {
+          setIsTyping(false);
+        }
+      );
+  
+      // Clean up listeners
+      return () => {
+        keyboardDidShowListener.remove();
+        keyboardDidHideListener.remove();
+      };
+    }, []);
   
 
 const captureView = async () => {
@@ -77,7 +101,7 @@ const shareImage = async (uri) => {
     const getPurchaseItemsByPurchaseOrderIdQuery = /* GraphQL */ `
     query GetPurchaseItemsByPurchaseOrderId($purchaseOrderId: ID!) {
       listPurchaseItems(filter: { 
-        purchaseOrderPurchaseItemsId: { eq: $purchaseOrderId },
+        purchaseOrderItemsId: { eq: $purchaseOrderId },
         _deleted: { ne: true } 
       }) {
         items {
@@ -110,16 +134,16 @@ const shareImage = async (uri) => {
 
 
 const handleStatusChange = (value) => {
-    setStatus(value); // Update the status state when status changes
+    setStatus(value); 
 };
 
-// Function to update the status along with other fields
-const updatePurchaseOrderStatus = async () => {
+const updatePurchaseOrderStatus = async (vendorName) => {
     console.log("Status",status);
     try {
         const updatePurchaseOrderInput = {
             id: purchaseOrderId,
             status: status,
+            vendor:vendorName,
             _version:route.params.purchaseOrderVersion,
         };
 
@@ -227,7 +251,7 @@ const confirmUpdateQuantityReceived = async () => {
             await updateQuantityReceived(item.id, item.quantityReceived, item._version,item.productName);
 
         }
-         await updatePurchaseOrderStatus();
+         await updatePurchaseOrderStatus(vendorName);
         console.log('All items updated successfully');
         setSuccess(true);
         setEditing(false);
@@ -395,102 +419,93 @@ const confirmUpdateQuantityReceived = async () => {
     useEffect(() => {
         const refreshPurchaseOrder = route.params?.refreshPurchaseOrder;
         if (refreshPurchaseOrder) {
-            fetchPurchaseOrderItems();
-            
+            fetchPurchaseOrderItems();   
         }
-        console.log("Vendor Name",vendorName);
-        setVendorName(route.params.purchaseOrderVendor);
-        console.log("Vendor Name",vendorName);
-        console.log("Vendor",purchaseOrderVendor);
     }, [route.params?.refreshPurchaseOrder]);
 
     useEffect(() => {
-        console.log("Products",scannedProducts);
         if (route.params?.scannedProducts) {
             setScannedProducts(route.params.scannedProducts);
         }
-
-        console.log("Vendor Name",vendorName);
-        console.log("Vendor",purchaseOrderVendor);
     }, [route.params?.scannedProducts]);
     
 
-    const onSubmit = async () => {
-        console.log('Product:');
-        Keyboard.dismiss();
-        setLoading(true);
-        if (!editing) { // Change the condition to check if not editing
-          setLoading(false);
-          setSuccessMessage(true);
-          setEditing(true); // This line is only executed once
-          return;
-      }
-        try {
-            console.log('Scanned Products:', scannedProducts);
-            let totalAmount = 0;
-            scannedProducts.forEach(product => {
-                totalAmount += product.price * product.quantity;
-            });
+    // const onSubmit = async () => {
+    //     console.log('Product:');
+    //     Keyboard.dismiss();
+    //     setLoading(true);
+    //     if (!editing) {
+    //       setLoading(false);
+    //       setSuccessMessage(true);
+    //       setEditing(true); 
+    //       return;
+    //   }
+    //     try {
+    //         console.log('Scanned Products:', scannedProducts);
+    //         let totalAmount = 0;
+    //         scannedProducts.forEach(product => {
+    //             totalAmount += product.price * product.quantity;
+    //         });
     
-            const newPurchaseOrder = await client.graphql({
-                query: createPurchaseOrder,
-                variables: {
-                    input: {
-                        purchaser: userId,
-                        purchaserName: userName,
-                        vendor: vendor,
-                        totalAmount: totalAmount,
-                        status: 'PENDING'
-                    }
-                },
-                authMode: 'apiKey',
-            });
+    //         const newPurchaseOrder = await client.graphql({
+    //             query: createPurchaseOrder,
+    //             variables: {
+    //                 input: {
+    //                     purchaser: userId,
+    //                     purchaserName: userName,
+    //                     vendor: vendor,
+    //                     totalAmount: totalAmount,
+    //                     status: 'PENDING'
+    //                 }
+    //             },
+    //             authMode: 'apiKey',
+    //         });
     
-            console.log(newPurchaseOrder);
+    //         console.log(newPurchaseOrder);
     
-            const createPurchaseItemPromises = scannedProducts.map(async (product) => {
-                const createPurchaseItemInput = {
-                    productName: product.name,
-                    productPrice: product.price,
-                    quantityOrdered: product.quantity,
-                    quantityReceived: 0,
-                    purchaseOrderPurchaseItemsId: newPurchaseOrder.data.createPurchaseOrder.id,
-                    productPurchaseItemsId: product.id,
-                };
+    //         const createPurchaseItemPromises = scannedProducts.map(async (product) => {
+    //             const createPurchaseItemInput = {
+    //                 productName: product.name,
+    //                 productPrice: product.price,
+    //                 quantityOrdered: product.quantity,
+    //                 quantityReceived: 0,
+    //                 purchaseOrderPurchaseItemsId: newPurchaseOrder.data.createPurchaseOrder.id,
+    //                 productPurchaseItemsId: product.id,
+    //             };
     
-                console.log("Item Input", createPurchaseItemInput);
+    //             console.log("Item Input", createPurchaseItemInput);
     
-                return client.graphql({
-                    query: createPurchaseItem,
-                    variables: { input: createPurchaseItemInput },
-                    authMode: 'apiKey',
-                });
-            });
+    //             return client.graphql({
+    //                 query: createPurchaseItem,
+    //                 variables: { input: createPurchaseItemInput },
+    //                 authMode: 'apiKey',
+    //             });
+    //         });
     
-            // Execute all create purchase item mutations
-            const createdPurchaseItems = await Promise.all(createPurchaseItemPromises);
-            console.log('Created Purchase Items:', createdPurchaseItems);
-            const updatePurchaseOrderInput = {
-                id: newPurchaseOrder.data.createPurchaseOrder.id,
-                totalAmount: totalAmount.toString(), // Update total amount here
-                _version: newPurchaseOrder.data.createPurchaseOrder._version,
-            };
+    //         // Execute all create purchase item mutations
+    //         const createdPurchaseItems = await Promise.all(createPurchaseItemPromises);
+    //         console.log('Created Purchase Items:', createdPurchaseItems);
+    //         const updatePurchaseOrderInput = {
+    //             id: newPurchaseOrder.data.createPurchaseOrder.id,
+    //             totalAmount: totalAmount.toString(), // Update total amount here
+    //             _version: newPurchaseOrder.data.createPurchaseOrder._version,
+    //         };
     
-            await client.graphql({
-                query: updatePurchaseOrder,
-                variables: { input: updatePurchaseOrderInput},
-                authMode: 'apiKey',
-            });
-            // Log the number of created purchase items
-            console.log('Number of Purchase Items Created:', createdPurchaseItems.length);
-            setSuccess(true);
-            setSuccessMessage(true);
-            setLoading(false);
-        } catch (error) {
-            setLoading(false);
-            console.error('Error creating purchase order items:', error);
-        }
-    };
+    //         await client.graphql({
+    //             query: updatePurchaseOrder,
+    //             variables: { input: updatePurchaseOrderInput},
+    //             authMode: 'apiKey',
+    //         });
+    //         // Log the number of created purchase items
+    //         console.log('Number of Purchase Items Created:', createdPurchaseItems.length);
+    //         setSuccess(true);
+    //         setSuccessMessage(true);
+    //         setLoading(false);
+    //     } catch (error) {
+    //         setLoading(false);
+    //         console.error('Error creating purchase order items:', error);
+    //     }
+    // };
     
     const handleDeleteItem = (index) => {
         const updatedScannedProducts = [...scannedProducts]; // Create a copy of the scannedProducts array
@@ -553,10 +568,17 @@ const handleUpdatePO = async () => {
     }
 };
 
-
+const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric'
+    });
+};
     return (
-     
     <SafeAreaView style={styles.headContainer}>
+         
          <TouchableOpacity style={styles.arrowBackIcon}  onPress={()=> navigation.navigate('PurchaseHistory')}>
             <Ionic size={24} color={COLORS.primary} name ='chevron-back-outline'/>
         </TouchableOpacity>
@@ -591,14 +613,22 @@ const handleUpdatePO = async () => {
 
  </View>
 )}
-   <ViewShot ref={viewShotRef} style={{ backgroundColor:'white',flex:1}} options={{ format: 'jpg', quality: 0.9, backgroundColor: 'white'}}>
 
+   <ViewShot ref={viewShotRef} style={{ backgroundColor:'white',flex:1}} options={{ format: 'jpg', quality: 0.9, backgroundColor: 'white'}}>
    <View style={styles.headContainer2}>
    <View style={styles.headingText}> 
     <Text style={styles.totalBill}>PurchaseOrder</Text>
     <View style={styles.totalAmountContainer}>
         <Text style={styles.totalAmountText}>Total Amount: {storeCurrency || '$'}{purchaseOrderAmount}</Text>
       </View>
+      <View style={styles.totalAmountContainer}>
+      <Text style={styles.totalAmountText}>Date Created: {formatDate(dateCreated)}</Text>
+      </View>
+      {status === 'RECEIVED' && (
+    <View style={styles.totalAmountContainer}>
+        <Text style={styles.totalAmountText}>Received At: {formatDate(dateUpdated)}</Text>
+    </View>
+)}
     </View>
 
     <View  style={styles.headerContainer}>
@@ -608,7 +638,7 @@ const handleUpdatePO = async () => {
           <SelectList
           data={[
               { key: '1', value: 'PENDING' },
-              { key: '2', value: 'CONFIRMED' },
+              { key: '2', value: 'RECEIVED' },
           ]}
           setSelected={(status) => setStatus(status)} 
          
@@ -632,69 +662,69 @@ const handleUpdatePO = async () => {
             </View>
         <View style={styles.vendorComponent}>
         <Text style={styles.totalBill}>Vendor :</Text>
+        
+        {editing ? (
+       
+        <TextInput
+        style={[{ borderWidth: 1, borderColor: 'rgba(140, 140, 140,4)', marginBottom: 10 }, styles.formInput]}
+        value={vendorName}
+        onChangeText={setVendorName}
+      />
+      ) : (
         <Text style={styles.formInput}>{route.params.purchaseOrderVendor}</Text>
-
+      )}
         </View>
                                  
 </View>
 </View>
-<View style={{ backgroundColor:'white'}}>
+    
+    <View style={{ backgroundColor:'white'}}>
 
-
+    {purchaseOrderItems.length > 0 && (
    <DataTable style={styles.columnHeadingContainer}>
                 <DataTable.Header >
+                    
                     <DataTable.Title textStyle={{color: 'white'}} style={{justifyContent:'flex-start',flex:1.2}} >ITEM</DataTable.Title>
                     <DataTable.Title textStyle={{color: 'white'}} style={{justifyContent:'center'}}>QTYORD</DataTable.Title>
                     <DataTable.Title textStyle={{color: 'white'}}  style={{justifyContent:'center'}}>PRICE</DataTable.Title>
-                    {/* <DataTable.Title style={{justifyContent:'center'}}>SUBTOTAL</DataTable.Title> */}
-                    <DataTable.Title textStyle={{color: 'white'}}  style={{justifyContent:'center'}}>QTYREC</DataTable.Title>
-                    {/* {editing &&  <DataTable.Title textStyle={{color: 'white'}}  style={{justifyContent:'center',flex:0.5}}>EDIT</DataTable.Title>}}*/}
+                    
+                    {editing && purchaseOrderItems.some(item => item.quantityReceived !== 0) && <DataTable.Title textStyle={{color: 'white'}} style={{justifyContent:'center'}}>QTYREC</DataTable.Title>}
+                    {!editing && purchaseOrderItems.some(item => item.quantityReceived !== 0) && <DataTable.Title textStyle={{color: 'white'}} style={{justifyContent:'center'}}>QTYREC</DataTable.Title>}
                 </DataTable.Header> 
                 </DataTable>
-
+ )}
                <ScrollView  style={{ backgroundColor:'white',flex:0}}>
-    {purchaseOrderItems.map((item, index) => (
-        <DataTable key={index}>
-            <DataTable.Row key={index}>
-                <DataTable.Cell style={{ justifyContent: 'flex-start', flex: 1.2 }}>{item.productName}</DataTable.Cell>
-                <DataTable.Cell style={{ justifyContent: 'center' }}>{item.quantityOrdered}</DataTable.Cell>
-                <DataTable.Cell style={{ justifyContent: 'center' }}>{item.productPrice}</DataTable.Cell>
-               
-    {editing ? (
-        <View style={styles.formInputContainer2}>
-            <TextInput
-                style={styles.formInput2}
-                value={item.quantityReceived.toString()}
-                onChangeText={(text) => handleQuantityReceivedChange(index, text)}
-            />
-        </View>
-    ) : (
-        <DataTable.Cell style={{ justifyContent: 'center' }}>
-        {item.quantityReceived}
-        </DataTable.Cell>
-    )}
-
-{/* {editing &&  <DataTable.Cell style={{ justifyContent: 'center', flex: 0.5 }}>
-                    <TouchableOpacity style={styles.deleteBill} onPress={() => handleDeleteItem(index)}>
-                        <Ionic style={styles.trash} size={21.5} color={'red'} name='trash' />
-                    </TouchableOpacity>
-                </DataTable.Cell>} */}
-            </DataTable.Row>
-        </DataTable>
+                {purchaseOrderItems.map((item, index) => (
+                    <DataTable key={index}>
+                    <DataTable.Row key={index}>
+                        <DataTable.Cell style={{ justifyContent: 'flex-start', flex: 1.2 }}>{item.productName}</DataTable.Cell>
+                        <DataTable.Cell style={{ justifyContent: 'center' }}>{item.quantityOrdered}</DataTable.Cell>
+                        <DataTable.Cell style={{ justifyContent: 'center' }}>{item.productPrice}</DataTable.Cell>
+                        {editing && item.quantityReceived !== 0 && (
+                            <View style={styles.formInputContainer2}>
+                                <TextInput
+                                    style={styles.formInput2}
+                                    value={item.quantityReceived.toString()}
+                                    onChangeText={(text) => handleQuantityReceivedChange(index, text)}
+                                />
+                            </View>
+                        )}
+                        {!editing && item.quantityReceived !== 0 && (
+                            <DataTable.Cell style={{ justifyContent: 'center' }}>{item.quantityReceived.toString()}</DataTable.Cell>
+                        )}
+                    </DataTable.Row>
+                </DataTable>
+                
     ))}
 
     
 </ScrollView>
 </View>
+{/* </Animated.View> */}
   </ViewShot>
-  
+  {!isTyping &&
    <View style={styles.footerContainer}>
        <View style={styles.footerWrapper}>
-           {/* {editing &&
-            <TouchableOpacity style={styles.addButton} onPress={handleAddProduct}>
-               <Text style={styles.addText}>Add Product</Text>
-           </TouchableOpacity>
-           } */}
            {editing &&
            <TouchableOpacity style={styles.addButton} onPress={confirmUpdateQuantityReceived}>
            <Text style={styles.addText}>Update PO</Text>
@@ -705,17 +735,17 @@ const handleUpdatePO = async () => {
             <Text style={styles.confirmText}>Share Purchase Order</Text>
         </TouchableOpacity>
 
-           {!editing && (userRole === 'GENERAL_MANAGER' || userName === purchaserName) && (
+           {!editing && (userRole === 'PURCHASER' || userName === purchaserName) && (
             <TouchableOpacity style={styles.confirmButton} onPress={()=>setEditing(true)}>
                 <Text style={styles.confirmText}>Update Purchase Order</Text>
             </TouchableOpacity>
             )
         }
-           {editing &&
+           {/* {editing &&
            <TouchableOpacity style={styles.confirmButton} onPress={onSubmit}>
            <Text style={styles.confirmText}>Generate Purchaser Order</Text>
        </TouchableOpacity>
-           }
+           } */}
              {editing &&
            <TouchableOpacity style={styles.confirmButton}  onPress={()=>setEditing(false)}>
            <Text style={styles.confirmText}>Cancel</Text>
@@ -724,6 +754,7 @@ const handleUpdatePO = async () => {
           
        </View>
    </View>
+}
 </SafeAreaView>
 )
 }
@@ -796,9 +827,6 @@ formInputWrapper:{
 formInput:{
     flex:0,
     width:'100%',
-    // width:100,
-    // height:100,
-    width:300,
     height:50,
     fontSize:18,
     fontFamily:'Poppins-Regular',
@@ -857,7 +885,6 @@ imageContainer:{
     flex:0,
     justifyContent:'center',
     alignItems:'center',
-    // paddingVertical:10,
 },
 
 inputContainer:{
@@ -1024,6 +1051,10 @@ arrowBackIcon:{
   top:25,
   left:18
 },
+container: {
+    flex: 1,
+    backgroundColor: '#044244',
+  },
 mainLogo:{
     flex:0,
     justifyContent:'center',
@@ -1137,7 +1168,7 @@ footerWrapper:{
 
     justifyContent:'center',
     alignItems:'center',
-
+    marginBottom:15,
 },
 
 confirmButton:{

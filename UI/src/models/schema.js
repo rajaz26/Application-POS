@@ -474,7 +474,14 @@ export const schema = {
                     "name": "phonenumber",
                     "isArray": false,
                     "type": "String",
-                    "isRequired": true,
+                    "isRequired": false,
+                    "attributes": []
+                },
+                "password": {
+                    "name": "password",
+                    "isArray": false,
+                    "type": "String",
+                    "isRequired": false,
                     "attributes": []
                 },
                 "image": {
@@ -568,6 +575,17 @@ export const schema = {
                         "queryField": "userById",
                         "fields": [
                             "userId",
+                            "id"
+                        ]
+                    }
+                },
+                {
+                    "type": "key",
+                    "properties": {
+                        "name": "byUserName",
+                        "queryField": "userByName",
+                        "fields": [
+                            "username",
                             "id"
                         ]
                     }
@@ -1179,22 +1197,6 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
-                "purchaseItems": {
-                    "name": "purchaseItems",
-                    "isArray": true,
-                    "type": {
-                        "model": "PurchaseItem"
-                    },
-                    "isRequired": false,
-                    "attributes": [],
-                    "isArrayNullable": true,
-                    "association": {
-                        "connectionType": "HAS_MANY",
-                        "associatedWith": [
-                            "purchaseOrderPurchaseItemsId"
-                        ]
-                    }
-                },
                 "createdAt": {
                     "name": "createdAt",
                     "isArray": false,
@@ -1294,6 +1296,13 @@ export const schema = {
                     "isRequired": false,
                     "attributes": []
                 },
+                "productTag": {
+                    "name": "productTag",
+                    "isArray": false,
+                    "type": "Int",
+                    "isRequired": false,
+                    "attributes": []
+                },
                 "quantityOrdered": {
                     "name": "quantityOrdered",
                     "isArray": false,
@@ -1348,13 +1357,6 @@ export const schema = {
                 },
                 "purchaseOrderItemsId": {
                     "name": "purchaseOrderItemsId",
-                    "isArray": false,
-                    "type": "ID",
-                    "isRequired": false,
-                    "attributes": []
-                },
-                "purchaseOrderPurchaseItemsId": {
-                    "name": "purchaseOrderPurchaseItemsId",
                     "isArray": false,
                     "type": "ID",
                     "isRequired": false,
@@ -1511,11 +1513,12 @@ export const schema = {
             "values": [
                 "PENDING",
                 "CONFIRMED",
-                "PAID"
+                "PAID",
+                "RECEIVED"
             ]
         }
     },
     "nonModels": {},
     "codegenVersion": "3.4.4",
-    "version": "36e11014a983dd373ac5d5fe92fda529"
+    "version": "b601fce5dd6a2ee2f27c210ae9321886"
 };

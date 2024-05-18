@@ -61,9 +61,6 @@ const ProductsScreen = ({ route }) => {
 `;
 
   const fetchAllProducts = async () => {
-    console.log("Store",storeID);
-    console.log("StoreName",storeName);
-    console.log("Role",userRole);
     try {
       const { data } = await client.graphql({
         query: getProductsByStoreIdQuery,
@@ -79,7 +76,7 @@ const ProductsScreen = ({ route }) => {
       setProductsObj(items);
       setLoading(false);
     } catch (error) {
-      console.error('Error fetching products:', error);
+      console.log('Error fetching products:', error);
       setLoading(false); 
     }
   };

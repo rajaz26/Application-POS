@@ -13,6 +13,7 @@ import Share from 'react-native-share';
 import RNFS from 'react-native-fs';
 import ViewShot from 'react-native-view-shot';
 import { useSelector } from 'react-redux';
+import { Image } from 'react-native-svg';
 
 const Reports = () => {
   const storeID = useSelector((state) => state.user.storeId);
@@ -256,25 +257,6 @@ const formatHourRange = (hour) => {
   return `${startHour}:00 ${startAmPm} - ${endHour}:00 ${endAmPm}`;
 };
 
-
-//   useEffect(() => {
-//     const fetchBillItems = async () => {
-//       try {
-//         const response = await client.graphql({
-//           query: listBillItems,
-//           authMode: 'apiKey',
-//         });
-//         setAllBillItems(response.data.listBillItems.items);
-//       } catch (error) {
-//         console.error('Error fetching bill items:', error);
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchBillItems();
-//   }, []);
-
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -359,7 +341,6 @@ const formatHourRange = (hour) => {
   
     setCategorySalesSummary(categorySalesArray);
   };
-
   
   const processWarehouseScans = (warehouseScans) => {
     const scanCounts = warehouseScans.reduce((acc, scan) => {
@@ -376,7 +357,6 @@ const formatHourRange = (hour) => {
   
     setWarehouseScansSummary(scansSummaryArray);
   };
-
   
   const fetchProductsNeedingRestock = async () => {
     setLoading(true);
@@ -580,7 +560,7 @@ const formatHourRange = (hour) => {
                 </ViewShot>
                 <View style={{flex:0,justifyContent:'center',alignItems:'center',marginVertical:10}}>            
                 <TouchableOpacity style={styles.addButton} onPress={captureView}>
-                            <Text style={styles.addText}>Share Purchase Order</Text>
+                            <Text style={styles.addText}>Share</Text>
                     </TouchableOpacity>    
                 <TouchableOpacity
                   style={styles.addButton}
@@ -600,7 +580,9 @@ const formatHourRange = (hour) => {
             >
               <SafeAreaView style={{flex: 1}}>
               <ViewShot ref={viewShotRef} style={{ backgroundColor:'white',flex:1}} options={{ format: 'jpg', quality: 0.9, backgroundColor: 'white'}}>
+              
               <Text style={styles.modalHeading}>Top Hours for Sales</Text>
+
                 <ScrollView style={styles.scrollView}>
                   <DataTable>
                     <DataTable.Header>
@@ -619,7 +601,7 @@ const formatHourRange = (hour) => {
                 </ViewShot>
                 <View style={{flex:0,justifyContent:'center',alignItems:'center',marginVertical:10}}>            
                 <TouchableOpacity style={styles.addButton} onPress={captureView}>
-                            <Text style={styles.addText}>Share Purchase Order</Text>
+                            <Text style={styles.addText}>Share</Text>
                     </TouchableOpacity>    
                    <TouchableOpacity
                     style={styles.addButton}
@@ -644,6 +626,7 @@ const formatHourRange = (hour) => {
           <ActivityIndicator size="large" color={COLORS.primary} />
         ) : (
             <ViewShot ref={viewShotRef} style={{ backgroundColor:'white',flex:1}} options={{ format: 'jpg', quality: 0.9, backgroundColor: 'white'}}>
+           
            <Text style={styles.modalHeading}>Cashier With Most Bills</Text>
           <ScrollView style={styles.scrollView}>
             <DataTable>
@@ -663,7 +646,7 @@ const formatHourRange = (hour) => {
         )}
         <View style={{flex:0,justifyContent:'center',alignItems:'center',marginVertical:10}}> 
                     <TouchableOpacity style={styles.addButton} onPress={captureView}>
-                            <Text style={styles.addText}>Share Purchase Order</Text>
+                            <Text style={styles.addText}>Share</Text>
                     </TouchableOpacity>           
                     <TouchableOpacity style={styles.addButton} onPress={() => setIsCashiersModalVisible(false)}>
                         <Text style={styles.addText}>Close</Text>
@@ -697,7 +680,7 @@ const formatHourRange = (hour) => {
             </ViewShot>
             <View style={{flex:0,justifyContent:'center',alignItems:'center',marginVertical:10}}> 
                     <TouchableOpacity style={styles.addButton} onPress={captureView}>
-                            <Text style={styles.addText}>Share Purchase Order</Text>
+                            <Text style={styles.addText}>Share</Text>
                     </TouchableOpacity>           
                     <TouchableOpacity style={styles.addButton} onPress={() => setIsPurchasersModalVisible(false)}>
                         <Text style={styles.addText}>Close</Text>
@@ -734,7 +717,7 @@ const formatHourRange = (hour) => {
             </ViewShot>
             <View style={{flex:0,justifyContent:'center',alignItems:'center',marginVertical:10}}> 
                     <TouchableOpacity style={styles.addButton} onPress={captureView}>
-                            <Text style={styles.addText}>Share Purchase Order</Text>
+                            <Text style={styles.addText}>Share</Text>
                     </TouchableOpacity>           
                     <TouchableOpacity style={styles.addButton} onPress={() => setIsRestockModalVisible(false)}>
                         <Text style={styles.addText}>Close</Text>
@@ -770,7 +753,7 @@ const formatHourRange = (hour) => {
     </ViewShot>
     <View style={{flex:0,justifyContent:'center',alignItems:'center',marginVertical:10}}> 
                     <TouchableOpacity style={styles.addButton} onPress={captureView}>
-                            <Text style={styles.addText}>Share Purchase Order</Text>
+                            <Text style={styles.addText}>Share</Text>
                     </TouchableOpacity>           
                     <TouchableOpacity style={styles.addButton} onPress={() => setIsWarehouseScansModalVisible(false)}>
                         <Text style={styles.addText}>Close</Text>
@@ -805,7 +788,7 @@ const formatHourRange = (hour) => {
     </ViewShot>
     <View style={{flex:0,justifyContent:'center',alignItems:'center',marginVertical:10}}> 
                     <TouchableOpacity style={styles.addButton} onPress={captureView}>
-                            <Text style={styles.addText}>Share Purchase Order</Text>
+                            <Text style={styles.addText}>Share</Text>
                     </TouchableOpacity>           
                     <TouchableOpacity style={styles.addButton} onPress={() => setIsCategorySalesModalVisible(false)}>
                         <Text style={styles.addText}>Close</Text>
@@ -842,7 +825,7 @@ const formatHourRange = (hour) => {
   </ViewShot>
   <View style={{flex:0,justifyContent:'center',alignItems:'center',marginVertical:10}}> 
                     <TouchableOpacity style={styles.addButton} onPress={captureView}>
-                            <Text style={styles.addText}>Share Purchase Order</Text>
+                            <Text style={styles.addText}>Share</Text>
                     </TouchableOpacity>           
                     <TouchableOpacity style={styles.addButton} onPress={() => setIsRevenueModalVisible(false)}>
                         <Text style={styles.addText}>Close</Text>

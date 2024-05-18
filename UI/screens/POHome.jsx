@@ -203,13 +203,12 @@ const [loading, setLoading] = useState(false);
                     <Ionic name="notifications" size={28} color={COLORS.primary} />
                     <Text style={styles.iconText}>Alerts</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={styles.iconContainer} onPress={() => navigation.navigate('ProductsList', {
-                    productsObj: productsObj,
-                  })
-                }>
-                    <Ionic name="list" size={28} color={COLORS.primary} style={styles.homeIcon} />
-                    <Text style={styles.iconText}>Products</Text>
-                  </TouchableOpacity> 
+                  <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('WarehouseQuantity')}>
+                
+                  
+                    <Ionic name="cube-outline" size={25} color={COLORS.primary} style={styles.homeIcon} />
+                    <Text style={styles.iconText}>Warehouse Quantity</Text>
+                  </TouchableOpacity>
                 </View>
           
             
@@ -415,14 +414,15 @@ const styles = StyleSheet.create({
     top:4,
     color:COLORS.primary,
     fontFamily:'Poppins-Light',
-    fontSize:13
+    fontSize:13,
+    textAlign:'center'
     
   },
   iconContainer:{
     flex:0,
     backgroundColor:'white',
-    height:80,
-    width:80,
+    height:90,
+    width:90,
     justifyContent:'center',
     borderWidth:1,
     borderRadius:20,
@@ -577,12 +577,7 @@ billTime:{
   fontSize:12,
   fontFamily:'Poppins-Regular',
 },
-billViewButton:{
-  backgroundColor:'rgba(180, 180, 180,0.5)',
-  paddingHorizontal:16,
-  paddingVertical:5,
-  borderRadius:15,
-},
+
 bluetoothViewButton:{
   backgroundColor:'rgba(180, 180, 180,0.5)',
   paddingHorizontal:16,
@@ -593,10 +588,16 @@ bluetoothViewButton:{
   alignItems:'center',
   marginTop:5,
 },
-
+billViewButton:{
+  backgroundColor:'rgba(180, 180, 180,0.5)',
+  // backgroundColor:COLORS.primary,
+  paddingHorizontal:16,
+  paddingVertical:5,
+  borderRadius:15,
+},
 billViewText:{
-  fontWeight:'600',
-  color:'black',
+  fontWeight:'500',
+  color:COLORS.primary,
   fontSize:13,
 },
 logoStyles:{

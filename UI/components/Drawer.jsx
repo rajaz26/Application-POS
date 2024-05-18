@@ -27,6 +27,7 @@ const Drawer = props => {
   const userRole = useSelector((state) => state.user.role);
   const userName=useSelector((state) => state.user.username);
   const [image,setImage]=useState();
+  const [role,setRole]=useState();
   const handleSignOut = async () => {
     console.log('Signing out...');
 
@@ -92,18 +93,7 @@ useEffect(() => {
         const userDetails = data.userById.items[0]; 
        
         setImage(userDetails.image);
-        // console.log("Image",image);
-        // console.log("User",userDetails);
-        // if (userDetails) {
-        //   dispatch(setUserDetails
-        //     ({
-        //     userId: userDetails.userId,
-        //     username: userDetails.username,
-        //     role: userDetails.role,
-        //     storeId: userDetails.storeUsersId,
-        //     storeName: userDetails.store.name,
-        //   }));
-        // }
+        setRole(userDetails.role);
       }
       
     } catch (error) {
@@ -149,9 +139,10 @@ useEffect(() => {
           </View>
         <View style={{flex: 1, backgroundColor: '#fff', paddingTop: 15}}>
             <View style={{paddingHorizontal: 20, }}>
-            <TouchableOpacity onPress={() => {}} style={{paddingVertical: 15}}>
+            {userRole === "GENERAL_MANAGER" && (
+            <TouchableOpacity  onPress={()=> navigation.navigate('Staff')} style={{paddingVertical: 15}} >
             <View style={{flexDirection: 'row'}}>
-                <Ionicons name="home-outline" size={22} color={COLORS.primary} />
+                <Ionicons name="people-outline" size={22} color={COLORS.primary} />
                 <Text
                 style={{
                     fontSize: 15,
@@ -160,10 +151,11 @@ useEffect(() => {
                     top:1,
                     color:COLORS.primary ,
                 }}>
-                Home
+                Staff
                 </Text>
             </View>
             </TouchableOpacity>
+            )}
             <TouchableOpacity style={{paddingVertical: 15}} onPress={()=> navigation.navigate('Profile')}>
             <View style={{flexDirection: 'row'}}>
                 <Ionicons name="person-outline" size={22} color={COLORS.primary} />
@@ -179,6 +171,7 @@ useEffect(() => {
                 </Text>
             </View>
             </TouchableOpacity>
+            {userRole === "CASHIER" && (
             <TouchableOpacity style={{paddingVertical: 15}} onPress={()=> navigation.navigate('Scan')}>
              <View style={{flexDirection: 'row'}}>
                 <Ionicons name="scan-outline" size={22} color={COLORS.primary} />
@@ -194,6 +187,58 @@ useEffect(() => {
                 </Text>
             </View>
             </TouchableOpacity>
+            )}
+             {userRole === "GENERAL_MANAGER" && (
+            <TouchableOpacity style={{paddingVertical: 15}} onPress={()=> navigation.navigate('Reports')}>
+             <View style={{flexDirection: 'row'}}>
+                <Ionicons name="document-outline" size={22} color={COLORS.primary} />
+                <Text
+                style={{
+                    fontSize: 15,
+                    fontFamily: 'Poppins-Medium',
+                    marginLeft: 12,
+                    top:1,
+                    color:COLORS.primary ,
+                }}>
+                Reports
+                </Text>
+            </View>
+            </TouchableOpacity>
+            )}
+               {userRole === "WAREHOUSE_MANAGER" || userRole === "PURCHASER" && (
+            <TouchableOpacity  onPress={()=> navigation.navigate('WarehouseQuantity')} style={{paddingVertical: 15}} >
+            <View style={{flexDirection: 'row'}}>
+                <Ionicons name="cube-outline" size={22} color={COLORS.primary} />
+                <Text
+                style={{
+                    fontSize: 15,
+                    fontFamily: 'Poppins-Medium',
+                    marginLeft: 12,
+                    top:1,
+                    color:COLORS.primary ,
+                }}>
+                Warehouse Quantity
+                </Text>
+            </View>
+            </TouchableOpacity>
+            )}
+             {userRole === "WAREHOUSE_MANAGER" && (
+            <TouchableOpacity  onPress={()=> navigation.navigate('WarehouseScan')} style={{paddingVertical: 15}} >
+            <View style={{flexDirection: 'row'}}>
+                <Ionicons name="scan-outline" size={22} color={COLORS.primary} />
+                <Text
+                style={{
+                    fontSize: 15,
+                    fontFamily: 'Poppins-Medium',
+                    marginLeft: 12,
+                    top:1,
+                    color:COLORS.primary ,
+                }}>
+                Scans List
+                </Text>
+            </View>
+            </TouchableOpacity>
+            )}
             <TouchableOpacity style={{paddingVertical: 15}} onPress={()=> navigation.navigate('History')}>
             <View style={{flexDirection: 'row'}}>
                 <Ionicons name="archive-outline" size={22} color={COLORS.primary} />
@@ -205,10 +250,11 @@ useEffect(() => {
                     top:1,
                     color:COLORS.primary ,
                 }}>
-                Transactions
+                Bills Generated
                 </Text>
             </View>
             </TouchableOpacity>
+            {userRole === "GENERAL_MANAGER" && (
             <TouchableOpacity style={{paddingVertical: 15}} onPress={()=> navigation.navigate('Settings')}>
             <View style={{flexDirection: 'row'}}>
                 <Ionicons name="settings-outline" size={22} color={COLORS.primary} />
@@ -223,7 +269,7 @@ useEffect(() => {
                 Settings
                 </Text>
             </View>
-            </TouchableOpacity>
+            </TouchableOpacity>)}
         </View>
         </View>
       </DrawerContentScrollView>

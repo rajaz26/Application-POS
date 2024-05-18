@@ -12,7 +12,8 @@ export enum UserRole {
 export enum BillStatus {
   PENDING = "PENDING",
   CONFIRMED = "CONFIRMED",
-  PAID = "PAID"
+  PAID = "PAID",
+  RECEIVED = "RECEIVED"
 }
 
 
@@ -155,7 +156,8 @@ type EagerUser = {
   readonly id: string;
   readonly userId: string;
   readonly username: string;
-  readonly phonenumber: string;
+  readonly phonenumber?: string | null;
+  readonly password?: string | null;
   readonly image?: string | null;
   readonly role: UserRole | keyof typeof UserRole;
   readonly idcardimage?: (string | null)[] | null;
@@ -175,7 +177,8 @@ type LazyUser = {
   readonly id: string;
   readonly userId: string;
   readonly username: string;
-  readonly phonenumber: string;
+  readonly phonenumber?: string | null;
+  readonly password?: string | null;
   readonly image?: string | null;
   readonly role: UserRole | keyof typeof UserRole;
   readonly idcardimage?: (string | null)[] | null;
@@ -354,7 +357,6 @@ type EagerPurchaseOrder = {
   readonly items: PurchaseItem[];
   readonly totalAmount: number;
   readonly status?: BillStatus | keyof typeof BillStatus | null;
-  readonly purchaseItems?: (PurchaseItem | null)[] | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly storePurchaseOrderId?: string | null;
@@ -373,7 +375,6 @@ type LazyPurchaseOrder = {
   readonly items: AsyncCollection<PurchaseItem>;
   readonly totalAmount: number;
   readonly status?: BillStatus | keyof typeof BillStatus | null;
-  readonly purchaseItems: AsyncCollection<PurchaseItem>;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
   readonly storePurchaseOrderId?: string | null;
@@ -394,6 +395,7 @@ type EagerPurchaseItem = {
   readonly product: Product;
   readonly productName?: string | null;
   readonly productPrice?: number | null;
+  readonly productTag?: number | null;
   readonly quantityOrdered: number;
   readonly quantityReceived: number;
   readonly purchaseOrder?: PurchaseOrder | null;
@@ -401,7 +403,6 @@ type EagerPurchaseItem = {
   readonly updatedAt?: string | null;
   readonly productPurchaseItemsId?: string | null;
   readonly purchaseOrderItemsId?: string | null;
-  readonly purchaseOrderPurchaseItemsId?: string | null;
 }
 
 type LazyPurchaseItem = {
@@ -413,6 +414,7 @@ type LazyPurchaseItem = {
   readonly product: AsyncItem<Product>;
   readonly productName?: string | null;
   readonly productPrice?: number | null;
+  readonly productTag?: number | null;
   readonly quantityOrdered: number;
   readonly quantityReceived: number;
   readonly purchaseOrder: AsyncItem<PurchaseOrder | undefined>;
@@ -420,7 +422,6 @@ type LazyPurchaseItem = {
   readonly updatedAt?: string | null;
   readonly productPurchaseItemsId?: string | null;
   readonly purchaseOrderItemsId?: string | null;
-  readonly purchaseOrderPurchaseItemsId?: string | null;
 }
 
 export declare type PurchaseItem = LazyLoading extends LazyLoadingDisabled ? EagerPurchaseItem : LazyPurchaseItem

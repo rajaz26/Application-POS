@@ -39,7 +39,7 @@ const SettingsScreen = () => {
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.arrowBackIcon}
-          onPress={() => navigation.navigate('Home')}
+          onPress={() => navigation.goBack()}
         >
           <Ionic size={22} color={COLORS.primary} name="chevron-back-outline" />
         </TouchableOpacity>
@@ -59,15 +59,12 @@ const SettingsScreen = () => {
             <Ionic style={styles.optionIcon} size={22} color={COLORS.primary} name="person-outline" />
             <Text style={styles.optionText}>Edit Profile</Text>
           </TouchableOpacity>
-          {/* <TouchableOpacity style={styles.optionContainer} onPress={toggleThemeModal}>
-            <Ionic style={styles.optionIcon} size={22} color={COLORS.primary} name="shield-half-outline" />
-            <Text style={styles.optionText}>Theme</Text>
-          </TouchableOpacity> */}
+
           <TouchableOpacity style={styles.optionContainer} onPress={toggleCurrencyModal}>
             <Ionic style={styles.optionIcon} size={22} color={COLORS.primary} name="card-outline" />
             <Text style={styles.optionText}>Currency</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.optionContainer}  onPress={() => navigation.navigate('Scan3')}>
+          <TouchableOpacity style={styles.optionContainer}  onPress={() => navigation.navigate('Notifications')}>
             <Ionic style={styles.optionIcon} size={22} color={COLORS.primary} name="notifications-outline" />
             <Text style={styles.optionText}>Notifications</Text>
           </TouchableOpacity>
@@ -154,7 +151,7 @@ const SettingsScreen = () => {
             <Text style={styles.optionText} >Logout</Text>
         </View>
         </View> */}
-        {/* Add other sections and options here as needed */}
+        
 
         <ThemeModal visible={isThemeModalVisible} onClose={toggleThemeModal} type="theme" />
         <ThemeModal visible={isCurrencyModalVisible} onClose={toggleCurrencyModal} type="currency"  currency={storeCurrency}/>

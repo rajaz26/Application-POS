@@ -1,4 +1,4 @@
-import { SafeAreaView, StyleSheet, Image,Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView, Button,StyleSheet, Image,Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import SalesLineChart from '../components/SalesLineChart'
 import { COLORS } from '../assets/theme'
@@ -18,8 +18,37 @@ import { listBills,listBillItems,userById  } from '../src/graphql/queries';
 import { selectConnectedDevice } from '../store/bluetoothReducer';
 import Sound from 'react-native-sound';
 import SkeletonPlaceholder from 'react-native-skeleton-placeholder';
+import notifee from '@notifee/react-native';
+import { AndroidColor } from '@notifee/react-native';
+import NotificationPopup from 'react-native-push-notification-popup';
+
 const GMHome = () => {
   const client = generateClient();
+  
+  async function onDisplayNotification() {
+    // Request permissions (required for iOS)
+    await notifee.requestPermission()
+
+    // Create a channel (required for Android)
+    const channelId = await notifee.createChannel({
+      id: 'default',
+      name: 'Default Channel',
+    });
+
+    // Display a notification
+    await notifee.displayNotification({
+      title: 'Notification Title',
+      body: 'Main body content of the notification',
+      android: {
+        channelId,
+        
+        pressAction: {
+          id: 'default',
+        },
+      },
+    });
+  }
+
   
   const dispatch = useDispatch();
   const connectedDevice = useSelector(state => selectConnectedDevice(state)?.name);
@@ -217,9 +246,10 @@ useEffect(() => {
     fetchAllBills();
 }, [storeID]);
 
+  const [popupVisible, setPopupVisible] = useState(false);
   const [bills, setBills] = useState([]);
   const [latestBill, setLatestBill] = useState(null);
-  // const userRole = useSelector((state) => state.user.role); 
+
   const fetchAllBills = async () => {
     try {
       const { data } = await client.graphql({
@@ -324,8 +354,8 @@ useEffect(() => {
   };  
   useEffect(() => {
     fetchAllBills();
-    // console.log("done");
   }, []);
+  
   useEffect(() => {
     if (bills.length > 0) {
       const latestBill = findLatestUpdatedBill(bills);
@@ -347,6 +377,7 @@ useEffect(() => {
     });
 
 };
+
 
   return (
     <View  style={{flex:1,backgroundColor:'white'}}>
@@ -443,7 +474,6 @@ useEffect(() => {
                 </View>
                 <View style={styles.iconWrapper}>    
                 <View style={styles.icons}>
-                
                 <TouchableOpacity style={styles.iconContainer} onPress={()=> navigation.navigate('Staff')}>  
                  <Ionic name="person" size={25} color={COLORS.primary} style={styles.homeIcon} />
                  <Text style={styles.iconText}>Staff List</Text>

@@ -14,13 +14,14 @@ import CashierHome from './CashierHome';
 import WMHome from './WMHome';
 import GMHome from './GMHome';
 import Store from './Store';
+import Notifications from './Notifications';
 const Tab = createMaterialTopTabNavigator();
 
 
 const tabIcons = {
   Dashboard: 'home',
   History: 'receipt',
-  Scan2: 'scan',
+  Scan2: 'notifications',
   Store: 'storefront',
   Profile: 'person',
 };
@@ -85,7 +86,7 @@ const TopTabNavigator3 = () => {
     >
       <Tab.Screen name="Dashboard" component={GMHome} />
       <Tab.Screen name="History" component={History} />
-      <Tab.Screen name="Scan2" component={Scan2} />
+      <Tab.Screen name="Scan2" component={Notifications} />
       <Tab.Screen name="Store" component={Store} />
       <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>

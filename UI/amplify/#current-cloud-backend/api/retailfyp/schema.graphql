@@ -9,6 +9,7 @@ enum BillStatus {
   PENDING
   CONFIRMED
   PAID
+  RECEIVED
 }
 
 type Store @model @auth(rules: [{ allow: public }]) {
@@ -51,8 +52,9 @@ type Notifications @model @auth(rules: [{ allow: public }]) {
 type User @model @auth(rules: [{ allow: public }]) {
   id: ID!
   userId: ID! @index(name: "byUserId", queryField: "userById", sortKeyFields: ["id"])
-  username: String! 
-  phonenumber: String!
+  username: String! @index(name: "byUserName", queryField: "userByName", sortKeyFields: ["id"])
+  phonenumber: String
+  password: String
   image: String
   role: UserRole!
   idcardimage: [String]
@@ -111,7 +113,6 @@ type PurchaseOrder @model @auth(rules: [{ allow: public }]) {
   items: [PurchaseItem!]! @hasMany
   totalAmount: Float!
   status: BillStatus
-  purchaseItems: [PurchaseItem] @hasMany
 }
 
 type PurchaseItem @model @auth(rules: [{ allow: public }]) {
@@ -119,6 +120,7 @@ type PurchaseItem @model @auth(rules: [{ allow: public }]) {
   product: Product! @belongsTo 
   productName: String
   productPrice: Float
+  productTag: Int
   quantityOrdered:Int!
   quantityReceived:Int!
   purchaseOrder: PurchaseOrder @belongsTo
